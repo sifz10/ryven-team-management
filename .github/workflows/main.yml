@@ -2,7 +2,7 @@ name: Deploy Laravel Project on push
 on:
   push:
     branches:
-      - main
+      - master
 jobs:
   web-deploy:
     name: Deploy
@@ -15,15 +15,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-      - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-      - name: Set ENV Configuration
-        run: |
-          sed -i 's/APP_NAME=.*/APP_NAME=${{ secrets.APP_NAME }}/' .env
-
-          sed -i 's/DB_DATABASE=.*/DB_DATABASE=${{ secrets.DB_DATABASE }}/' .env
-          sed -i 's/DB_USERNAME=.*/DB_USERNAME=${{ secrets.DB_USERNAME }}/' .env
-          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/' .env
 
       - name: Install Composer Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --ignore-platform-reqs
