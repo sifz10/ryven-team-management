@@ -11,6 +11,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// SOP page (authenticated)
+Route::get('/sop', function () {
+    return view('sop');
+})->middleware(['auth'])->name('sop');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
