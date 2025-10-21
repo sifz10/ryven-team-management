@@ -7,10 +7,10 @@
 
     <div class="py-12">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="mb-4">
-                        <a href="{{ route('dashboard') }}" class="text-gray-600">← Back to Dashboard</a>
+                        <a href="{{ route('dashboard') }}" class="text-gray-600 dark:text-gray-300">← Back to Dashboard</a>
                     </div>
                     <form method="POST" action="{{ route('employees.store') }}" class="space-y-4">
                         @csrf
@@ -46,7 +46,7 @@
                         </div>
                         <div>
                             <x-input-label for="currency" value="Currency" />
-                            <select id="currency" name="currency" class="mt-1 block w-full border-gray-300 rounded-md">
+                            <select id="currency" name="currency" class="mt-1 block w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-md focus:border-indigo-500 focus:ring-indigo-500">
                                 @php($currencies = ['USD' => 'US Dollar', 'EUR' => 'Euro', 'GBP' => 'British Pound', 'BDT' => 'Bangladeshi Taka', 'INR' => 'Indian Rupee'])
                                 @foreach($currencies as $code => $label)
                                     <option value="{{ $code }}" @selected(old('currency', 'USD') === $code)>{{ $code }} - {{ $label }}</option>
@@ -60,7 +60,7 @@
                             <x-input-error :messages="$errors->get('hired_at')" class="mt-2" />
                         </div>
                         <div class="flex items-center justify-end gap-3">
-                            <a href="{{ route('employees.index') }}" class="text-gray-700 hover:text-gray-900">Cancel</a>
+                            <a href="{{ route('employees.index') }}" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Cancel</a>
                             <x-primary-button class="bg-gray-900 hover:bg-gray-800 focus:bg-gray-800">Save</x-primary-button>
                         </div>
                     </form>

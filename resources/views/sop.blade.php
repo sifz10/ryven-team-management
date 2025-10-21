@@ -1,55 +1,33 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
+                {{ __('Standard Operating Procedure (SOP)') }}
+            </h2>
+            <a href="#" onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 17H7v4h10v-4zM7 7V3h10v4M7 13h10m-12 4H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2"/></svg>
+                <span class="text-sm font-medium">Print</span>
+            </a>
+        </div>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Version 1.0 • Effective: October 2025 • Prepared by: CEO – Kazi Abu Sifat</p>
+    </x-slot>
 
-        <title>Ryven Global LLC — SOP</title>
-
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <style>
-            summary::-webkit-details-marker{display:none}
-            details[open] .chevron{transform:rotate(180deg)}
-            .stage-item:target .stage-card{box-shadow:0 0 0 2px rgb(199 210 254); border-color: rgb(165 180 252)}
-        </style>
-    </head>
-     <body class="font-sans antialiased scroll-smooth bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-800" x-data="{progress:0}" x-init="window.addEventListener('scroll',()=>{progress=Math.min(100, (window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100)})">
-        <div class="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200/60">
+    <div x-data="{progress:0}" x-init="window.addEventListener('scroll',()=>{progress=Math.min(100,(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100)})">
+        <div class="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200/60 dark:bg-gray-700/60 pointer-events-none">
             <div class="h-1 bg-indigo-600 transition-all" :style="`width:${progress}%;`"></div>
         </div>
-        <header class="relative isolate overflow-hidden bg-white">
-            <div class="absolute inset-0 -z-10">
-                <div class="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl"></div>
-                <div class="absolute right-0 top-0 h-96 w-96 rounded-full bg-purple-200/40 blur-3xl"></div>
-            </div>
-            <div class="mx-auto max-w-7xl px-6 pt-10 pb-12 lg:px-8">
-                <div class="flex items-center justify-between">
-                    <a href="/" class="inline-flex items-center gap-3">
-                        <img src="{{ asset('black-logo.png') }}" alt="Ryven Global" class="h-10">
-                        <span class="sr-only">Home</span>
-                    </a>
-                    <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Dashboard</a>
-                </div>
-                <div class="mt-8 max-w-3xl">
-                    <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Ryven Global LLC — Standard Operating Procedure</h1>
-                    <p class="mt-3 text-gray-600">Version 1.0 • Effective: October 2025 • Prepared by: CEO – Kazi Abu Sifat</p>
-                </div>
-            </div>
-        </header>
+    </div>
 
         <main class="mx-auto max-w-7xl px-6 py-10 lg:px-8">
             <section class="grid gap-6 lg:grid-cols-3">
                 <div class="lg:col-span-2 space-y-10">
-                    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h2 class="text-xl font-semibold text-gray-900">1. Purpose</h2>
-                        <p class="mt-3 text-gray-700">To define clear responsibilities, communication flow, and standard processes for client acquisition, project execution, and post-delivery support at Ryven Global LLC.</p>
+                    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">1. Purpose</h2>
+                        <p class="mt-3 text-gray-700 dark:text-gray-300">To define clear responsibilities, communication flow, and standard processes for client acquisition, project execution, and post-delivery support at Ryven Global LLC.</p>
                     </div>
 
-                    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h2 class="text-xl font-semibold text-gray-900">2. Team Structure</h2>
+                    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">2. Team Structure</h2>
                         <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                             @php
                                 $roles = [
@@ -64,12 +42,12 @@
                                 ];
                             @endphp
                             @foreach ($roles as $r)
-                                <div class="rounded-xl border border-gray-200 p-4 hover:shadow">
+                                <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow">
                                     <div class="flex items-start gap-3">
                                         <div class="mt-1 h-2.5 w-2.5 rounded-full bg-indigo-500"></div>
                                         <div>
-                                            <p class="font-medium text-gray-900">{{ $r['role'] }}</p>
-                                            <p class="text-sm text-gray-600">{{ $r['desc'] }}</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">{{ $r['role'] }}</p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ $r['desc'] }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -77,9 +55,9 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                         <h2 class="text-xl font-semibold text-gray-900">3. Workflow Overview</h2>
-                         <ol class="mt-6 relative border-s-2 border-dashed border-indigo-200 ps-6 space-y-4">
+                    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">3. Workflow Overview</h2>
+                         <ol class="mt-6 relative border-s-2 border-dashed border-indigo-200 dark:border-indigo-300/40 ps-6 space-y-4">
                             @php
                                 $stages = [
                                     [
@@ -102,7 +80,7 @@
                                             'Send onboarding email with welcome kit.',
                                             'Sign NDA, Contract, and Payment Agreement.',
                                             'Create project workspace (Drive/Notion).',
-                                            'Setup Slack/Notion/ClickUp/Trello channels.',
+                                            'Setup CRM project, Discord channels, WhatsApp group, email thread.',
                                             'Assign developers, designer, and QA.',
                                         ],
                                         'deliverables' => ['Signed documents','Workspace setup','Team allocation'],
@@ -136,7 +114,7 @@
                                         'resp' => 'QA Engineer, Manager, Developers',
                                         'items' => [
                                             'Manual and automated tests.',
-                                            'Log bugs in ClickUp/Notion.',
+                                            'Log bugs in CRM.',
                                             'Developers fix and mark resolutions.',
                                             'Pre-deploy review by Manager & CEO.',
                                         ],
@@ -197,23 +175,23 @@
                              @foreach ($stages as $index => $stage)
                                  <li class="relative stage-item" @if(isset($stageAnchors[$stage['title']])) id="{{ $stageAnchors[$stage['title']] }}" @endif>
                                     <div class="absolute -start-1 top-2 h-3 w-3 rounded-full bg-indigo-500"></div>
-                                    <details open class="ms-6 rounded-xl border border-gray-200 bg-white p-0 shadow-sm overflow-hidden">
+                                    <details open class="ms-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-0 shadow-sm overflow-hidden stage-card">
                                         <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 select-none">
                                             <div>
-                                                <h3 class="text-base font-semibold text-gray-900">{{ $stage['title'] }}</h3>
-                                                <span class="mt-1 inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">Responsible: {{ $stage['resp'] }}</span>
+                                                <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ $stage['title'] }}</h3>
+                                                <span class="mt-1 inline-flex items-center rounded-full bg-indigo-50 dark:bg-indigo-400/20 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-200">Responsible: {{ $stage['resp'] }}</span>
                                             </div>
-                                            <svg class="chevron h-4 w-4 text-gray-500 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                                            <svg class="chevron h-4 w-4 text-gray-500 dark:text-gray-300 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
                                         </summary>
                                         <div class="px-5 pb-5">
-                                            <ul class="mt-1 list-disc ps-5 text-sm text-gray-700 space-y-1">
+                                            <ul class="mt-1 list-disc ps-5 text-sm text-gray-700 dark:text-gray-300 space-y-1">
                                                 @foreach ($stage['items'] as $it)
                                                     <li>{{ $it }}</li>
                                                 @endforeach
                                             </ul>
                                             <div class="mt-4 flex flex-wrap items-center gap-2">
                                                 @foreach ($stage['deliverables'] as $d)
-                                                    <span class="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200">{{ $d }}</span>
+                                                    <span class="inline-flex items-center rounded-full bg-gray-50 dark:bg-gray-700/50 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-200 dark:ring-gray-600">{{ $d }}</span>
                                                 @endforeach
                                             </div>
                                         </div>
@@ -224,11 +202,11 @@
                     </div>
 
                     <div class="grid gap-6 md:grid-cols-2">
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                            <h2 class="text-xl font-semibold text-gray-900">4. Communication Protocol</h2>
+                        <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">4. Communication Protocol</h2>
                             <div class="mt-4 overflow-x-auto">
                                 <table class="min-w-full text-left text-sm">
-                                    <thead class="text-gray-600">
+                                    <thead class="text-gray-600 dark:text-gray-300">
                                         <tr>
                                             <th class="py-2">Type</th>
                                             <th class="py-2">Tool</th>
@@ -236,14 +214,14 @@
                                             <th class="py-2">Responsible</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="text-gray-700">
+                                    <tbody class="text-gray-700 dark:text-gray-300">
                                         @php
                                             $comm = [
-                                                ['Daily Task Updates','Trello / ClickUp','Daily','All Developers'],
-                                                ['Weekly Report','Notion / Google Docs','Weekly','Manager'],
+                                                ['Daily Task Updates','CRM','Daily','All Developers'],
+                                                ['Weekly Report','CRM / Google Docs','Weekly','Manager'],
                                                 ['Client Sync Call','Zoom / Google Meet','Weekly','Manager + CEO'],
-                                                ['Internal Review','Slack / Meet','Bi-weekly','CEO + Team'],
-                                                ['QA Report','Notion','Per sprint','QA Engineer'],
+                                                ['Internal Review','Discord / Meet','Bi-weekly','CEO + Team'],
+                                                ['QA Report','CRM','Per sprint','QA Engineer'],
                                                 ['Final Delivery','Email + Call','Once','CEO + Manager'],
                                             ];
                                         @endphp
@@ -260,9 +238,9 @@
                             </div>
                         </div>
 
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                            <h2 class="text-xl font-semibold text-gray-900">5. Documentation Standards</h2>
-                            <ul class="mt-3 list-disc ps-5 text-gray-700 space-y-1">
+                        <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">5. Documentation Standards</h2>
+                            <ul class="mt-3 list-disc ps-5 text-gray-700 dark:text-gray-300 space-y-1">
                                 <li>Every project contains a <code>/docs</code> folder with SRS, designs, deployment, API, QA.</li>
                                 <li>Naming: <code>clientname_projectname_phase_date.docx</code></li>
                             </ul>
@@ -270,17 +248,17 @@
                     </div>
 
                     <div class="grid gap-6 md:grid-cols-2">
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                            <h2 class="text-xl font-semibold text-gray-900">6. Code & Repository Policy</h2>
-                            <ul class="mt-3 list-disc ps-5 text-gray-700 space-y-1">
+                        <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">6. Code & Repository Policy</h2>
+                            <ul class="mt-3 list-disc ps-5 text-gray-700 dark:text-gray-300 space-y-1">
                                 <li>Private repositories on GitHub/GitLab.</li>
                                 <li>Branches: <code>main</code> → production, <code>dev</code> → sprint, <code>feature/*</code> per feature.</li>
                                 <li>Commits include task ID/purpose, e.g., <code>feat(auth): add JWT login route</code>.</li>
                             </ul>
                         </div>
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                            <h2 class="text-xl font-semibold text-gray-900">7. Meetings & Reporting</h2>
-                            <ul class="mt-3 list-disc ps-5 text-gray-700 space-y-1">
+                        <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">7. Meetings & Reporting</h2>
+                            <ul class="mt-3 list-disc ps-5 text-gray-700 dark:text-gray-300 space-y-1">
                                 <li>Daily Standup (optional) — Devs & QA</li>
                                 <li>Weekly Review (mandatory) — Manager & CEO</li>
                                 <li>Monthly Business Review — BDM & CEO</li>
@@ -289,8 +267,8 @@
                     </div>
 
                     <div class="grid gap-6 md:grid-cols-2">
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                            <h2 class="text-xl font-semibold text-gray-900">8. Performance Evaluation</h2>
+                        <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">8. Performance Evaluation</h2>
                             @php
                                 $perf = [
                                     ['Developers','Code quality, deadlines, communication'],
@@ -306,16 +284,16 @@
                                 @foreach ($perf as $p)
                                     <li class="flex items-start gap-3">
                                         <span class="mt-1 inline-block h-2.5 w-2.5 rounded-full bg-purple-500"></span>
-                                        <p class="text-gray-700"><span class="font-medium text-gray-900">{{ $p[0] }}:</span> {{ $p[1] }}</p>
+                                        <p class="text-gray-700 dark:text-gray-300"><span class="font-medium text-gray-900 dark:text-white">{{ $p[0] }}:</span> {{ $p[1] }}</p>
                                     </li>
                                 @endforeach
                             </ul>
                         </div>
-                        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                            <h2 class="text-xl font-semibold text-gray-900">9. Tools & Platforms</h2>
-                            <ul class="mt-3 grid grid-cols-2 gap-2 text-gray-700 text-sm">
+                        <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">9. Tools & Platforms</h2>
+                            <ul class="mt-3 grid grid-cols-2 gap-2 text-gray-700 dark:text-gray-300 text-sm">
                                 <li><span class="font-medium">Communication</span>: Slack, Gmail, WhatsApp</li>
-                                <li><span class="font-medium">Project Mgmt</span>: CRM, Whatsapp, Email, Google Meet, Zoom</li>
+                                <li><span class="font-medium">Project Mgmt</span>: CRM, WhatsApp, Email, Google Meet, Zoom</li>
                                 <li><span class="font-medium">Design</span>: Figma, Adobe XD</li>
                                 <li><span class="font-medium">Development</span>: VS Code, GitHub, Postman, Vercel, Railway, AWS</li>
                                 <li><span class="font-medium">QA</span>: Notion, BrowserStack, Testrail</li>
@@ -335,9 +313,9 @@
                         </div>
                     </div>
 
-                    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h2 class="text-xl font-semibold text-gray-900">10. Security & Compliance</h2>
-                        <ul class="mt-3 list-disc ps-5 text-gray-700 space-y-1">
+                    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">10. Security & Compliance</h2>
+                        <ul class="mt-3 list-disc ps-5 text-gray-700 dark:text-gray-300 space-y-1">
                             <li>All client data must remain confidential.</li>
                             <li>NDA and IP transfer agreements before project start.</li>
                             <li>No third-party sharing without approval.</li>
@@ -348,30 +326,25 @@
                             <li>Follow CCPA and local security standards.</li>
                         </ul>
                     </div>
-
-                    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <h2 class="text-xl font-semibold text-gray-900">11. Missing Step Suggestions</h2>
-                        <ul class="mt-3 list-disc ps-5 text-gray-700 space-y-1">
-                            <li><span class="font-medium">Pre-sale Discovery</span> — short questionnaire to clarify pain points and expectations.</li>
-                            <li><span class="font-medium">Post-project Retrospective</span> — internal review of wins and improvements.</li>
-                        </ul>
-                    </div>
                 </div>
 
                 <aside class="space-y-6 lg:sticky lg:top-8 self-start">
-                    <div class="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-indigo-900">At-a-glance</h3>
-                        <ul class="mt-3 space-y-2 text-sm text-indigo-900/80">
+                    <div class="rounded-2xl border border-indigo-200 dark:border-indigo-400/30 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/30 dark:to-gray-800 p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-indigo-900 dark:text-indigo-200">At-a-glance</h3>
+                        <ul class="mt-3 space-y-2 text-sm text-indigo-900/80 dark:text-indigo-200/80">
                             <li>9 workflow stages from Lead Gen to Upsell</li>
                             <li>Clear role responsibilities</li>
                             <li>Defined communication cadence</li>
                             <li>Security and compliance ready</li>
                         </ul>
-                        <a href="#" onclick="window.print()" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700">Download / Print</a>
+                        <a href="#" onclick="window.print()" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 17H7v4h10v-4zM7 7V3h10v4M7 13h10m-12 4H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2"/></svg>
+                            <span class="text-sm font-medium">Print</span>
+                        </a>
                     </div>
-                     <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                         <h3 class="text-lg font-semibold text-gray-900">Quick Links</h3>
-                         <ul class="mt-3 space-y-2 text-sm text-gray-700">
+                     <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Links</h3>
+                         <ul class="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-300">
                              <li><a class="hover:text-indigo-600" href="#kickoff-template">Kickoff Template</a></li>
                              <li><a class="hover:text-indigo-600" href="#qa-checklist">QA Checklist</a></li>
                              <li><a class="hover:text-indigo-600" href="#deployment-guide">Deployment Guide</a></li>
@@ -380,11 +353,6 @@
                 </aside>
             </section>
         </main>
-
-        <footer class="mx-auto max-w-7xl px-6 pb-12 text-sm text-gray-500 lg:px-8">
-            © {{ date('Y') }} Ryven Global LLC. All rights reserved.
-        </footer>
-    </body>
-</html>
+    </x-app-layout>
 
 

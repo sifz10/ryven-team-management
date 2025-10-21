@@ -15,10 +15,10 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-2xl">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="mb-4">
-                        <a href="{{ route('dashboard') }}" class="text-gray-600">← Back to Dashboard</a>
+                        <a href="{{ route('dashboard') }}" class="text-gray-600 dark:text-gray-300">← Back to Dashboard</a>
                     </div>
                     @if (session('status'))
                         <div class="mb-4 text-green-600">{{ session('status') }}</div>
@@ -40,17 +40,17 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         @forelse ($employees as $employee)
-                            <div class="border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow transition">
+                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 shadow-sm hover:shadow transition">
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <div class="text-lg font-semibold">{{ $employee->first_name }} {{ $employee->last_name }}</div>
-                                        <div class="text-sm text-gray-600">{{ $employee->position ?? '—' }}</div>
+                                        <div class="text-sm text-gray-600 dark:text-gray-300">{{ $employee->position ?? '—' }}</div>
                                     </div>
                                     @if($employee->discontinued_at)
                                         <span class="text-xs text-red-600">Discontinued</span>
                                     @endif
                                 </div>
-                                <div class="mt-3 text-sm text-gray-700 space-y-1">
+                                <div class="mt-3 text-sm text-gray-700 dark:text-gray-300 space-y-1">
                                     <div>{{ $employee->email }}</div>
                                     @if($employee->phone)
                                         <div>{{ $employee->phone }}</div>
@@ -71,7 +71,7 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="col-span-full text-center text-gray-500">
+                            <div class="col-span-full text-center text-gray-500 dark:text-gray-400">
                                 <div class="mb-3">No employees yet.</div>
                                 <a href="{{ route('employees.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full shadow hover:bg-gray-800">
                                     <svg class="w-5 h-5 -ms-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

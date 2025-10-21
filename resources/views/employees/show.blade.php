@@ -27,10 +27,10 @@
 
     <div class="py-12">
         <div x-data="{ tab: 'overview' }" class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     <div class="mb-4">
-                        <a href="{{ route('dashboard') }}" class="text-gray-600">← Back to Dashboard</a>
+                        <a href="{{ route('dashboard') }}" class="text-gray-600 dark:text-gray-300">← Back to Dashboard</a>
                     </div>
 
                     @php
@@ -69,10 +69,10 @@
                             <button type="button" @click="tab='org'" :class="tab==='org' ? 'bg-black text-white shadow' : 'text-gray-700 hover:bg-white'" class="px-4 py-2 rounded-lg text-sm transition">Org totals</button>
                         </div>
 
-                        <div x-cloak x-show="tab==='overview'" x-transition.opacity class="bg-white border border-gray-200 rounded-2xl shadow-sm">
-                        <div class="p-6 border-b border-gray-200">
+                        <div x-cloak x-show="tab==='overview'" x-transition.opacity class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                             <h3 class="text-lg font-semibold">Compensation Overview</h3>
-                            <p class="text-sm text-gray-600 mt-1">Summary of payments and projected cost based on current monthly salary.</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Summary of payments and projected cost based on current monthly salary.</p>
                             <form method="GET" class="mt-4 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
                                 <div>
                                     <x-input-label for="from" value="From" />
@@ -90,7 +90,7 @@
                                 </div>
                             </form>
                             @if(request('from') || request('to'))
-                                <div class="mt-2 text-xs text-gray-500">Filtering payments @if(request('from')) from {{ request('from') }} @endif @if(request('to')) to {{ request('to') }} @endif</div>
+                                <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">Filtering payments @if(request('from')) from {{ request('from') }} @endif @if(request('to')) to {{ request('to') }} @endif</div>
                             @endif
                         </div>
                         
@@ -127,15 +127,15 @@
                             </div>
                         </div>
                     <!-- Organization totals across all employees -->
-                    <div x-cloak x-show="tab==='org'" x-transition.opacity class="mt-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
-                        <div class="p-6 border-b border-gray-200">
+                    <div x-cloak x-show="tab==='org'" x-transition.opacity class="mt-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                             <h3 class="text-lg font-semibold">Total Paid to All Employees</h3>
-                            <p class="text-sm text-gray-600 mt-1">Cumulative payments across the organization (all time), by currency.</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Cumulative payments across the organization (all time), by currency.</p>
                         </div>
                         <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             @forelse ($orgPaidByCurrency as $row)
-                                <div class="rounded-xl border border-gray-200 p-4 flex items-center justify-between">
-                                    <div class="text-sm text-gray-600">{{ $row->currency }}</div>
+                                <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+                                    <div class="text-sm text-gray-600 dark:text-gray-300">{{ $row->currency }}</div>
                                     <div class="text-xl font-semibold">{{ number_format($row->total, 2) }} {{ $row->currency }}</div>
                                 </div>
                             @empty
@@ -147,8 +147,8 @@
             </div>
 
             <!-- Bank Accounts moved above Payment Timeline -->
-            <div x-cloak x-show="tab==='bank'" x-transition.opacity class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div x-cloak x-show="tab==='bank'" x-transition.opacity class="mt-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-4">Bank Accounts</h3>
 
                     <form method="POST" action="{{ route('employees.bank-accounts.store', $employee) }}" class="mb-6 space-y-3">
@@ -170,7 +170,7 @@
 
                     <ul class="space-y-4">
                         @forelse($employee->bankAccounts as $account)
-                            <li class="border border-gray-200 rounded-xl p-4">
+                            <li class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
                                         <div class="font-semibold">{{ $account->title }}</div>
@@ -218,8 +218,8 @@
             </div>
 
             <!-- Shared Access section -->
-            <div x-cloak x-show="tab==='access'" x-transition.opacity class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div x-cloak x-show="tab==='access'" x-transition.opacity class="mt-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-semibold mb-4">Shared Access</h3>
 
                     <form method="POST" action="{{ route('employees.accesses.store', $employee) }}" class="mb-6 space-y-3" enctype="multipart/form-data">
@@ -234,7 +234,7 @@
                             <textarea id="acc_note" name="note_markdown" rows="3" class="mt-1 block w-full border-gray-300 rounded-md" placeholder="Access details, user names, scopes... (optional)"></textarea>
                             <x-input-error :messages="$errors->get('note_markdown')" class="mt-2" />
                         </div>
-                        <div x-data="{ isDragging:false }" @dragover.prevent="isDragging=true" @dragleave.prevent="isDragging=false" @drop.prevent="isDragging=false" class="border-2 border-dashed rounded-lg p-4" :class="isDragging ? 'border-black bg-gray-50' : 'border-gray-300'">
+                        <div x-data="{ isDragging:false }" @dragover.prevent="isDragging=true" @dragleave.prevent="isDragging=false" @drop.prevent="isDragging=false" class="border-2 border-dashed rounded-lg p-4" :class="isDragging ? 'border-black bg-gray-50 dark:bg-gray-900' : 'border-gray-300 dark:border-gray-600'">
                             <x-input-label for="acc_file" value="Attachment (optional)" />
                             <input id="acc_file" name="attachment" type="file" class="mt-1 block w-full" />
                             <p class="text-xs text-gray-500 mt-1">Drag & drop or click to upload (max 10 MB).</p>
@@ -246,7 +246,7 @@
 
                     <ul class="space-y-4">
                         @forelse($employee->accesses as $access)
-                            <li class="border border-gray-200 rounded-xl p-4">
+                            <li class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
                                         <div class="font-semibold">{{ $access->title }}</div>
@@ -301,8 +301,8 @@
                     </ul>
                 </div>
             </div>
-            <div x-cloak x-show="tab==='timeline'" x-transition.opacity class="mt-6 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div x-cloak x-show="tab==='timeline'" x-transition.opacity class="mt-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     @if (session('status'))
                         <div class="mb-4 text-green-600">{{ session('status') }}</div>
                     @endif
@@ -342,7 +342,7 @@
                     </form>
 
                     <div class="relative">
-                        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                        <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
                         <ul class="space-y-6">
                             @forelse($payments as $payment)
                                 <li class="relative pl-12">
