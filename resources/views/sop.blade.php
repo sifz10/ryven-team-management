@@ -28,7 +28,7 @@
             <div class="mx-auto max-w-7xl px-6 pt-10 pb-12 lg:px-8">
                 <div class="flex items-center justify-between">
                     <a href="/" class="inline-flex items-center gap-3">
-                        <img src="{{ asset('black-logo.png') }}" alt="Ryven Global" class="h-10 w-10">
+                        <img src="{{ asset('black-logo.png') }}" alt="Ryven Global" class="h-10">
                         <span class="sr-only">Home</span>
                     </a>
                     <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Dashboard</a>
