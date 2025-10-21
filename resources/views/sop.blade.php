@@ -10,8 +10,16 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <style>
+            summary::-webkit-details-marker{display:none}
+            details[open] .chevron{transform:rotate(180deg)}
+            .stage-item:target .stage-card{box-shadow:0 0 0 2px rgb(199 210 254); border-color: rgb(165 180 252)}
+        </style>
     </head>
-     <body class="font-sans antialiased scroll-smooth bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-800">
+     <body class="font-sans antialiased scroll-smooth bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-800" x-data="{progress:0}" x-init="window.addEventListener('scroll',()=>{progress=Math.min(100, (window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100)})">
+        <div class="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200/60">
+            <div class="h-1 bg-indigo-600 transition-all" :style="`width:${progress}%;`"></div>
+        </div>
         <header class="relative isolate overflow-hidden bg-white">
             <div class="absolute inset-0 -z-10">
                 <div class="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl"></div>
@@ -23,7 +31,7 @@
                         <img src="{{ asset('black-logo.png') }}" alt="Ryven Global" class="h-10 w-10">
                         <span class="sr-only">Home</span>
                     </a>
-                    <a href="/login" class="text-sm font-medium text-gray-600 hover:text-gray-900">Sign in</a>
+                    <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Dashboard</a>
                 </div>
                 <div class="mt-8 max-w-3xl">
                     <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Ryven Global LLC — Standard Operating Procedure</h1>
@@ -71,7 +79,7 @@
 
                     <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                          <h2 class="text-xl font-semibold text-gray-900">3. Workflow Overview</h2>
-                         <ol class="mt-6 relative border-s-2 border-dashed border-indigo-200 ps-6 space-y-8">
+                         <ol class="mt-6 relative border-s-2 border-dashed border-indigo-200 ps-6 space-y-4">
                             @php
                                 $stages = [
                                     [
@@ -187,24 +195,29 @@
                              @endphp
 
                              @foreach ($stages as $index => $stage)
-                                 <li class="relative" @if(isset($stageAnchors[$stage['title']])) id="{{ $stageAnchors[$stage['title']] }}" @endif>
-                                    <div class="absolute -start-1 top-1.5 h-3 w-3 rounded-full bg-indigo-500"></div>
-                                    <div class="ms-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                                        <div class="flex items-center justify-between gap-4">
-                                            <h3 class="text-base font-semibold text-gray-900">{{ $stage['title'] }}</h3>
-                                            <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">Responsible: {{ $stage['resp'] }}</span>
+                                 <li class="relative stage-item" @if(isset($stageAnchors[$stage['title']])) id="{{ $stageAnchors[$stage['title']] }}" @endif>
+                                    <div class="absolute -start-1 top-2 h-3 w-3 rounded-full bg-indigo-500"></div>
+                                    <details open class="ms-6 rounded-xl border border-gray-200 bg-white p-0 shadow-sm overflow-hidden">
+                                        <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 select-none">
+                                            <div>
+                                                <h3 class="text-base font-semibold text-gray-900">{{ $stage['title'] }}</h3>
+                                                <span class="mt-1 inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">Responsible: {{ $stage['resp'] }}</span>
+                                            </div>
+                                            <svg class="chevron h-4 w-4 text-gray-500 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                                        </summary>
+                                        <div class="px-5 pb-5">
+                                            <ul class="mt-1 list-disc ps-5 text-sm text-gray-700 space-y-1">
+                                                @foreach ($stage['items'] as $it)
+                                                    <li>{{ $it }}</li>
+                                                @endforeach
+                                            </ul>
+                                            <div class="mt-4 flex flex-wrap items-center gap-2">
+                                                @foreach ($stage['deliverables'] as $d)
+                                                    <span class="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200">{{ $d }}</span>
+                                                @endforeach
+                                            </div>
                                         </div>
-                                        <ul class="mt-3 list-disc ps-5 text-sm text-gray-700 space-y-1">
-                                            @foreach ($stage['items'] as $it)
-                                                <li>{{ $it }}</li>
-                                            @endforeach
-                                        </ul>
-                                        <div class="mt-4 flex flex-wrap items-center gap-2">
-                                            @foreach ($stage['deliverables'] as $d)
-                                                <span class="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200">{{ $d }}</span>
-                                            @endforeach
-                                        </div>
-                                    </div>
+                                    </details>
                                 </li>
                             @endforeach
                         </ol>
@@ -345,7 +358,7 @@
                     </div>
                 </div>
 
-                <aside class="space-y-6">
+                <aside class="space-y-6 lg:sticky lg:top-8 self-start">
                     <div class="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-6 shadow-sm">
                         <h3 class="text-lg font-semibold text-indigo-900">At-a-glance</h3>
                         <ul class="mt-3 space-y-2 text-sm text-indigo-900/80">
