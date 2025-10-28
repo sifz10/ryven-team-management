@@ -5,6 +5,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeePaymentController;
 use App\Http\Controllers\EmployeeBankAccountController;
 use App\Http\Controllers\EmployeeAccessController;
+use App\Http\Controllers\AttendanceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,6 +45,14 @@ Route::middleware('auth')->group(function () {
     Route::post('employees/{employee}/accesses', [EmployeeAccessController::class, 'store'])->name('employees.accesses.store');
     Route::put('employees/{employee}/accesses/{access}', [EmployeeAccessController::class, 'update'])->name('employees.accesses.update');
     Route::delete('employees/{employee}/accesses/{access}', [EmployeeAccessController::class, 'destroy'])->name('employees.accesses.destroy');
+
+    // Attendance routes
+    Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+    Route::post('attendance', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
+    Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
+    Route::post('attendance/bulk-populate', [AttendanceController::class, 'bulkPopulate'])->name('attendance.bulk-populate');
+    Route::post('attendance/monthly-adjustment', [AttendanceController::class, 'saveMonthlyAdjustment'])->name('attendance.monthly-adjustment');
 });
 
 require __DIR__.'/auth.php';

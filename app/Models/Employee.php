@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
@@ -37,5 +38,15 @@ class Employee extends Model
     public function accesses()
     {
         return $this->hasMany(EmployeeAccess::class)->latest();
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class)->latest('date');
+    }
+
+    public function monthlyAdjustments(): HasMany
+    {
+        return $this->hasMany(MonthlyAdjustment::class);
     }
 }
