@@ -11,6 +11,12 @@
                     </svg>
                     Attendance
                 </a>
+                <a href="{{ route('contracts.index') }}" class="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-full shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Contracts
+                </a>
                 <a href="{{ route('employees.index') }}" class="inline-flex items-center px-5 py-2.5 bg-black text-white rounded-full shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">Employees</a>
                 <a href="{{ route('employees.create') }}" class="inline-flex items-center px-5 py-2.5 bg-black text-white rounded-full shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">+ Add Employee</a>
             </div>
@@ -28,12 +34,15 @@
         $paymentsMonthCount = \App\Models\EmployeePayment::whereBetween('paid_at', [now()->startOfMonth(), now()->endOfMonth()])->count();
         $paymentsRecent = \App\Models\EmployeePayment::with('employee')->orderByDesc('paid_at')->limit(6)->get();
         $newHires = \App\Models\Employee::whereNull('discontinued_at')->whereNotNull('hired_at')->orderByDesc('hired_at')->limit(6)->get();
+        $contractsCount = \App\Models\EmploymentContract::count();
+        $activeContractsCount = \App\Models\EmploymentContract::where('status', 'active')->count();
+        $recentContracts = \App\Models\EmploymentContract::with('employee')->latest()->limit(6)->get();
     @endphp
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- KPI cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                     <div class="text-sm text-gray-600 dark:text-gray-300">Total Employees</div>
                     <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">{{ $employeesCount }}</div>
@@ -41,6 +50,11 @@
                 <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                     <div class="text-sm text-gray-600 dark:text-gray-300">Payments this month</div>
                     <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">{{ $paymentsMonthCount }}</div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                    <div class="text-sm text-gray-600 dark:text-gray-300">Total Contracts</div>
+                    <div class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">{{ $contractsCount }}</div>
+                    <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $activeContractsCount }} active</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
                     <div class="text-sm text-gray-600 dark:text-gray-300">Monthly Payroll</div>
@@ -101,27 +115,36 @@
                 </div>
 
                 <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold dark:text-white">New Hires</h3>
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold dark:text-white">Recent Contracts</h3>
+                        <a href="{{ route('contracts.index') }}" class="text-sm text-gray-700 dark:text-gray-300 hover:text-black">View all</a>
                     </div>
                     <div class="p-6">
                         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-                            @forelse ($newHires as $e)
-                                <li class="py-3 flex items-center justify-between">
-                                    <div>
-                                        <div class="font-medium dark:text-white">{{ $e->first_name }} {{ $e->last_name }}</div>
-                                        <div class="text-sm text-gray-600 dark:text-gray-300">Hired {{ \Carbon\Carbon::parse($e->hired_at)->diffForHumans() }}</div>
+                            @forelse ($recentContracts as $contract)
+                                <li class="py-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="font-medium dark:text-white">{{ optional($contract->employee)->first_name }} {{ optional($contract->employee)->last_name }}</div>
+                                        @php
+                                            $statusColors = [
+                                                'draft' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                                                'active' => 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+                                                'terminated' => 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+                                                'expired' => 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+                                            ];
+                                            $badgeColor = $statusColors[$contract->status] ?? $statusColors['draft'];
+                                        @endphp
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold {{ $badgeColor }}">
+                                            {{ ucwords($contract->status) }}
+                                        </span>
                                     </div>
-                                    <div class="text-right text-sm text-gray-600 dark:text-gray-300">
-                                        @if($e->salary)
-                                            {{ number_format($e->salary, 2) }} {{ $e->currency ?? 'USD' }}/mo
-                                        @else
-                                            —
-                                        @endif
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-sm text-gray-600 dark:text-gray-300">{{ $contract->job_title }}</div>
+                                        <a href="{{ route('contracts.pdf', $contract) }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Download PDF</a>
                                     </div>
                                 </li>
                             @empty
-                                <li class="py-6 text-gray-500 dark:text-gray-400 text-sm">No new hires.</li>
+                                <li class="py-6 text-gray-500 dark:text-gray-400 text-sm">No contracts yet.</li>
                             @endforelse
                         </ul>
                     </div>

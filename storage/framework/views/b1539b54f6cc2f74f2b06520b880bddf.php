@@ -27,22 +27,28 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <a href="<?php echo e(route('employees.index')); ?>" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <a href="<?php echo e(route('employees.index')); ?>" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full border border-gray-300 dark:border-gray-600 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     Back
                 </a>
-                <a href="<?php echo e(route('employees.edit', $employee)); ?>" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg shadow-lg hover:shadow-xl transition">
+                <a href="<?php echo e(route('employees.edit', $employee)); ?>" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                     Edit
                 </a>
+                <a href="<?php echo e(route('contracts.create', $employee)); ?>" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Create Contract
+                </a>
                 <?php if(!$employee->discontinued_at): ?>
                     <form method="POST" action="<?php echo e(route('employees.discontinue', $employee)); ?>" onsubmit="return confirm('Mark this employee as discontinued?')">
                         <?php echo csrf_field(); ?>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 hover:shadow-xl transition">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
@@ -52,7 +58,7 @@
                 <?php else: ?>
                     <form method="POST" action="<?php echo e(route('employees.reactivate', $employee)); ?>">
                         <?php echo csrf_field(); ?>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 hover:shadow-xl transition">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
@@ -173,6 +179,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             Activity Log
+                        </button>
+                        <button type="button" @click="tab='contracts'" :class="tab==='contracts' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Contracts
                         </button>
                         <button type="button" @click="tab='org'" :class="tab==='org' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,6 +377,147 @@
                             </div>
                         </div>
             </div>
+
+            <!-- Contracts Tab -->
+            <div x-cloak x-show="tab==='contracts'" x-transition.opacity>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Employment Contracts</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Manage and download employment contracts</p>
+                                </div>
+                            </div>
+                            <a href="<?php echo e(route('contracts.create', $employee)); ?>" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition text-sm font-medium">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                New Contract
+                            </a>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <?php $__empty_1 = true; $__currentLoopData = $employee->contracts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $contract): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <div class="mb-4 last:mb-0 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <h4 class="text-lg font-bold text-gray-900 dark:text-white"><?php echo e($contract->job_title); ?></h4>
+                                                <?php
+                                                    $statusColors = [
+                                                        'draft' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                                                        'active' => 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+                                                        'terminated' => 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+                                                        'expired' => 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+                                                    ];
+                                                    $badgeColor = $statusColors[$contract->status] ?? $statusColors['draft'];
+                                                ?>
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo e($badgeColor); ?>">
+                                                    <?php echo e(ucwords($contract->status)); ?>
+
+                                                </span>
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                                    <?php echo e(ucwords(str_replace('_', ' ', $contract->contract_type))); ?>
+
+                                                </span>
+                                            </div>
+                                            <?php if($contract->department): ?>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3"><?php echo e($contract->department); ?></p>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="<?php echo e(route('contracts.pdf', $contract)); ?>" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition text-sm font-medium">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                Download PDF
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                        <div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Salary</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white"><?php echo e(number_format($contract->salary, 2)); ?> <?php echo e($contract->currency); ?></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Start Date</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->start_date->format('M d, Y')); ?></p>
+                                        </div>
+                                        <?php if($contract->end_date): ?>
+                                        <div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">End Date</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->end_date->format('M d, Y')); ?></p>
+                                        </div>
+                                        <?php endif; ?>
+                                        <div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Working Hours</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->working_hours_per_week); ?>h/week</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Probation Period</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->probation_period_days); ?> days</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Notice Period</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->notice_period_days); ?> days</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Annual Leave</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->annual_leave_days); ?> days</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Created</p>
+                                            <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->created_at->format('M d, Y')); ?></p>
+                                        </div>
+                                    </div>
+
+                                    <?php if($contract->job_description || $contract->benefits): ?>
+                                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                        <?php if($contract->job_description): ?>
+                                        <div class="mb-3">
+                                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Job Description</p>
+                                            <p class="text-sm text-gray-700 dark:text-gray-300"><?php echo e(Str::limit($contract->job_description, 150)); ?></p>
+                                        </div>
+                                        <?php endif; ?>
+                                        <?php if($contract->benefits): ?>
+                                        <div>
+                                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Benefits</p>
+                                            <p class="text-sm text-gray-700 dark:text-gray-300"><?php echo e(Str::limit($contract->benefits, 150)); ?></p>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                            <div class="text-center py-12">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                                    <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No contracts yet</h3>
+                                <p class="text-gray-600 dark:text-gray-400 mb-4">Create your first employment contract for this employee</p>
+                                <a href="<?php echo e(route('contracts.create', $employee)); ?>" class="inline-flex items-center px-5 py-2.5 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Create First Contract
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
             <!-- Organization Tab -->
             <div x-cloak x-show="tab==='org'" x-transition.opacity>
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
@@ -423,7 +576,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
 
                     <form method="POST" action="<?php echo e(route('employees.bank-accounts.store', $employee)); ?>" class="mb-6 space-y-3">
                         <?php echo csrf_field(); ?>
@@ -715,7 +868,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
 
                     <form method="POST" action="<?php echo e(route('employees.accesses.store', $employee)); ?>" class="mb-6 space-y-3" enctype="multipart/form-data">
                         <?php echo csrf_field(); ?>
@@ -1038,8 +1191,8 @@
                             <li class="text-gray-500">No shared access recorded.</li>
                         <?php endif; ?>
                     </ul>
-                    </div>
                 </div>
+            </div>
             </div>
             <!-- Activity Log Section -->
             <div x-cloak x-show="tab==='timeline'" x-transition.opacity>

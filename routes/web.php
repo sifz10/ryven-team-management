@@ -6,6 +6,7 @@ use App\Http\Controllers\EmployeePaymentController;
 use App\Http\Controllers\EmployeeBankAccountController;
 use App\Http\Controllers\EmployeeAccessController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\EmploymentContractController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -45,6 +46,16 @@ Route::middleware('auth')->group(function () {
     Route::post('employees/{employee}/accesses', [EmployeeAccessController::class, 'store'])->name('employees.accesses.store');
     Route::put('employees/{employee}/accesses/{access}', [EmployeeAccessController::class, 'update'])->name('employees.accesses.update');
     Route::delete('employees/{employee}/accesses/{access}', [EmployeeAccessController::class, 'destroy'])->name('employees.accesses.destroy');
+
+    // Employment Contract routes
+    Route::get('contracts', [EmploymentContractController::class, 'index'])->name('contracts.index');
+    Route::get('employees/{employee}/contracts/create', [EmploymentContractController::class, 'create'])->name('contracts.create');
+    Route::post('employees/{employee}/contracts', [EmploymentContractController::class, 'store'])->name('contracts.store');
+    Route::get('contracts/{contract}', [EmploymentContractController::class, 'show'])->name('contracts.show');
+    Route::get('contracts/{contract}/edit', [EmploymentContractController::class, 'edit'])->name('contracts.edit');
+    Route::put('contracts/{contract}', [EmploymentContractController::class, 'update'])->name('contracts.update');
+    Route::delete('contracts/{contract}', [EmploymentContractController::class, 'destroy'])->name('contracts.destroy');
+    Route::get('contracts/{contract}/pdf', [EmploymentContractController::class, 'downloadPdf'])->name('contracts.pdf');
 
     // Attendance routes
     Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');

@@ -49,4 +49,9 @@ class Employee extends Model
     {
         return $this->hasMany(MonthlyAdjustment::class);
     }
+
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(EmploymentContract::class)->latest();
+    }
 }
