@@ -71,7 +71,7 @@
      <?php $__env->endSlot(); ?>
 
     <div class="py-8">
-        <div x-data="{ tab: 'overview' }" class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div x-data="{ tab: getInitialTab() }" class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Employee Info Card -->
             <div class="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
                 <div class="p-6">
@@ -136,7 +136,7 @@
                         $paymentsQuery = \App\Models\EmployeePayment::where('employee_id', $employee->id);
                         if ($from) { $paymentsQuery->whereDate('paid_at', '>=', $from); }
                         if ($to) { $paymentsQuery->whereDate('paid_at', '<=', $to); }
-                        $payments = $paymentsQuery->orderByDesc('paid_at')->get();
+                        $payments = $paymentsQuery->orderByDesc('created_at')->get();
 
                         $totalPaid = \App\Models\EmployeePayment::where('employee_id', $employee->id)
                             ->whereNotNull('amount')
@@ -156,41 +156,47 @@
             <div class="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
                 <div class="p-2">
                     <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" @click="tab='overview'" :class="tab==='overview' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <button type="button" @click="tab='overview'; updateTabUrl('overview')" :class="tab==='overview' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                             Overview
                         </button>
-                        <button type="button" @click="tab='bank'" :class="tab==='bank' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <button type="button" @click="tab='bank'; updateTabUrl('bank')" :class="tab==='bank' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                             </svg>
                             Bank Accounts
                         </button>
-                        <button type="button" @click="tab='access'" :class="tab==='access' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <button type="button" @click="tab='access'; updateTabUrl('access')" :class="tab==='access' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                             </svg>
                             Shared Access
                         </button>
-                        <button type="button" @click="tab='timeline'" :class="tab==='timeline' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <button type="button" @click="tab='timeline'; updateTabUrl('timeline')" :class="tab==='timeline' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             Activity Log
                         </button>
-                        <button type="button" @click="tab='contracts'" :class="tab==='contracts' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <button type="button" @click="tab='contracts'; updateTabUrl('contracts')" :class="tab==='contracts' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
                             Contracts
                         </button>
-                        <button type="button" @click="tab='org'" :class="tab==='org' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <button type="button" @click="tab='org'; updateTabUrl('org')" :class="tab==='org' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>
                             Organization
+                        </button>
+                        <button type="button" @click="tab='checklist'; updateTabUrl('checklist')" :class="tab==='checklist' ? 'bg-black text-white shadow-lg' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            Daily Checklist
                         </button>
                     </div>
                 </div>
@@ -1215,13 +1221,27 @@
                     </div>
                     <div class="p-6 text-gray-900 dark:text-white">
                     <?php if(session('status')): ?>
-                            <div class="mb-6 px-4 py-3 bg-green-50 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 rounded-lg text-green-700 dark:text-green-300"><?php echo e(session('status')); ?></div>
+                            <div class="mb-6 px-4 py-3 bg-green-50 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 rounded-xl text-green-700 dark:text-green-300 flex items-center gap-3 shadow-sm" 
+                                 x-data="{ show: true }" 
+                                 x-show="show" 
+                                 x-transition
+                                 x-init="setTimeout(() => show = false, 5000)">
+                                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="flex-1"><?php echo e(session('status')); ?></span>
+                                <button @click="show = false" class="text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
                     <?php endif; ?>
 
                     <!-- Add Activity Form -->
                     <div class="mb-8 bg-gray-50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-200 dark:border-gray-700/50 shadow-sm">
                         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wide">Add New Entry</h4>
-                        <form method="POST" action="<?php echo e(route('employees.payments.store', $employee)); ?>" class="space-y-4">
+                        <form method="POST" action="<?php echo e(route('employees.payments.store', $employee)); ?>?tab=timeline" class="space-y-4" x-data="{ submitting: false }" @submit="submitting = true">
                         <?php echo csrf_field(); ?>
                         <div>
                                 <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
@@ -1488,11 +1508,15 @@
 <?php endif; ?>
                         </div>
                             <div class="flex items-center justify-end">
-                                <button type="submit" class="inline-flex items-center px-6 py-2.5 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <button type="submit" :disabled="submitting" class="inline-flex items-center px-6 py-2.5 bg-black hover:bg-gray-800 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <svg x-show="!submitting" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                     </svg>
-                                    Add Entry
+                                    <svg x-show="submitting" class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span x-text="submitting ? 'Adding...' : 'Add Entry'">Add Entry</span>
                                 </button>
                         </div>
                     </form>
@@ -1560,14 +1584,25 @@
                                     
                                     <!-- Activity Card -->
                                     <div class="bg-white dark:bg-gray-800/60 backdrop-blur-sm border <?php echo e($borderColor); ?> rounded-xl p-4 shadow-sm hover:shadow-md dark:hover:shadow-xl transition-all duration-200">
-                                        <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
-                                        <div class="flex items-center gap-3">
-                                                <span class="text-xs font-semibold px-2.5 py-1 rounded-full border <?php echo e($badgeBg); ?>"><?php echo e($badge); ?></span>
+                                        <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+                                        <div class="flex items-center gap-2">
+                                                <?php
+                                                    $badgeEmoji = match($activityType) {
+                                                        'achievement' => '🟢',
+                                                        'warning' => '🔴',
+                                                        'payment' => '🔵',
+                                                        default => '⚪'
+                                                    };
+                                                ?>
+                                                <span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border <?php echo e($badgeBg); ?>">
+                                                    <span class="mr-1.5"><?php echo e($badgeEmoji); ?></span>
+                                                    <span class="uppercase tracking-wide"><?php echo e($badge); ?></span>
+                                                </span>
                                                 <span class="text-sm text-gray-600 dark:text-gray-400"><?php echo e(\Carbon\Carbon::parse($payment->paid_at)->format('M d, Y')); ?></span>
                                             </div>
                                             <div class="flex items-center gap-2">
                                                 <button type="button" class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition" x-data @click="$dispatch('open-modal', 'edit-payment-<?php echo e($payment->id); ?>')">Edit</button>
-                                                <form method="POST" action="<?php echo e(route('employees.payments.destroy', [$employee, $payment])); ?>" class="inline">
+                                                <form method="POST" action="<?php echo e(route('employees.payments.destroy', [$employee, $payment])); ?>?tab=timeline" class="inline">
                                                 <?php echo csrf_field(); ?>
                                                 <?php echo method_field('DELETE'); ?>
                                                     <button class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition" onclick="return confirm('Remove this entry?')">Delete</button>
@@ -1604,8 +1639,8 @@
 <?php endif; ?>
 <?php $component->withAttributes(['name' => 'edit-payment-'.e($payment->id).'']); ?>
                                         <div class="p-6">
-                                            <h4 class="text-lg font-semibold mb-4 text-gray-900">Edit Activity Entry</h4>
-                                            <form method="POST" action="<?php echo e(route('employees.payments.update', [$employee, $payment])); ?>" class="space-y-4">
+                                            <h4 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Edit Activity Entry</h4>
+                                            <form method="POST" action="<?php echo e(route('employees.payments.update', [$employee, $payment])); ?>?tab=timeline" class="space-y-4" x-data="{ saving: false }" @submit="saving = true">
                                                 <?php echo csrf_field(); ?>
                                                 <?php echo method_field('PUT'); ?>
                                                 <div>
@@ -1772,9 +1807,15 @@
 <?php endif; ?>
                                                     <textarea id="note_<?php echo e($payment->id); ?>" name="note" rows="3" class="mt-1 block w-full border-gray-300 rounded-md" placeholder="Payment details, achievement, or notes..."><?php echo e($payment->note); ?></textarea>
                                                 </div>
-                                                <div class="flex items-center justify-end gap-3 mt-4 pt-4 border-t">
-                                                    <button type="button" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition" x-data @click="$dispatch('close-modal', 'edit-payment-<?php echo e($payment->id); ?>')">Cancel</button>
-                                                    <button type="submit" class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition font-semibold">Save Changes</button>
+                                                <div class="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                    <button type="button" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition" x-data @click="$dispatch('close-modal', 'edit-payment-<?php echo e($payment->id); ?>')">Cancel</button>
+                                                    <button type="submit" :disabled="saving" class="inline-flex items-center px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                                                        <svg x-show="saving" class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        <span x-text="saving ? 'Saving...' : 'Save Changes'">Save Changes</span>
+                                                    </button>
                                                 </div>
                                             </form>
                                         </div>
@@ -1805,8 +1846,694 @@
                 </div>
             </div>
 
+            <!-- Checklist Tab -->
+            <div x-cloak x-show="tab==='checklist'" x-transition.opacity>
+                <div class="space-y-6">
+                    <!-- Today's Checklists -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Today's Checklist</h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5"><?php echo e(now()->format('l, F j, Y')); ?></p>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="generateTodayChecklists(<?php echo e($employee->id); ?>)" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition text-sm font-medium" id="generate-btn">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    <span id="generate-btn-text">Generate Today's Checklist</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <?php $__empty_1 = true; $__currentLoopData = $todayChecklists; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $checklist): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <div class="mb-6 last:mb-0 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden" data-checklist-id="<?php echo e($checklist->id); ?>">
+                                    <div class="p-6">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div>
+                                                <h4 class="text-lg font-bold text-gray-900 dark:text-white"><?php echo e($checklist->template->title); ?></h4>
+                                                <?php if($checklist->template->description): ?>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1"><?php echo e($checklist->template->description); ?></p>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-2xl font-bold text-gray-900 dark:text-white" data-completion-display="<?php echo e($checklist->id); ?>"><?php echo e($checklist->completion_percentage); ?>%</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Complete</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="space-y-2">
+                                            <?php $__currentLoopData = $checklist->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition" data-item-container="<?php echo e($item->id); ?>">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        id="item-<?php echo e($item->id); ?>"
+                                                        <?php echo e($item->is_completed ? 'checked' : ''); ?>
+
+                                                        onchange="toggleChecklistItem(<?php echo e($item->id); ?>, <?php echo e($employee->id); ?>, <?php echo e($checklist->id); ?>)"
+                                                        class="w-5 h-5 text-black border-gray-300 rounded focus:ring-black cursor-pointer"
+                                                    >
+                                                    <label for="item-<?php echo e($item->id); ?>" class="flex-1 cursor-pointer" data-item-label="<?php echo e($item->id); ?>">
+                                                        <span class="<?php echo e($item->is_completed ? 'line-through text-gray-500 dark:text-gray-600' : 'text-gray-900 dark:text-white'); ?>"><?php echo e($item->title); ?></span>
+                                                    </label>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400" data-item-timestamp="<?php echo e($item->id); ?>">
+                                                        <?php if($item->completed_at): ?>
+                                                            ✓ <?php echo e($item->completed_at->format('g:i A')); ?>
+
+                                                        <?php endif; ?>
+                                                    </span>
+                                                </div>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                <div class="text-center py-12">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                                        <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No checklists for today</h3>
+                                    <p class="text-gray-600 dark:text-gray-400 mb-4">Click the button above to generate today's checklist based on templates</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Checklist Templates Management -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Checklist Templates</h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Manage checklist templates that repeat daily</p>
+                                    </div>
+                                </div>
+                                <button type="button" x-data @click="$dispatch('open-modal', 'create-checklist-template')" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition text-sm font-medium">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    New Template
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <?php $__empty_1 = true; $__currentLoopData = $checklistTemplates; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $template): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <div class="mb-4 last:mb-0 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                                    <div class="p-6">
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-3 mb-2">
+                                                    <h4 class="text-lg font-bold text-gray-900 dark:text-white"><?php echo e($template->title); ?></h4>
+                                                    <span class="px-3 py-1 rounded-full text-xs font-semibold <?php echo e($template->is_active ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'); ?>">
+                                                        <?php echo e($template->is_active ? 'Active' : 'Inactive'); ?>
+
+                                                    </span>
+                                                    <?php if($template->role): ?>
+                                                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                                            <?php echo e($template->role); ?>
+
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <?php if($template->description): ?>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3"><?php echo e($template->description); ?></p>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button type="button" x-data @click="$dispatch('open-modal', 'edit-template-<?php echo e($template->id); ?>')" class="text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                                                    Edit
+                                                </button>
+                                                <form method="POST" action="<?php echo e(route('employees.checklists.templates.destroy', [$employee, $template])); ?>" class="inline">
+                                                    <?php echo csrf_field(); ?>
+                                                    <?php echo method_field('DELETE'); ?>
+                                                    <button type="submit" class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" onclick="return confirm('Delete this template? This will also remove all associated daily checklists.')">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3">CHECKLIST ITEMS (<?php echo e($template->items->count()); ?>)</p>
+                                            <ul class="space-y-2">
+                                                <?php $__currentLoopData = $template->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                    <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                                        </svg>
+                                                        <?php echo e($item->title); ?>
+
+                                                    </li>
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Edit Template Modal -->
+                                <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'edit-template-'.e($template->id).'']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'edit-template-'.e($template->id).'']); ?>
+                                    <div class="p-6">
+                                        <h4 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Edit Checklist Template</h4>
+                                        <form method="POST" action="<?php echo e(route('employees.checklists.templates.update', [$employee, $template])); ?>" class="space-y-4" x-data="{ items: <?php echo e(json_encode($template->items->pluck('title')->values())); ?> }">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('PUT'); ?>
+                                            <div>
+                                                <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['for' => 'title_'.e($template->id).'','value' => 'Template Title']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('input-label'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['for' => 'title_'.e($template->id).'','value' => 'Template Title']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $attributes = $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+                                                <?php if (isset($component)) { $__componentOriginal18c21970322f9e5c938bc954620c12bb = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal18c21970322f9e5c938bc954620c12bb = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.text-input','data' => ['id' => 'title_'.e($template->id).'','type' => 'text','name' => 'title','class' => 'mt-1 block w-full','value' => ''.e($template->title).'','required' => true]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('text-input'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'title_'.e($template->id).'','type' => 'text','name' => 'title','class' => 'mt-1 block w-full','value' => ''.e($template->title).'','required' => true]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal18c21970322f9e5c938bc954620c12bb)): ?>
+<?php $attributes = $__attributesOriginal18c21970322f9e5c938bc954620c12bb; ?>
+<?php unset($__attributesOriginal18c21970322f9e5c938bc954620c12bb); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal18c21970322f9e5c938bc954620c12bb)): ?>
+<?php $component = $__componentOriginal18c21970322f9e5c938bc954620c12bb; ?>
+<?php unset($__componentOriginal18c21970322f9e5c938bc954620c12bb); ?>
+<?php endif; ?>
+                                            </div>
+                                            <div>
+                                                <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['for' => 'description_'.e($template->id).'','value' => 'Description (Optional)']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('input-label'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['for' => 'description_'.e($template->id).'','value' => 'Description (Optional)']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $attributes = $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+                                                <textarea id="description_<?php echo e($template->id); ?>" name="description" rows="2" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-md"><?php echo e($template->description); ?></textarea>
+                                            </div>
+                                            <div>
+                                                <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['for' => 'role_'.e($template->id).'','value' => 'Role (Optional)']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('input-label'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['for' => 'role_'.e($template->id).'','value' => 'Role (Optional)']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $attributes = $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+                                                <?php if (isset($component)) { $__componentOriginal18c21970322f9e5c938bc954620c12bb = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal18c21970322f9e5c938bc954620c12bb = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.text-input','data' => ['id' => 'role_'.e($template->id).'','type' => 'text','name' => 'role','class' => 'mt-1 block w-full','value' => ''.e($template->role).'','placeholder' => 'e.g., Developer, Manager']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('text-input'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'role_'.e($template->id).'','type' => 'text','name' => 'role','class' => 'mt-1 block w-full','value' => ''.e($template->role).'','placeholder' => 'e.g., Developer, Manager']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal18c21970322f9e5c938bc954620c12bb)): ?>
+<?php $attributes = $__attributesOriginal18c21970322f9e5c938bc954620c12bb; ?>
+<?php unset($__attributesOriginal18c21970322f9e5c938bc954620c12bb); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal18c21970322f9e5c938bc954620c12bb)): ?>
+<?php $component = $__componentOriginal18c21970322f9e5c938bc954620c12bb; ?>
+<?php unset($__componentOriginal18c21970322f9e5c938bc954620c12bb); ?>
+<?php endif; ?>
+                                            </div>
+                                            <div>
+                                                <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['value' => 'Checklist Items']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('input-label'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['value' => 'Checklist Items']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $attributes = $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+                                                <div class="space-y-2 mt-2">
+                                                    <template x-for="(item, index) in items" :key="index">
+                                                        <div class="flex items-center gap-2">
+                                                            <input type="text" :name="'items[' + index + ']'" x-model="items[index]" class="flex-1 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-md" placeholder="Item description" required>
+                                                            <button type="button" @click="items.splice(index, 1)" class="px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                                <button type="button" @click="items.push('')" class="mt-3 inline-flex items-center px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                    </svg>
+                                                    Add Item
+                                                </button>
+                                            </div>
+                                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                <button type="button" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" x-data @click="$dispatch('close-modal', 'edit-template-<?php echo e($template->id); ?>')">Cancel</button>
+                                                <button type="submit" class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                 <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                <div class="text-center py-12">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                                        <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No templates yet</h3>
+                                    <p class="text-gray-600 dark:text-gray-400 mb-4">Create your first checklist template for this employee</p>
+                                    <button type="button" x-data @click="$dispatch('open-modal', 'create-checklist-template')" class="inline-flex items-center px-5 py-2.5 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        Create First Template
+                                    </button>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Template Modal -->
+                <?php if (isset($component)) { $__componentOriginal9f64f32e90b9102968f2bc548315018c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9f64f32e90b9102968f2bc548315018c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.modal','data' => ['name' => 'create-checklist-template']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('modal'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'create-checklist-template']); ?>
+                    <div class="p-6">
+                        <h4 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Create Checklist Template</h4>
+                        <form method="POST" action="<?php echo e(route('employees.checklists.templates.store', $employee)); ?>" class="space-y-4" x-data="{ items: [''] }">
+                            <?php echo csrf_field(); ?>
+                            <div>
+                                <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['for' => 'template_title','value' => 'Template Title']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('input-label'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['for' => 'template_title','value' => 'Template Title']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $attributes = $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+                                <?php if (isset($component)) { $__componentOriginal18c21970322f9e5c938bc954620c12bb = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal18c21970322f9e5c938bc954620c12bb = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.text-input','data' => ['id' => 'template_title','type' => 'text','name' => 'title','class' => 'mt-1 block w-full','placeholder' => 'e.g., Daily Tasks, Morning Routine','required' => true]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('text-input'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'template_title','type' => 'text','name' => 'title','class' => 'mt-1 block w-full','placeholder' => 'e.g., Daily Tasks, Morning Routine','required' => true]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal18c21970322f9e5c938bc954620c12bb)): ?>
+<?php $attributes = $__attributesOriginal18c21970322f9e5c938bc954620c12bb; ?>
+<?php unset($__attributesOriginal18c21970322f9e5c938bc954620c12bb); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal18c21970322f9e5c938bc954620c12bb)): ?>
+<?php $component = $__componentOriginal18c21970322f9e5c938bc954620c12bb; ?>
+<?php unset($__componentOriginal18c21970322f9e5c938bc954620c12bb); ?>
+<?php endif; ?>
+                            </div>
+                            <div>
+                                <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['for' => 'template_description','value' => 'Description (Optional)']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('input-label'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['for' => 'template_description','value' => 'Description (Optional)']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $attributes = $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+                                <textarea id="template_description" name="description" rows="2" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-md" placeholder="Brief description of this checklist"></textarea>
+                            </div>
+                            <div>
+                                <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['for' => 'template_role','value' => 'Role (Optional)']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('input-label'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['for' => 'template_role','value' => 'Role (Optional)']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $attributes = $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+                                <?php if (isset($component)) { $__componentOriginal18c21970322f9e5c938bc954620c12bb = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal18c21970322f9e5c938bc954620c12bb = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.text-input','data' => ['id' => 'template_role','type' => 'text','name' => 'role','class' => 'mt-1 block w-full','value' => ''.e($employee->position).'','placeholder' => 'e.g., Developer, Manager']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('text-input'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'template_role','type' => 'text','name' => 'role','class' => 'mt-1 block w-full','value' => ''.e($employee->position).'','placeholder' => 'e.g., Developer, Manager']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal18c21970322f9e5c938bc954620c12bb)): ?>
+<?php $attributes = $__attributesOriginal18c21970322f9e5c938bc954620c12bb; ?>
+<?php unset($__attributesOriginal18c21970322f9e5c938bc954620c12bb); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal18c21970322f9e5c938bc954620c12bb)): ?>
+<?php $component = $__componentOriginal18c21970322f9e5c938bc954620c12bb; ?>
+<?php unset($__componentOriginal18c21970322f9e5c938bc954620c12bb); ?>
+<?php endif; ?>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">This helps organize templates by employee role</p>
+                            </div>
+                            <div>
+                                <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['value' => 'Checklist Items']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('input-label'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['value' => 'Checklist Items']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $attributes = $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581)): ?>
+<?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
+<?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
+<?php endif; ?>
+                                <div class="space-y-2 mt-2">
+                                    <template x-for="(item, index) in items" :key="index">
+                                        <div class="flex items-center gap-2">
+                                            <input type="text" :name="'items[' + index + ']'" x-model="items[index]" class="flex-1 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-md" placeholder="Item description" required>
+                                            <button type="button" @click="items.length > 1 && items.splice(index, 1)" class="px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md" :disabled="items.length === 1">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                                <button type="button" @click="items.push('')" class="mt-3 inline-flex items-center px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Add Item
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <button type="button" class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg" x-data @click="$dispatch('close-modal', 'create-checklist-template')">Cancel</button>
+                                <button type="submit" class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800">Create Template</button>
+                            </div>
+                        </form>
+                    </div>
+                 <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $attributes = $__attributesOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__attributesOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9f64f32e90b9102968f2bc548315018c)): ?>
+<?php $component = $__componentOriginal9f64f32e90b9102968f2bc548315018c; ?>
+<?php unset($__componentOriginal9f64f32e90b9102968f2bc548315018c); ?>
+<?php endif; ?>
+            </div>
+
         </div>
     </div>
+
+    <style>
+        .scale-110 {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
+    </style>
+
+    <script>
+        // Get initial tab from URL parameter or default to overview
+        function getInitialTab() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('tab') || 'overview';
+        }
+
+        // Update URL with current tab without reloading page
+        function updateTabUrl(tabName) {
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabName);
+            window.history.pushState({}, '', url);
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500' : type === 'info' ? 'bg-blue-500' : 'bg-red-500'
+            } text-white font-medium`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function generateTodayChecklists(employeeId) {
+            const btn = document.getElementById('generate-btn');
+            const btnText = document.getElementById('generate-btn-text');
+            const originalText = btnText.textContent;
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.textContent = 'Generating...';
+            
+            fetch(`/employees/${employeeId}/checklists/generate-today`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message || 'Checklists generated successfully!', 'success');
+                    // Reload the page to show the new checklists
+                    setTimeout(() => {
+                        window.location.href = window.location.pathname + '?tab=checklist';
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'Failed to generate checklists', 'error');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btnText.textContent = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Failed to generate checklists', 'error');
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.textContent = originalText;
+            });
+        }
+
+        function toggleChecklistItem(itemId, employeeId, checklistId) {
+            const checkbox = document.getElementById(`item-${itemId}`);
+            const originalState = checkbox.checked;
+            
+            fetch(`/employees/${employeeId}/checklists/items/${itemId}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the label styling
+                    const label = document.querySelector(`[data-item-label="${itemId}"] span`);
+                    if (data.is_completed) {
+                        label.className = 'line-through text-gray-500 dark:text-gray-600';
+                    } else {
+                        label.className = 'text-gray-900 dark:text-white';
+                    }
+                    
+                    // Update the timestamp
+                    const timestamp = document.querySelector(`[data-item-timestamp="${itemId}"]`);
+                    if (data.completed_at) {
+                        timestamp.textContent = `✓ ${data.completed_at}`;
+                    } else {
+                        timestamp.textContent = '';
+                    }
+                    
+                    // Update completion percentage
+                    updateCompletionPercentage(checklistId);
+                    
+                    // Show success toast
+                    showToast(data.is_completed ? '✓ Item completed!' : '○ Item unchecked');
+                } else {
+                    // Revert checkbox if failed
+                    checkbox.checked = originalState;
+                    showToast('Failed to update item', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Revert checkbox on error
+                checkbox.checked = originalState;
+                showToast('Failed to update item', 'error');
+            });
+        }
+
+        function updateCompletionPercentage(checklistId) {
+            const checklistEl = document.querySelector(`[data-checklist-id="${checklistId}"]`);
+            if (!checklistEl) return;
+            
+            const checkboxes = checklistEl.querySelectorAll('input[type="checkbox"]');
+            const total = checkboxes.length;
+            const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100 * 10) / 10 : 0;
+            
+            const display = document.querySelector(`[data-completion-display="${checklistId}"]`);
+            if (display) {
+                display.textContent = `${percentage}%`;
+                
+                // Add a brief animation
+                display.classList.add('scale-110');
+                setTimeout(() => display.classList.remove('scale-110'), 200);
+            }
+        }
+    </script>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>

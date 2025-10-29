@@ -11,6 +11,7 @@ class EmployeePaymentController extends Controller
 	public function store(Request $request, Employee $employee)
 	{
 		$validated = $request->validate([
+			'activity_type' => ['required', 'string', 'in:payment,achievement,warning,note'],
 			'paid_at' => ['required', 'date'],
 			'amount' => ['nullable', 'numeric', 'min:0'],
 			'currency' => ['nullable', 'string', 'size:3'],
@@ -22,7 +23,7 @@ class EmployeePaymentController extends Controller
 
 		EmployeePayment::create($validated);
 
-		return redirect()->route('employees.show', $employee)->with('status', 'Payment added to timeline');
+		return redirect()->route('employees.show', ['employee' => $employee, 'tab' => 'timeline'])->with('status', 'Activity added successfully');
 	}
 
     public function update(Request $request, Employee $employee, EmployeePayment $payment)
@@ -30,6 +31,7 @@ class EmployeePaymentController extends Controller
         abort_unless($payment->employee_id === $employee->id, 404);
 
         $validated = $request->validate([
+            'activity_type' => ['required', 'string', 'in:payment,achievement,warning,note'],
             'paid_at' => ['required', 'date'],
             'amount' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['nullable', 'string', 'size:3'],
@@ -40,13 +42,13 @@ class EmployeePaymentController extends Controller
 
         $payment->update($validated);
 
-        return redirect()->route('employees.show', $employee)->with('status', 'Payment updated');
+        return redirect()->route('employees.show', ['employee' => $employee, 'tab' => 'timeline'])->with('status', 'Activity updated successfully');
     }
 	public function destroy(Employee $employee, EmployeePayment $payment)
 	{
 		abort_unless($payment->employee_id === $employee->id, 404);
 		$payment->delete();
-		return redirect()->route('employees.show', $employee)->with('status', 'Payment removed');
+		return redirect()->route('employees.show', ['employee' => $employee, 'tab' => 'timeline'])->with('status', 'Activity removed successfully');
 	}
 }
 

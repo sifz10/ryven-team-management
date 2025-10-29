@@ -54,4 +54,14 @@ class Employee extends Model
     {
         return $this->hasMany(EmploymentContract::class)->latest();
     }
+
+    public function checklistTemplates(): HasMany
+    {
+        return $this->hasMany(ChecklistTemplate::class);
+    }
+
+    public function dailyChecklists(): HasMany
+    {
+        return $this->hasMany(DailyChecklist::class);
+    }
 }

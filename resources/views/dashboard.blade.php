@@ -323,10 +323,19 @@
                 </div>
                 <div class="p-6">
                     @forelse ($recentActivities as $activity)
-                        <div class="flex gap-4 py-4 border-b border-gray-200 dark:border-gray-700 last:border-0">
-                            <!-- Timeline Dot -->
+                        <div class="flex gap-4 py-4 border-b border-gray-200 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors rounded-lg -mx-2 px-2">
+                            <!-- Timeline Dot with Color -->
                             <div class="flex flex-col items-center">
-                                <div class="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-semibold flex-shrink-0">
+                                @php
+                                    $dotColors = [
+                                        'achievement' => 'bg-green-500 text-white',
+                                        'warning' => 'bg-orange-500 text-white',
+                                        'payment' => 'bg-blue-500 text-white',
+                                        'note' => 'bg-gray-500 text-white',
+                                    ];
+                                    $dotColor = $dotColors[$activity['type']] ?? $dotColors['note'];
+                                @endphp
+                                <div class="w-10 h-10 rounded-full {{ $dotColor }} flex items-center justify-center font-semibold flex-shrink-0 shadow-lg text-lg">
                                     {{ $activity['icon'] }}
                                 </div>
                                 @if (!$loop->last)
@@ -336,29 +345,29 @@
 
                             <!-- Activity Content -->
                             <div class="flex-1 pt-1">
-                                <div class="flex items-start justify-between mb-1">
-                                    <div>
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="font-semibold text-gray-900 dark:text-white">
-                                                {{ optional($activity['employee'])->first_name }} {{ optional($activity['employee'])->last_name }}
-                                            </span>
+                                <div class="flex items-start justify-between mb-2">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-2">
                                             @php
                                                 $typeColors = [
-                                                    'achievement' => 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-                                                    'warning' => 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
-                                                    'payment' => 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-                                                    'note' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                                                    'achievement' => 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border border-green-300 dark:border-green-700',
+                                                    'warning' => 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300 border border-orange-300 dark:border-orange-700',
+                                                    'payment' => 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 border border-blue-300 dark:border-blue-700',
+                                                    'note' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600',
                                                 ];
                                                 $typeBadge = $typeColors[$activity['type']] ?? $typeColors['note'];
                                             @endphp
-                                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold {{ $typeBadge }}">
-                                                {{ ucwords($activity['type']) }}
+                                            <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide {{ $typeBadge }}">
+                                                {{ $activity['icon'] }} {{ $activity['type'] }}
+                                            </span>
+                                            <span class="font-semibold text-gray-900 dark:text-white">
+                                                {{ optional($activity['employee'])->first_name }} {{ optional($activity['employee'])->last_name }}
                                             </span>
                                         </div>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ $activity['description'] }}</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ $activity['description'] }}</p>
                                         @if($activity['amount'])
-                                            <div class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-                                                {{ number_format($activity['amount'], 2) }} {{ $activity['currency'] }}
+                                            <div class="inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md text-sm font-semibold text-gray-900 dark:text-white">
+                                                💵 {{ number_format($activity['amount'], 2) }} {{ $activity['currency'] }}
                                             </div>
                                         @endif
                                     </div>

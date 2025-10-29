@@ -72,7 +72,14 @@ class EmployeeController extends Controller
      */
     public function show(Employee $employee)
     {
-        return view('employees.show', compact('employee'));
+        // Load checklist templates and today's checklists
+        $checklistTemplates = $employee->checklistTemplates()->with('items')->get();
+        $todayChecklists = $employee->dailyChecklists()
+            ->with(['template.items', 'items'])
+            ->where('date', now()->toDateString())
+            ->get();
+
+        return view('employees.show', compact('employee', 'checklistTemplates', 'todayChecklists'));
     }
 
     /**
