@@ -209,56 +209,56 @@
 
         <!-- Statistics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black rounded-2xl p-6 border border-gray-700 dark:border-gray-800 shadow-lg">
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-600">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-300 text-xs font-semibold uppercase tracking-wide">Total Activities</p>
-                        <p class="text-3xl font-bold text-white mt-2"><?php echo e($totalActivities); ?></p>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 uppercase tracking-wide font-medium">Total Activities</div>
+                        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><?php echo e($totalActivities); ?></div>
                     </div>
-                    <div class="p-3 bg-gray-700 rounded-full">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-3 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
+                        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black rounded-2xl p-6 border border-gray-700 dark:border-gray-800 shadow-lg">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-300 text-xs font-semibold uppercase tracking-wide">Total Commits</p>
-                        <p class="text-3xl font-bold text-white mt-2"><?php echo e($totalCommits); ?></p>
+                        <div class="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wide font-medium">Total Commits</div>
+                        <div class="text-3xl font-bold text-blue-900 dark:text-blue-200 mt-2"><?php echo e($totalCommits); ?></div>
                     </div>
-                    <div class="p-3 bg-gray-700 rounded-full">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-3 bg-blue-200 dark:bg-blue-900 rounded-xl">
+                        <svg class="w-5 h-5 text-blue-700 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black rounded-2xl p-6 border border-gray-700 dark:border-gray-800 shadow-lg">
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl p-5 border border-purple-200 dark:border-purple-800">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-300 text-xs font-semibold uppercase tracking-wide">Pull Requests</p>
-                        <p class="text-3xl font-bold text-white mt-2"><?php echo e($prCount); ?></p>
+                        <div class="text-xs text-purple-600 dark:text-purple-400 uppercase tracking-wide font-medium">Pull Requests</div>
+                        <div class="text-3xl font-bold text-purple-900 dark:text-purple-200 mt-2"><?php echo e($prCount); ?></div>
                     </div>
-                    <div class="p-3 bg-gray-700 rounded-full">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-3 bg-purple-200 dark:bg-purple-900 rounded-xl">
+                        <svg class="w-5 h-5 text-purple-700 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black rounded-2xl p-6 border border-gray-700 dark:border-gray-800 shadow-lg">
+            <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl p-5 border border-green-200 dark:border-green-800">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-gray-300 text-xs font-semibold uppercase tracking-wide">Repositories</p>
-                        <p class="text-3xl font-bold text-white mt-2"><?php echo e($repositories->count()); ?></p>
+                        <div class="text-xs text-green-600 dark:text-green-400 uppercase tracking-wide font-medium">Repositories</div>
+                        <div class="text-3xl font-bold text-green-900 dark:text-green-200 mt-2"><?php echo e($repositories->count()); ?></div>
                     </div>
-                    <div class="p-3 bg-gray-700 rounded-full">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-3 bg-green-200 dark:bg-green-900 rounded-xl">
+                        <svg class="w-5 h-5 text-green-700 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path>
                         </svg>
                     </div>
@@ -286,17 +286,17 @@
 
     <!-- Activity Timeline -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
-        <div class="bg-gradient-to-r from-gray-800 to-black dark:from-gray-900 dark:to-black p-6 border-b border-gray-700">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-white/10 rounded-lg">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-bold text-white">Activity Timeline</h3>
-                    <p class="text-sm text-gray-300 mt-0.5">Showing <?php echo e($githubLogs->count()); ?> recent activities</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Activity Timeline</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Recent GitHub activities</p>
                 </div>
+                <?php if($githubLogs->isNotEmpty()): ?>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                        <span class="font-medium text-gray-900 dark:text-white"><?php echo e($githubLogs->total()); ?></span> activities
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -307,24 +307,24 @@
                         <!-- Event Icon -->
                         <div class="flex-shrink-0">
                             <?php if($log->event_type === 'push'): ?>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black flex items-center justify-center shadow-lg border border-gray-700">
-                                    <span class="text-2xl">📤</span>
+                                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                    <span class="text-xl">📤</span>
                                 </div>
                             <?php elseif($log->event_type === 'pull_request'): ?>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black flex items-center justify-center shadow-lg border border-gray-700">
-                                    <span class="text-2xl">🔀</span>
+                                <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                    <span class="text-xl">🔀</span>
                                 </div>
                             <?php elseif($log->event_type === 'pull_request_review'): ?>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black flex items-center justify-center shadow-lg border border-gray-700">
-                                    <span class="text-2xl">👀</span>
+                                <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                    <span class="text-xl">👀</span>
                                 </div>
                             <?php elseif($log->event_type === 'issues'): ?>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black flex items-center justify-center shadow-lg border border-gray-700">
-                                    <span class="text-2xl">🐛</span>
+                                <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                    <span class="text-xl">🐛</span>
                                 </div>
                             <?php else: ?>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black flex items-center justify-center shadow-lg border border-gray-700">
-                                    <span class="text-2xl"><?php echo e($log->event_icon); ?></span>
+                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                    <span class="text-xl"><?php echo e($log->event_icon); ?></span>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -334,17 +334,16 @@
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1">
                                     <!-- Event Type Badge -->
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-gray-800 to-black text-white shadow-sm border border-gray-700">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-xs font-semibold text-gray-900 dark:text-white">
                                             <?php echo e($log->event_display_name); ?>
 
                                             <?php if($log->action): ?>
-                                                · <?php echo e(ucfirst($log->action)); ?>
-
+                                                <span class="text-gray-500 dark:text-gray-400">· <?php echo e(ucfirst($log->action)); ?></span>
                                             <?php endif; ?>
                                         </span>
                                         <?php if($log->branch): ?>
-                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
                                                 </svg>
@@ -355,13 +354,12 @@
                                     </div>
 
                                     <!-- Repository Name -->
-                                    <a href="<?php echo e($log->repository_url); ?>" target="_blank" class="group inline-flex items-center gap-1.5 text-base font-bold text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                                        <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <a href="<?php echo e($log->repository_url); ?>" target="_blank" class="group inline-flex items-center gap-2 mb-1">
+                                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                                         </svg>
-                                        <?php echo e($log->repository_name); ?>
-
-                                        <svg class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"><?php echo e($log->repository_name); ?></span>
+                                        <svg class="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                         </svg>
                                     </a>
@@ -509,33 +507,23 @@
                                 </div>
 
                                 <!-- Timestamp -->
-                                <div class="flex-shrink-0">
-                                    <div class="bg-gray-100 dark:bg-gray-900 rounded-xl px-3 py-2 text-right border border-gray-200 dark:border-gray-700">
-                                        <div class="text-xs font-semibold text-gray-900 dark:text-white">
-                                            <?php echo e($log->event_at->diffForHumans()); ?>
+                                <div class="flex-shrink-0 text-right">
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        <?php echo e($log->event_at->diffForHumans()); ?>
 
-                                        </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            <?php echo e($log->event_at->format('M d, Y')); ?>
+                                    </div>
+                                    <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                        <?php echo e($log->event_at->format('M d, g:i A')); ?>
 
-                                        </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">
-                                            <?php echo e($log->event_at->format('g:i A')); ?>
-
-                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Author Info -->
                             <?php if($log->author_username): ?>
-                                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                        </svg>
-                                        <span class="font-semibold"><?php echo $log->author_username; ?></span>
-                                    </div>
+                                <div class="flex items-center gap-2 mt-3">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">by</span>
+                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300"><?php echo $log->author_username; ?></span>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -570,28 +558,37 @@
                     
                     <!-- Setup Instructions Card -->
                     <div class="max-w-2xl mx-auto">
-                        <div class="p-5 bg-gradient-to-br from-gray-800 to-black dark:from-gray-900 dark:to-black border border-gray-700 dark:border-gray-800 rounded-2xl text-left shadow-lg">
-                            <div class="flex items-start gap-3">
-                                <div class="p-2 bg-white/10 rounded-lg flex-shrink-0">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl text-left">
+                            <div class="flex items-start gap-3 mb-4">
+                                <div class="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex-shrink-0">
+                                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
-                                <div class="text-sm text-gray-100 flex-1">
-                                    <div class="font-bold text-white mb-3">Setup Instructions:</div>
-                                    <ol class="list-decimal list-inside space-y-2 mb-4">
-                                        <li class="text-gray-200">Go to your GitHub repository settings</li>
-                                        <li class="text-gray-200">Add a new webhook with URL: <code class="px-2 py-1 bg-black/50 border border-gray-700 rounded text-xs text-white"><?php echo e(url('/webhook/github')); ?></code></li>
-                                        <li class="text-gray-200">Select events: Push, Pull Request, Issues</li>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3">Setup Instructions</h4>
+                                    <ol class="list-decimal list-inside space-y-2 mb-4 text-sm text-gray-700 dark:text-gray-300">
+                                        <li>Go to your GitHub repository settings</li>
+                                        <li>Add a new webhook with URL: <code class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs"><?php echo e(url('/webhook/github')); ?></code></li>
+                                        <li>Select events: Push, Pull Request, Issues</li>
                                     </ol>
-                                    <div class="font-bold text-white mb-2">Employee Matching:</div>
-                                    <ul class="list-disc list-inside space-y-2">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Employee Matching</h4>
+                                    <ul class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                                         <?php if($employee->github_username): ?>
-                                            <li class="text-gray-200">✅ GitHub username set: <code class="px-2 py-1 bg-green-900/50 border border-green-700 text-green-300 rounded text-xs font-semibold">{{ $employee->github_username }}</code></li>
+                                            <li class="flex items-center gap-2">
+                                                <span class="text-green-600 dark:text-green-400">✓</span>
+                                                GitHub username set: <code class="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs font-medium">{{ $employee->github_username }}</code>
+                                            </li>
                                         <?php else: ?>
-                                            <li class="text-gray-200">⚠️ Add GitHub username in <a href="<?php echo e(route('employees.edit', $employee)); ?>" class="underline font-semibold text-white hover:text-gray-300">employee settings</a></li>
+                                            <li class="flex items-center gap-2">
+                                                <span class="text-yellow-600 dark:text-yellow-400">⚠</span>
+                                                <span>Add GitHub username in <a href="<?php echo e(route('employees.edit', $employee)); ?>" class="underline font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">employee settings</a></span>
+                                            </li>
                                         <?php endif; ?>
-                                        <li class="text-gray-200">Email matching: <code class="px-2 py-1 bg-black/50 border border-gray-700 rounded text-xs text-white"><?php echo e($employee->email); ?></code></li>
+                                        <li class="flex items-center gap-2">
+                                            <span class="text-blue-600 dark:text-blue-400">•</span>
+                                            Email matching: <code class="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs"><?php echo e($employee->email); ?></code>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
