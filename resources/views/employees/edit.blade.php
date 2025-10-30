@@ -31,6 +31,19 @@
                             <x-input-error :messages="$errors->get('email')" class="mt-2" />
                         </div>
                         <div>
+                            <x-input-label for="github_username" value="GitHub Username" />
+                            <div class="mt-1">
+                                <x-text-input id="github_username" name="github_username" type="text" class="block w-full" value="{{ old('github_username', $employee->github_username) }}" placeholder="e.g., johndoe" />
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Enter their GitHub username (without @) to automatically track their GitHub activities
+                                </p>
+                            </div>
+                            <x-input-error :messages="$errors->get('github_username')" class="mt-2" />
+                        </div>
+                        <div>
                             <x-input-label for="phone" value="Phone" />
                             <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" value="{{ old('phone', $employee->phone) }}" />
                             <x-input-error :messages="$errors->get('phone')" class="mt-2" />

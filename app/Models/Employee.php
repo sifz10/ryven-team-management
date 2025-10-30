@@ -11,6 +11,7 @@ class Employee extends Model
         'first_name',
         'last_name',
         'email',
+        'github_username',
         'phone',
         'position',
         'department',

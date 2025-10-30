@@ -322,13 +322,21 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <div class="text-sm text-blue-700 dark:text-blue-300">
-                                <div class="font-semibold mb-1">Setup Instructions:</div>
-                                <ol class="list-decimal list-inside space-y-1">
+                                <div class="font-semibold mb-2">Setup Instructions:</div>
+                                <ol class="list-decimal list-inside space-y-1 mb-3">
                                     <li>Go to your GitHub repository settings</li>
                                     <li>Add a new webhook with URL: <code class="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/50 rounded text-xs"><?php echo e(url('/webhook/github')); ?></code></li>
                                     <li>Select events: Push, Pull Request, Issues</li>
-                                    <li>Make sure employee email matches GitHub email</li>
                                 </ol>
+                                <div class="font-semibold mb-1">Employee Matching:</div>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <?php if($employee->github_username): ?>
+                                        <li>✅ GitHub username set: <code class="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 rounded text-xs font-semibold">{{ $employee->github_username }}</code></li>
+                                    <?php else: ?>
+                                        <li>⚠️ Add GitHub username in <a href="<?php echo e(route('employees.edit', $employee)); ?>" class="underline font-semibold">employee settings</a></li>
+                                    <?php endif; ?>
+                                    <li>Email matching: <code class="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/50 rounded text-xs"><?php echo e($employee->email); ?></code></li>
+                                </ul>
                             </div>
                         </div>
                     </div>

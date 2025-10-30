@@ -339,9 +339,13 @@ class GitHubWebhookController extends Controller
             }
         }
 
-        // If not found and username is provided, you could add a github_username field to employees table
-        // For now, we'll just try email matching
-        // You can enhance this later by adding a github_username column to employees table
+        // Try to find by GitHub username
+        if ($username) {
+            $employee = Employee::where('github_username', $username)->first();
+            if ($employee) {
+                return $employee;
+            }
+        }
         
         return null;
     }
