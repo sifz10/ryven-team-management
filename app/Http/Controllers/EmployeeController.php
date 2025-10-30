@@ -12,6 +12,24 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
+        // Statistics
+        $totalEmployees = Employee::count();
+        $activeEmployees = Employee::whereNull('discontinued_at')->count();
+        $discontinuedEmployees = Employee::whereNotNull('discontinued_at')->count();
+        
+        // Calculate total monthly payroll by currency
+        $payrollByCurrency = Employee::whereNull('discontinued_at')
+            ->whereNotNull('salary')
+            ->selectRaw('currency, SUM(salary) as total')
+            ->groupBy('currency')
+            ->get();
+        
+        // Get all departments
+        $departments = Employee::whereNotNull('department')
+            ->distinct()
+            ->pluck('department')
+            ->sort();
+
         $query = Employee::query();
 
         if ($request->filled('status')) {
@@ -22,6 +40,10 @@ class EmployeeController extends Controller
             }
         }
 
+        if ($request->filled('department')) {
+            $query->where('department', $request->string('department')->toString());
+        }
+
         if ($request->filled('q')) {
             $q = $request->string('q')->toString();
             $query->where(function ($x) use ($q) {
@@ -29,12 +51,38 @@ class EmployeeController extends Controller
                     ->orWhere('last_name', 'like', "%{$q}%")
                     ->orWhere('email', 'like', "%{$q}%")
                     ->orWhere('phone', 'like', "%{$q}%")
+                    ->orWhere('department', 'like', "%{$q}%")
                     ->orWhere('position', 'like', "%{$q}%");
             });
         }
 
-        $employees = $query->latest()->paginate(12)->withQueryString();
-        return view('employees.index', compact('employees'));
+        $employees = $query->with([
+            'payments' => function($q) {
+                $q->latest('paid_at')->limit(5);
+            }
+        ])->withCount([
+            'payments as achievement_count' => function($q) {
+                $q->where('activity_type', 'achievement');
+            },
+            'payments as warning_count' => function($q) {
+                $q->where('activity_type', 'warning');
+            },
+            'payments as payment_count' => function($q) {
+                $q->where('activity_type', 'payment');
+            },
+            'payments as note_count' => function($q) {
+                $q->where('activity_type', 'note');
+            }
+        ])->latest()->paginate(12)->withQueryString();
+        
+        return view('employees.index', compact(
+            'employees', 
+            'totalEmployees', 
+            'activeEmployees', 
+            'discontinuedEmployees', 
+            'payrollByCurrency',
+            'departments'
+        ));
     }
 
     /**
@@ -56,6 +104,7 @@ class EmployeeController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:employees,email'],
             'phone' => ['nullable', 'string', 'max:50'],
             'position' => ['nullable', 'string', 'max:255'],
+            'department' => ['nullable', 'string', 'max:255'],
             'salary' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['nullable', 'string', 'size:3'],
             'hired_at' => ['nullable', 'date'],
@@ -111,6 +160,7 @@ class EmployeeController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:employees,email,'.$employee->id],
             'phone' => ['nullable', 'string', 'max:50'],
             'position' => ['nullable', 'string', 'max:255'],
+            'department' => ['nullable', 'string', 'max:255'],
             'salary' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['nullable', 'string', 'size:3'],
             'hired_at' => ['nullable', 'date'],

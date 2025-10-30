@@ -40,6 +40,11 @@
                             <x-input-error :messages="$errors->get('position')" class="mt-2" />
                         </div>
                         <div>
+                            <x-input-label for="department" value="Department" />
+                            <x-text-input id="department" name="department" type="text" class="mt-1 block w-full" value="{{ old('department') }}" />
+                            <x-input-error :messages="$errors->get('department')" class="mt-2" />
+                        </div>
+                        <div>
                             <x-input-label for="salary" value="Salary" />
                             <x-text-input id="salary" name="salary" type="number" step="0.01" class="mt-1 block w-full" value="{{ old('salary') }}" />
                             <x-input-error :messages="$errors->get('salary')" class="mt-2" />

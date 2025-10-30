@@ -15,6 +15,11 @@ class EmployeePayment extends Model
         'note',
     ];
 
+    protected $casts = [
+        'paid_at' => 'datetime',
+        'amount' => 'decimal:2',
+    ];
+
     public function employee()
     {
         return $this->belongsTo(Employee::class);

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ActivityCreated;
 use App\Models\Employee;
 use App\Models\EmployeePayment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class EmployeePaymentController extends Controller
 {
@@ -21,7 +23,16 @@ class EmployeePaymentController extends Controller
 		$validated['employee_id'] = $employee->id;
 		$validated['currency'] = $validated['currency'] ?? ($employee->currency ?? 'USD');
 
-		EmployeePayment::create($validated);
+		$activity = EmployeePayment::create($validated);
+		$activity->refresh(); // Refresh to ensure all casts are applied
+
+		// Send email notification
+		try {
+			Mail::to('kazi.sifat1999@gmail.com')->send(new ActivityCreated($employee, $activity));
+		} catch (\Exception $e) {
+			// Log the error but don't fail the request
+			logger()->error('Failed to send activity notification email: ' . $e->getMessage());
+		}
 
 		return redirect()->route('employees.show', ['employee' => $employee, 'tab' => 'timeline'])->with('status', 'Activity added successfully');
 	}
