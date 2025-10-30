@@ -1625,11 +1625,21 @@
                                                 <span class="text-sm text-gray-600 dark:text-gray-400"><?php echo e(\Carbon\Carbon::parse($payment->paid_at)->format('M d, Y')); ?></span>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <button type="button" class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition" x-data @click="$dispatch('open-modal', 'edit-payment-<?php echo e($payment->id); ?>')">Edit</button>
+                                                <button type="button" class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-800 dark:bg-black text-white rounded-full hover:bg-gray-700 dark:hover:bg-gray-900 transition text-xs font-medium shadow-sm" x-data @click="$dispatch('open-modal', 'edit-payment-<?php echo e($payment->id); ?>')">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
+                                                    Edit
+                                                </button>
                                                 <form method="POST" action="<?php echo e(route('employees.payments.destroy', [$employee, $payment])); ?>?tab=timeline" class="inline">
                                                 <?php echo csrf_field(); ?>
                                                 <?php echo method_field('DELETE'); ?>
-                                                    <button class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition" onclick="return confirm('Remove this entry?')">Delete</button>
+                                                    <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-800 transition text-xs font-medium shadow-sm" onclick="return confirm('Remove this entry?')">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                        Delete
+                                                    </button>
                                             </form>
                                         </div>
                                     </div>
@@ -1719,14 +1729,14 @@
 <?php endif; ?>
                                                     <?php if (isset($component)) { $__componentOriginal18c21970322f9e5c938bc954620c12bb = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal18c21970322f9e5c938bc954620c12bb = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.text-input','data' => ['id' => 'paid_at_'.e($payment->id).'','type' => 'date','name' => 'paid_at','class' => 'mt-1 block w-full','value' => ''.e($payment->paid_at).'','required' => true]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.text-input','data' => ['id' => 'paid_at_'.e($payment->id).'','type' => 'date','name' => 'paid_at','class' => 'mt-1 block w-full','value' => ''.e(\Carbon\Carbon::parse($payment->paid_at)->format('Y-m-d')).'','required' => true]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('text-input'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['id' => 'paid_at_'.e($payment->id).'','type' => 'date','name' => 'paid_at','class' => 'mt-1 block w-full','value' => ''.e($payment->paid_at).'','required' => true]); ?>
+<?php $component->withAttributes(['id' => 'paid_at_'.e($payment->id).'','type' => 'date','name' => 'paid_at','class' => 'mt-1 block w-full','value' => ''.e(\Carbon\Carbon::parse($payment->paid_at)->format('Y-m-d')).'','required' => true]); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal18c21970322f9e5c938bc954620c12bb)): ?>
