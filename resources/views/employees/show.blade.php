@@ -85,8 +85,8 @@
                             </div>
                             <div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">GitHub</div>
-                                <a href="https://github.com/{{ $employee->github_username }}" target="_blank" class="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 mt-1 inline-flex items-center gap-1">
-                                    @{{ $employee->github_username }}
+                                <a href="https://github.com/<?php echo e($employee->github_username); ?>" target="_blank" class="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 mt-1 inline-flex items-center gap-1">
+                                    @<?php echo e($employee->github_username); ?>
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                     </svg>
