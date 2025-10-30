@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: 'DejaVu Sans', 'Arial', 'Helvetica', sans-serif;
             font-size: 14px;
             color: #333;
             line-height: 1.6;
@@ -442,7 +442,7 @@
         <!-- Footer -->
         <div class="footer">
             <div class="footer-message">Thank you for your business!</div>
-            <div class="footer-timestamp">This invoice was generated on {{ now()->format('M d, Y \a\t h:i A') }}</div>
+            <div class="footer-timestamp">Invoice Date: {{ $invoice->invoice_date->format('M d, Y') }}</div>
         </div>
     </div>
 </body>

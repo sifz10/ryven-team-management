@@ -258,7 +258,7 @@
                             Thank you for your business!
                         </p>
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                            This invoice was generated on {{ now()->format('M d, Y \a\t h:i A') }}
+                            Invoice Date: {{ $invoice->invoice_date->format('M d, Y') }}
                         </p>
                     </div>
                 </div>
