@@ -23,6 +23,12 @@ Route::get('/checklist/{token}/item/{item}/toggle', [ChecklistController::class,
 // GitHub Webhook (no authentication required)
 Route::post('/webhook/github', [GitHubWebhookController::class, 'handle'])->name('webhook.github');
 
+// GitHub Activities API (for AJAX load more)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/employees/{employee}/github/activities', [GitHubWebhookController::class, 'loadActivities'])->name('github.activities.load');
+    Route::get('/employees/{employee}/github/check-new', [GitHubWebhookController::class, 'checkNew'])->name('github.activities.checkNew');
+});
+
 // SOP page (authenticated)
 Route::get('/sop', function () {
     return view('sop');

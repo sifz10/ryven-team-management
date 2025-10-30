@@ -33,7 +33,7 @@
         $logsQuery->where('repository_name', $repository);
     }
     
-    $githubLogs = $logsQuery->orderBy('event_at', 'desc')->paginate(20)->withQueryString();
+    $githubLogs = $logsQuery->orderBy('event_at', 'desc')->limit(15)->get();
     
     // Get statistics for the filtered date range
     $totalActivities = $statsQuery->count();
@@ -289,224 +289,26 @@
         <div class="p-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Activity Timeline</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Recent GitHub activities</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        Activity Timeline
+                        <span id="refresh-indicator" class="hidden">
+                            <svg class="animate-spin w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Recent GitHub activities • Auto-refreshes every 30s</p>
                 </div>
-                <?php if($githubLogs->isNotEmpty()): ?>
                     <div class="text-sm text-gray-600 dark:text-gray-400">
-                        <span class="font-medium text-gray-900 dark:text-white"><?php echo e($githubLogs->total()); ?></span> activities
+                    <span class="font-medium text-gray-900 dark:text-white" id="total-activities"><?php echo e($totalActivities); ?></span> activities
                     </div>
-                <?php endif; ?>
             </div>
         </div>
 
-        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+        <div id="activities-container">
             <?php $__empty_1 = true; $__currentLoopData = $githubLogs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-all duration-200">
-                    <div class="flex items-start gap-4">
-                        <!-- Event Icon -->
-                        <div class="flex-shrink-0">
-                            <?php if($log->event_type === 'push'): ?>
-                                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                    <span class="text-xl">📤</span>
-                                </div>
-                            <?php elseif($log->event_type === 'pull_request'): ?>
-                                <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                                    <span class="text-xl">🔀</span>
-                                </div>
-                            <?php elseif($log->event_type === 'pull_request_review'): ?>
-                                <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                                    <span class="text-xl">👀</span>
-                                </div>
-                            <?php elseif($log->event_type === 'issues'): ?>
-                                <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                                    <span class="text-xl">🐛</span>
-                                </div>
-                            <?php else: ?>
-                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                    <span class="text-xl"><?php echo e($log->event_icon); ?></span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- Event Content -->
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex-1">
-                                    <!-- Event Type Badge -->
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span class="text-xs font-semibold text-gray-900 dark:text-white">
-                                            <?php echo e($log->event_display_name); ?>
-
-                                            <?php if($log->action): ?>
-                                                <span class="text-gray-500 dark:text-gray-400">· <?php echo e(ucfirst($log->action)); ?></span>
-                                            <?php endif; ?>
-                                        </span>
-                                        <?php if($log->branch): ?>
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
-                                                </svg>
-                                                <?php echo e($log->branch); ?>
-
-                                            </span>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <!-- Repository Name -->
-                                    <a href="<?php echo e($log->repository_url); ?>" target="_blank" class="group inline-flex items-center gap-2 mb-1">
-                                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                                        </svg>
-                                        <span class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"><?php echo e($log->repository_name); ?></span>
-                                        <svg class="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                        </svg>
-                                    </a>
-
-                                    <?php if($log->event_type === 'push'): ?>
-                                        <div class="mt-2">
-                                            <?php if($log->commits_count > 1): ?>
-                                                <p class="text-sm text-gray-700 dark:text-gray-300">
-                                                    Pushed <span class="font-semibold"><?php echo e($log->commits_count); ?> commits</span>
-                                                </p>
-                                            <?php endif; ?>
-                                            <?php if($log->commit_message): ?>
-                                                <div class="mt-2" x-data="{ expanded: false }">
-                                                    <div class="p-2.5 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                        <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed" style="word-break: break-word;">
-                                                            <span x-show="!expanded"><?php echo e(Str::limit(trim($log->commit_message), 120)); ?></span>
-                                                            <span x-show="expanded" x-cloak class="whitespace-pre-wrap"><?php echo e(trim($log->commit_message)); ?></span>
-                                                        </p>
-                                                    </div>
-                                                    <div class="flex items-center gap-3 mt-1.5">
-                                                        <?php if(strlen($log->commit_message) > 120): ?>
-                                                            <button @click="expanded = !expanded" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">
-                                                                <span x-show="!expanded">Show more</span>
-                                                                <span x-show="expanded" x-cloak>Show less</span>
-                                                            </button>
-                                                        <?php endif; ?>
-                                                        <?php if($log->commit_sha): ?>
-                                                            <a href="<?php echo e($log->commit_url); ?>" target="_blank" class="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition">
-                                                                <code class="text-xs"><?php echo e(Str::limit($log->commit_sha, 7, '')); ?></code>
-                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                                                </svg>
-                                                            </a>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php elseif($log->event_type === 'pull_request'): ?>
-                                        <div class="mt-2">
-                                            <a href="<?php echo e($log->pr_url); ?>" target="_blank" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                                                #<?php echo e($log->pr_number); ?>: <?php echo e($log->pr_title); ?>
-
-                                            </a>
-                                            <?php if($log->pr_description): ?>
-                                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                    <?php echo e(Str::limit($log->pr_description, 200)); ?>
-
-                                                </p>
-                                            <?php endif; ?>
-                                            <?php if($log->pr_state): ?>
-                                                <div class="mt-2 flex items-center gap-2">
-                                                    <?php if($log->pr_merged): ?>
-                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
-                                                            🟣 Merged
-                                                        </span>
-                                                    <?php elseif($log->pr_state === 'open'): ?>
-                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                                                            🟢 Open
-                                                        </span>
-                                                    <?php elseif($log->pr_state === 'closed'): ?>
-                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
-                                                            🔴 Closed
-                                                        </span>
-                                                    <?php endif; ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php elseif(in_array($log->event_type, ['pull_request_review', 'pull_request_review_comment'])): ?>
-                                        <div class="mt-2">
-                                            <?php if($log->pr_title): ?>
-                                                <a href="<?php echo e($log->pr_url); ?>" target="_blank" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                                                    #<?php echo e($log->pr_number); ?>: <?php echo e($log->pr_title); ?>
-
-                                                </a>
-                                            <?php endif; ?>
-                                            <?php if($log->commit_message): ?>
-                                                <div class="mt-2" x-data="{ expanded: false }">
-                                                    <div class="p-2.5 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                        <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed" style="word-break: break-word;">
-                                                            <span x-show="!expanded"><?php echo e(Str::limit(trim($log->commit_message), 120)); ?></span>
-                                                            <span x-show="expanded" x-cloak class="whitespace-pre-wrap"><?php echo e(trim($log->commit_message)); ?></span>
-                                                        </p>
-                                                    </div>
-                                                    <?php if(strlen($log->commit_message) > 120): ?>
-                                                        <button @click="expanded = !expanded" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium mt-1.5">
-                                                            <span x-show="!expanded">Show more</span>
-                                                            <span x-show="expanded" x-cloak>Show less</span>
-                                                        </button>
-                                                    <?php endif; ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php elseif($log->event_type === 'issues'): ?>
-                                        <div class="mt-2">
-                                            <a href="<?php echo e($log->pr_url); ?>" target="_blank" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                                                #<?php echo e($log->pr_number); ?>: <?php echo e($log->pr_title); ?>
-
-                                            </a>
-                                            <?php if($log->pr_description): ?>
-                                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                    <?php echo e(Str::limit($log->pr_description, 200)); ?>
-
-                                                </p>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php elseif($log->commit_message): ?>
-                                        <div class="mt-2" x-data="{ expanded: false }">
-                                            <div class="p-2.5 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed" style="word-break: break-word;">
-                                                    <span x-show="!expanded"><?php echo e(Str::limit(trim($log->commit_message), 120)); ?></span>
-                                                    <span x-show="expanded" x-cloak class="whitespace-pre-wrap"><?php echo e(trim($log->commit_message)); ?></span>
-                                                </p>
-                                            </div>
-                                            <?php if(strlen($log->commit_message) > 120): ?>
-                                                <button @click="expanded = !expanded" class="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium mt-1.5">
-                                                    <span x-show="!expanded">Show more</span>
-                                                    <span x-show="expanded" x-cloak>Show less</span>
-                                                </button>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <!-- Timestamp -->
-                                <div class="flex-shrink-0 text-right">
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                                        <?php echo e($log->event_at->diffForHumans()); ?>
-
-                                    </div>
-                                    <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                        <?php echo e($log->event_at->format('M d, g:i A')); ?>
-
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Author Info -->
-                            <?php if($log->author_username): ?>
-                                <div class="flex items-center gap-2 mt-3">
-                                    <span class="text-xs text-gray-500 dark:text-gray-400">by</span>
-                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300"><?php echo $log->author_username; ?></span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
+                <?php echo $__env->make('employees.partials.github-activity-item', ['githubLogs' => collect([$log]), 'employee' => $employee], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <div class="p-12">
                     <div class="text-center mb-6">
@@ -576,13 +378,257 @@
             <?php endif; ?>
         </div>
 
-        <?php if($githubLogs->hasPages()): ?>
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                <?php echo e($githubLogs->links()); ?>
-
+        <!-- Load More Button -->
+        <?php if($githubLogs->count() >= 15): ?>
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-center">
+                <button type="button" id="load-more-btn" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-all shadow-lg text-sm font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                    <span id="load-more-text">Load More Activities</span>
+                    <svg id="load-more-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
             </div>
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+// GitHub Activities Manager
+const GitHubActivities = {
+    employeeId: <?php echo e($employee->id); ?>,
+    currentPage: 1,
+    hasMore: <?php echo e($githubLogs->count() >= 15 ? 'true' : 'false'); ?>,
+    loading: false,
+    polling: false,
+    pollInterval: null,
+    
+    // Get current filters from URL
+    getFilters() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            start_date: params.get('start_date') || '',
+            end_date: params.get('end_date') || '',
+            event_type: params.get('event_type') || '',
+            repository: params.get('repository') || ''
+        };
+    },
+    
+    // Get latest activity ID
+    getLatestId() {
+        const firstActivity = document.querySelector('.activity-item');
+        return firstActivity ? parseInt(firstActivity.dataset.activityId) : 0;
+    },
+    
+    // Load more activities
+    async loadMore() {
+        if (this.loading || !this.hasMore) return;
+        
+        this.loading = true;
+        const btn = document.getElementById('load-more-btn');
+        const text = document.getElementById('load-more-text');
+        const spinner = document.getElementById('load-more-spinner');
+        
+        // Show loading state
+        btn.disabled = true;
+        text.textContent = 'Loading...';
+        spinner.classList.remove('hidden');
+        
+        try {
+            const filters = this.getFilters();
+            const params = new URLSearchParams({
+                ...filters,
+                page: this.currentPage + 1
+            });
+            
+            const response = await fetch(`/employees/${this.employeeId}/github/activities?${params}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) throw new Error('Failed to load activities');
+            
+            const data = await response.json();
+            
+            if (data.success && data.html) {
+                // Append new activities
+                const container = document.getElementById('activities-container');
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.html;
+                
+                while (tempDiv.firstChild) {
+                    container.appendChild(tempDiv.firstChild);
+                }
+                
+                this.currentPage = data.nextPage;
+                this.hasMore = data.hasMore;
+                
+                // Hide button if no more activities
+                if (!data.hasMore) {
+                    btn.parentElement.innerHTML = `
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            All activities loaded
+                        </div>
+                    `;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading activities:', error);
+            text.textContent = 'Error loading. Try again?';
+        } finally {
+            this.loading = false;
+            btn.disabled = false;
+            text.textContent = 'Load More Activities';
+            spinner.classList.add('hidden');
+        }
+    },
+    
+    // Check for new activities
+    async checkNewActivities() {
+        if (this.polling) return;
+        
+        this.polling = true;
+        const indicator = document.getElementById('refresh-indicator');
+        indicator.classList.remove('hidden');
+        
+        try {
+            const filters = this.getFilters();
+            const params = new URLSearchParams({
+                ...filters,
+                last_id: this.getLatestId()
+            });
+            
+            const response = await fetch(`/employees/${this.employeeId}/github/check-new?${params}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) throw new Error('Failed to check new activities');
+            
+            const data = await response.json();
+            
+            if (data.success && data.hasNew) {
+                // Prepend new activities with animation
+                const container = document.getElementById('activities-container');
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.html;
+                
+                // Insert new activities at the top
+                while (tempDiv.lastChild) {
+                    const newActivity = tempDiv.lastChild;
+                    newActivity.classList.add('new-activity');
+                    container.insertBefore(newActivity, container.firstChild);
+                }
+                
+                // Update total count
+                const totalEl = document.getElementById('total-activities');
+                if (totalEl) {
+                    const currentTotal = parseInt(totalEl.textContent);
+                    totalEl.textContent = currentTotal + data.count;
+                }
+                
+                // Flash animation
+                setTimeout(() => {
+                    document.querySelectorAll('.new-activity').forEach(el => {
+                        el.classList.remove('new-activity');
+                    });
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('Error checking new activities:', error);
+        } finally {
+            this.polling = false;
+            indicator.classList.add('hidden');
+        }
+    },
+    
+    // Start auto-refresh
+    startAutoRefresh() {
+        // Check every 30 seconds
+        this.pollInterval = setInterval(() => {
+            this.checkNewActivities();
+        }, 30000);
+    },
+    
+    // Stop auto-refresh
+    stopAutoRefresh() {
+        if (this.pollInterval) {
+            clearInterval(this.pollInterval);
+            this.pollInterval = null;
+        }
+    },
+    
+    // Initialize
+    init() {
+        // Load more button
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', () => this.loadMore());
+        }
+        
+        // Start auto-refresh
+        this.startAutoRefresh();
+        
+        // Stop auto-refresh when leaving page
+        window.addEventListener('beforeunload', () => this.stopAutoRefresh());
+        
+        // Stop auto-refresh when tab becomes hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.stopAutoRefresh();
+            } else {
+                this.startAutoRefresh();
+                // Check immediately when tab becomes visible
+                this.checkNewActivities();
+            }
+        });
+        
+        console.log('GitHub Activities Manager initialized');
+    }
+};
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => GitHubActivities.init());
+} else {
+    GitHubActivities.init();
+}
+</script>
+
+<style>
+.new-activity {
+    animation: slideInDown 0.5s ease-out, highlightFade 2s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes highlightFade {
+    0%, 50% {
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+</style>
 
 <?php /**PATH F:\Project\salary\resources\views/employees/partials/github-activity.blade.php ENDPATH**/ ?>

@@ -10,6 +10,107 @@ use Illuminate\Support\Facades\Log;
 class GitHubWebhookController extends Controller
 {
     /**
+     * Load GitHub activities for an employee (AJAX endpoint)
+     */
+    public function loadActivities(Request $request, Employee $employee)
+    {
+        $perPage = 15;
+        $page = $request->input('page', 1);
+        
+        // Build query with filters
+        $query = $employee->githubLogs();
+        
+        // Apply date filters
+        if ($request->filled('start_date')) {
+            $query->whereDate('event_at', '>=', $request->input('start_date'));
+        }
+        
+        if ($request->filled('end_date')) {
+            $query->whereDate('event_at', '<=', $request->input('end_date'));
+        }
+        
+        // Apply event type filter
+        if ($request->filled('event_type')) {
+            $query->where('event_type', $request->input('event_type'));
+        }
+        
+        // Apply repository filter
+        if ($request->filled('repository')) {
+            $query->where('repository_name', $request->input('repository'));
+        }
+        
+        // Get paginated results
+        $logs = $query->orderBy('event_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        // Render HTML for activities
+        $html = view('employees.partials.github-activity-item', [
+            'githubLogs' => $logs,
+            'employee' => $employee
+        ])->render();
+        
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'hasMore' => $logs->hasMorePages(),
+            'nextPage' => $logs->currentPage() + 1,
+            'total' => $logs->total()
+        ]);
+    }
+
+    /**
+     * Check for new activities (real-time polling)
+     */
+    public function checkNew(Request $request, Employee $employee)
+    {
+        $lastId = $request->input('last_id', 0);
+        
+        // Build query with filters
+        $query = $employee->githubLogs()->where('id', '>', $lastId);
+        
+        // Apply same filters as main view
+        if ($request->filled('start_date')) {
+            $query->whereDate('event_at', '>=', $request->input('start_date'));
+        }
+        
+        if ($request->filled('end_date')) {
+            $query->whereDate('event_at', '<=', $request->input('end_date'));
+        }
+        
+        if ($request->filled('event_type')) {
+            $query->where('event_type', $request->input('event_type'));
+        }
+        
+        if ($request->filled('repository')) {
+            $query->where('repository_name', $request->input('repository'));
+        }
+        
+        $newLogs = $query->orderBy('event_at', 'desc')->get();
+        
+        if ($newLogs->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'hasNew' => false,
+                'count' => 0
+            ]);
+        }
+        
+        // Render HTML for new activities
+        $html = view('employees.partials.github-activity-item', [
+            'githubLogs' => $newLogs,
+            'employee' => $employee
+        ])->render();
+        
+        return response()->json([
+            'success' => true,
+            'hasNew' => true,
+            'count' => $newLogs->count(),
+            'html' => $html,
+            'latestId' => $newLogs->first()->id
+        ]);
+    }
+
+    /**
      * Handle incoming GitHub webhook
      */
     public function handle(Request $request)
