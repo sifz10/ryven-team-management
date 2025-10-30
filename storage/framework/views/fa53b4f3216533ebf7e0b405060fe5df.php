@@ -191,11 +191,17 @@
                                                 </p>
                                             <?php endif; ?>
                                             <?php if($log->commit_message): ?>
-                                                <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                    <p class="text-sm text-gray-700 dark:text-gray-300 font-mono">
-                                                        <?php echo e(Str::limit($log->commit_message, 150)); ?>
-
+                                                <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700" x-data="{ expanded: false }">
+                                                    <p class="text-sm text-gray-700 dark:text-gray-300 font-mono break-words whitespace-pre-wrap">
+                                                        <span x-show="!expanded"><?php echo e(Str::limit($log->commit_message, 150)); ?></span>
+                                                        <span x-show="expanded" x-cloak><?php echo e($log->commit_message); ?></span>
                                                     </p>
+                                                    <?php if(strlen($log->commit_message) > 150): ?>
+                                                        <button @click="expanded = !expanded" class="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1 font-medium">
+                                                            <span x-show="!expanded">Show more</span>
+                                                            <span x-show="expanded" x-cloak>Show less</span>
+                                                        </button>
+                                                    <?php endif; ?>
                                                     <?php if($log->commit_sha): ?>
                                                         <a href="<?php echo e($log->commit_url); ?>" target="_blank" class="inline-flex items-center text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2">
                                                             <code class="mr-1"><?php echo e(Str::limit($log->commit_sha, 8, '')); ?></code>
@@ -246,11 +252,17 @@
                                                 </a>
                                             <?php endif; ?>
                                             <?php if($log->commit_message): ?>
-                                                <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                    <p class="text-sm text-gray-700 dark:text-gray-300">
-                                                        <?php echo e(Str::limit($log->commit_message, 200)); ?>
-
+                                                <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700" x-data="{ expanded: false }">
+                                                    <p class="text-sm text-gray-700 dark:text-gray-300 break-words whitespace-pre-wrap">
+                                                        <span x-show="!expanded"><?php echo e(Str::limit($log->commit_message, 200)); ?></span>
+                                                        <span x-show="expanded" x-cloak><?php echo e($log->commit_message); ?></span>
                                                     </p>
+                                                    <?php if(strlen($log->commit_message) > 200): ?>
+                                                        <button @click="expanded = !expanded" class="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1 font-medium">
+                                                            <span x-show="!expanded">Show more</span>
+                                                            <span x-show="expanded" x-cloak>Show less</span>
+                                                        </button>
+                                                    <?php endif; ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
@@ -268,11 +280,17 @@
                                             <?php endif; ?>
                                         </div>
                                     <?php elseif($log->commit_message): ?>
-                                        <div class="mt-2">
-                                            <p class="text-sm text-gray-700 dark:text-gray-300">
-                                                <?php echo e($log->commit_message); ?>
-
+                                        <div class="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700" x-data="{ expanded: false }">
+                                            <p class="text-sm text-gray-700 dark:text-gray-300 break-words whitespace-pre-wrap">
+                                                <span x-show="!expanded"><?php echo e(Str::limit($log->commit_message, 200)); ?></span>
+                                                <span x-show="expanded" x-cloak><?php echo e($log->commit_message); ?></span>
                                             </p>
+                                            <?php if(strlen($log->commit_message) > 200): ?>
+                                                <button @click="expanded = !expanded" class="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1 font-medium">
+                                                    <span x-show="!expanded">Show more</span>
+                                                    <span x-show="expanded" x-cloak>Show less</span>
+                                                </button>
+                                            <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
                                 </div>
