@@ -282,7 +282,7 @@
                             @if($log->author_username)
                                 <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                                     <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                                        <span class="font-medium">@{{ $log->author_username }}</span>
+                                        <span class="font-medium"><?php echo $log->author_username; ?></span>
                                     </div>
                                 </div>
                             @endif

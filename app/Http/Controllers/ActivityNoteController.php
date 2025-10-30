@@ -18,7 +18,21 @@ class ActivityNoteController extends Controller
         $validated['employee_payment_id'] = $payment->id;
         $validated['user_id'] = auth()->id();
 
-        ActivityNote::create($validated);
+        $note = ActivityNote::create($validated);
+        $note->load('user');
+
+        // Return JSON for AJAX requests
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'note' => $note,
+                'html' => view('employees.partials.activity-note', [
+                    'note' => $note,
+                    'employee' => $employee,
+                    'payment' => $payment
+                ])->render()
+            ]);
+        }
 
         return redirect()
             ->route('employees.show', ['employee' => $employee, 'tab' => 'timeline'])

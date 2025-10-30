@@ -1661,69 +1661,107 @@
                                     <?php endif; ?>
 
                                         <!-- Activity Notes Section -->
-                                        <?php if($payment->notes->count() > 0): ?>
-                                            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" 
+                                             x-data="{
+                                                notes: <?php echo e($payment->notes->count()); ?>,
+                                                showNoteForm: false,
+                                                noteText: '',
+                                                submitting: false,
+                                                error: '',
+                                                
+                                                async submitNote() {
+                                                    if (!this.noteText.trim()) return;
+                                                    
+                                                    this.submitting = true;
+                                                    this.error = '';
+                                                    
+                                                    try {
+                                                        const response = await fetch('<?php echo e(route('employees.payments.notes.store', [$employee, $payment])); ?>', {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                                'Accept': 'application/json',
+                                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                                            },
+                                                            body: JSON.stringify({
+                                                                note: this.noteText
+                                                            })
+                                                        });
+                                                        
+                                                        if (!response.ok) {
+                                                            throw new Error('Network response was not ok');
+                                                        }
+                                                        
+                                                        const data = await response.json();
+                                                        
+                                                        if (data.success) {
+                                                            const container = document.getElementById('notes-container-<?php echo e($payment->id); ?>');
+                                                            container.insertAdjacentHTML('beforeend', data.html);
+                                                            
+                                                            this.notes++;
+                                                            this.noteText = '';
+                                                            this.showNoteForm = false;
+                                                            
+                                                            setTimeout(() => {
+                                                                container.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                                            }, 100);
+                                                        } else {
+                                                            this.error = 'Failed to post note. Please try again.';
+                                                        }
+                                                    } catch (error) {
+                                                        this.error = 'An error occurred. Please try again.';
+                                                        console.error('Error posting note:', error);
+                                                    } finally {
+                                                        this.submitting = false;
+                                                    }
+                                                }
+                                             }"
+                                             data-payment-id="<?php echo e($payment->id); ?>">
+                                            
+                                            <!-- Notes List -->
+                                            <div x-show="notes > 0" class="mb-4">
                                                 <div class="flex items-center gap-2 mb-3">
                                                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
                                                     </svg>
-                                                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Notes (<?php echo e($payment->notes->count()); ?>)</span>
+                                                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Notes (<span x-text="notes"></span>)</span>
                                                 </div>
-                                                <div class="space-y-2">
+                                                <div class="space-y-2" id="notes-container-<?php echo e($payment->id); ?>">
                                                     <?php $__currentLoopData = $payment->notes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                        <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                                                            <div class="flex items-start justify-between gap-2 mb-2">
-                                                                <div class="flex items-center gap-2">
-                                                                    <div class="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs font-bold">
-                                                                        <?php echo e(strtoupper(substr($note->user->name ?? 'U', 0, 1))); ?>
-
-                                                                    </div>
-                                                                    <div class="text-xs">
-                                                                        <span class="font-medium text-gray-900 dark:text-white"><?php echo e($note->user->name ?? 'Unknown'); ?></span>
-                                                                        <span class="text-gray-500 dark:text-gray-400"> • <?php echo e($note->created_at->diffForHumans()); ?></span>
-                                                                    </div>
-                                                                </div>
-                                                                <form method="POST" action="<?php echo e(route('employees.payments.notes.destroy', [$employee, $payment, $note])); ?>" class="inline">
-                                                                    <?php echo csrf_field(); ?>
-                                                                    <?php echo method_field('DELETE'); ?>
-                                                                    <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition" onclick="return confirm('Delete this note?')">
-                                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                                        </svg>
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                            <p class="text-sm text-gray-700 dark:text-gray-300"><?php echo e($note->note); ?></p>
-                                                        </div>
+                                                        <?php echo $__env->make('employees.partials.activity-note', ['note' => $note, 'employee' => $employee, 'payment' => $payment], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
                                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                 </div>
                                             </div>
-                                        <?php endif; ?>
 
-                                        <!-- Add Note Form -->
-                                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" x-data="{ showNoteForm: false }">
-                                            <button type="button" @click="showNoteForm = !showNoteForm" class="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition font-medium">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                                </svg>
-                                                <span x-text="showNoteForm ? 'Cancel' : 'Add Note'"></span>
-                                            </button>
-                                            
-                                            <form x-show="showNoteForm" x-transition method="POST" action="<?php echo e(route('employees.payments.notes.store', [$employee, $payment])); ?>" class="mt-3 space-y-3">
-                                                <?php echo csrf_field(); ?>
-                                                <textarea name="note" rows="3" class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm" placeholder="Add a note to this activity..." required></textarea>
-                                                <div class="flex items-center gap-2">
-                                                    <button type="submit" class="inline-flex items-center gap-1 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition text-xs font-medium shadow-sm">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                                        </svg>
-                                                        Post Note
-                                                    </button>
-                                                    <button type="button" @click="showNoteForm = false" class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </form>
+                                            <!-- Add Note Form -->
+                                            <div>
+                                                <button type="button" @click="showNoteForm = !showNoteForm" class="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition font-medium">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                    </svg>
+                                                    <span x-text="showNoteForm ? 'Cancel' : 'Add Note'"></span>
+                                                </button>
+                                                
+                                                <form x-show="showNoteForm" x-transition @submit.prevent="submitNote()" class="mt-3 space-y-3">
+                                                    <textarea x-model="noteText" rows="3" class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm" placeholder="Add a note to this activity..." required></textarea>
+                                                    <div class="flex items-center gap-2">
+                                                        <button type="submit" :disabled="submitting" class="inline-flex items-center gap-1 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition text-xs font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                                            <svg x-show="!submitting" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                            </svg>
+                                                            <svg x-show="submitting" class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            <span x-text="submitting ? 'Posting...' : 'Post Note'"></span>
+                                                        </button>
+                                                        <button type="button" @click="showNoteForm = false; noteText = ''" class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                    <div x-show="error" x-transition class="text-xs text-red-600 dark:text-red-400" x-text="error"></div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
 
