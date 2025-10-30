@@ -419,10 +419,10 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </div>
-                                <div>
+                            <div>
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Employment Contracts</h3>
                                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Manage and download employment contracts</p>
-                                </div>
+                            </div>
                             </div>
                             <a href="<?php echo e(route('contracts.create', $employee)); ?>" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition text-sm font-medium">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -473,32 +473,32 @@
                                     </div>
 
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                        <div>
+                            <div>
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Salary</p>
                                             <p class="font-semibold text-gray-900 dark:text-white"><?php echo e(number_format($contract->salary, 2)); ?> <?php echo e($contract->currency); ?></p>
-                                        </div>
-                                        <div>
+                            </div>
+                            <div>
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Start Date</p>
                                             <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->start_date->format('M d, Y')); ?></p>
-                                        </div>
+                            </div>
                                         <?php if($contract->end_date): ?>
                                         <div>
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">End Date</p>
                                             <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->end_date->format('M d, Y')); ?></p>
-                                        </div>
+                        </div>
                                         <?php endif; ?>
                                         <div>
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Working Hours</p>
                                             <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->working_hours_per_week); ?>h/week</p>
-                                        </div>
+                                    </div>
                                         <div>
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Probation Period</p>
                                             <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->probation_period_days); ?> days</p>
-                                        </div>
+                            </div>
                                         <div>
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Notice Period</p>
                                             <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->notice_period_days); ?> days</p>
-                                        </div>
+                        </div>
                                         <div>
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Annual Leave</p>
                                             <p class="font-semibold text-gray-900 dark:text-white"><?php echo e($contract->annual_leave_days); ?> days</p>
@@ -516,14 +516,14 @@
                                             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Job Description</p>
                                             <p class="text-sm text-gray-700 dark:text-gray-300"><?php echo e(Str::limit($contract->job_description, 150)); ?></p>
                                         </div>
-                                        <?php endif; ?>
+                                <?php endif; ?>
                                         <?php if($contract->benefits): ?>
                                         <div>
                                             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Benefits</p>
                                             <p class="text-sm text-gray-700 dark:text-gray-300"><?php echo e(Str::limit($contract->benefits, 150)); ?></p>
-                                        </div>
+                            </div>
                                         <?php endif; ?>
-                                    </div>
+                        </div>
                                 <?php endif; ?>
                                 </div>
                             </div>
@@ -551,13 +551,13 @@
             <!-- Organization Tab -->
             <div x-cloak x-show="tab==='org'" x-transition.opacity>
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
-                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                                 <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
-                            </div>
+                        </div>
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Organization Totals</h3>
                                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Cumulative payments across the organization (all time), by currency</p>
@@ -1652,13 +1652,79 @@
                                                     </svg>
                                                     <span class="text-lg font-bold text-gray-900 dark:text-white"><?php echo e(number_format($payment->amount, 2)); ?></span>
                                                     <span class="text-sm text-gray-600 dark:text-gray-400 ml-1"><?php echo e($payment->currency ?? $employee->currency ?? 'USD'); ?></span>
-                                                </div>
+                                    </div>
                                             </div>
                                         <?php endif; ?>
                                         
-                                        <?php if($payment->note): ?>
+                                    <?php if($payment->note): ?>
                                             <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"><?php echo e($payment->note); ?></div>
+                                    <?php endif; ?>
+
+                                        <!-- Activity Notes Section -->
+                                        <?php if($payment->notes->count() > 0): ?>
+                                            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                <div class="flex items-center gap-2 mb-3">
+                                                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                                    </svg>
+                                                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Notes (<?php echo e($payment->notes->count()); ?>)</span>
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <?php $__currentLoopData = $payment->notes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                        <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                                                            <div class="flex items-start justify-between gap-2 mb-2">
+                                                                <div class="flex items-center gap-2">
+                                                                    <div class="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs font-bold">
+                                                                        <?php echo e(strtoupper(substr($note->user->name ?? 'U', 0, 1))); ?>
+
+                                                                    </div>
+                                                                    <div class="text-xs">
+                                                                        <span class="font-medium text-gray-900 dark:text-white"><?php echo e($note->user->name ?? 'Unknown'); ?></span>
+                                                                        <span class="text-gray-500 dark:text-gray-400"> • <?php echo e($note->created_at->diffForHumans()); ?></span>
+                                                                    </div>
+                                                                </div>
+                                                                <form method="POST" action="<?php echo e(route('employees.payments.notes.destroy', [$employee, $payment, $note])); ?>" class="inline">
+                                                                    <?php echo csrf_field(); ?>
+                                                                    <?php echo method_field('DELETE'); ?>
+                                                                    <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition" onclick="return confirm('Delete this note?')">
+                                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                                        </svg>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                            <p class="text-sm text-gray-700 dark:text-gray-300"><?php echo e($note->note); ?></p>
+                                                        </div>
+                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                </div>
+                                            </div>
                                         <?php endif; ?>
+
+                                        <!-- Add Note Form -->
+                                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" x-data="{ showNoteForm: false }">
+                                            <button type="button" @click="showNoteForm = !showNoteForm" class="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition font-medium">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                </svg>
+                                                <span x-text="showNoteForm ? 'Cancel' : 'Add Note'"></span>
+                                            </button>
+                                            
+                                            <form x-show="showNoteForm" x-transition method="POST" action="<?php echo e(route('employees.payments.notes.store', [$employee, $payment])); ?>" class="mt-3 space-y-3">
+                                                <?php echo csrf_field(); ?>
+                                                <textarea name="note" rows="3" class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm" placeholder="Add a note to this activity..." required></textarea>
+                                                <div class="flex items-center gap-2">
+                                                    <button type="submit" class="inline-flex items-center gap-1 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition text-xs font-medium shadow-sm">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                        </svg>
+                                                        Post Note
+                                                    </button>
+                                                    <button type="button" @click="showNoteForm = false" class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
 
                                     <!-- Edit Modal -->
@@ -1706,7 +1772,7 @@
                                                     </select>
                                                 </div>
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
+                                                <div>
                                                         <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input-label','data' => ['for' => 'paid_at_'.e($payment->id).'','value' => 'Date']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -1892,11 +1958,11 @@
                                         <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                                         </svg>
-                                    </div>
+        </div>
                                     <div>
                                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Today's Checklist</h3>
                                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5"><?php echo e(now()->format('l, F j, Y')); ?></p>
-                                    </div>
+    </div>
                                 </div>
                                 <button type="button" onclick="generateTodayChecklists(<?php echo e($employee->id); ?>)" class="inline-flex items-center px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition text-sm font-medium" id="generate-btn">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

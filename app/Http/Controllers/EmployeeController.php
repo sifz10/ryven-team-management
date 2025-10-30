@@ -122,6 +122,9 @@ class EmployeeController extends Controller
      */
     public function show(Employee $employee)
     {
+        // Load payments with notes
+        $employee->load(['payments.notes.user']);
+        
         // Load checklist templates
         $checklistTemplates = $employee->checklistTemplates()->with('items')->get();
         

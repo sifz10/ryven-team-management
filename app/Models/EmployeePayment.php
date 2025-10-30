@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmployeePayment extends Model
 {
@@ -23,5 +24,10 @@ class EmployeePayment extends Model
     public function employee()
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function notes(): HasMany
+    {
+        return $this->hasMany(ActivityNote::class, 'employee_payment_id')->latest();
     }
 }
