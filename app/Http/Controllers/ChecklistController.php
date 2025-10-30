@@ -9,6 +9,9 @@ use App\Models\DailyChecklistItem;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Mail\DailyChecklistMail;
 
 class ChecklistController extends Controller
 {
@@ -175,5 +178,83 @@ class ChecklistController extends Controller
                 'message' => 'Failed to generate checklists: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    // Send checklist via email
+    public function sendChecklistEmail(Employee $employee, DailyChecklist $checklist)
+    {
+        try {
+            // Generate a unique token if not already set
+            if (!$checklist->email_token) {
+                $checklist->email_token = Str::random(64);
+                $checklist->save();
+            }
+
+            // Load relationships
+            $checklist->load(['template', 'items']);
+
+            // Send email
+            Mail::to($employee->email)->send(new DailyChecklistMail($checklist, $employee));
+
+            // Update email_sent_at timestamp
+            $checklist->update(['email_sent_at' => now()]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Checklist sent successfully to ' . $employee->email,
+                'sent_at' => $checklist->email_sent_at->format('g:i A'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send email: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // Public endpoint to toggle item from email (no authentication required)
+    public function publicToggleItem(Request $request, $token, DailyChecklistItem $item)
+    {
+        // Find the checklist by token
+        $checklist = DailyChecklist::where('email_token', $token)->first();
+
+        if (!$checklist) {
+            abort(404, 'Checklist not found');
+        }
+
+        // Check if link has expired (12 hours after email was sent)
+        if ($checklist->email_sent_at && $checklist->email_sent_at->copy()->addHours(12)->isPast()) {
+            return redirect()->route('checklist.public.view', ['token' => $token])
+                ->with('error', 'This checklist link has expired. Links are valid for 12 hours after sending.');
+        }
+
+        // Verify that the item belongs to this checklist
+        if ($item->daily_checklist_id !== $checklist->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Toggle the item
+        $isCompleted = !$item->is_completed;
+        $item->update([
+            'is_completed' => $isCompleted,
+            'completed_at' => $isCompleted ? now() : null,
+        ]);
+
+        // Redirect back with a success message
+        return redirect()->route('checklist.public.view', ['token' => $token])
+            ->with('status', $isCompleted ? 'Item marked as complete!' : 'Item unmarked.');
+    }
+
+    // Public view of checklist from email
+    public function publicView($token)
+    {
+        $checklist = DailyChecklist::where('email_token', $token)
+            ->with(['template', 'items', 'employee'])
+            ->firstOrFail();
+
+        // Check if link has expired (12 hours after email was sent)
+        $isExpired = $checklist->email_sent_at && $checklist->email_sent_at->copy()->addHours(12)->isPast();
+
+        return view('checklist.public', compact('checklist', 'isExpired'));
     }
 }

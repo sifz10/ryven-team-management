@@ -957,15 +957,32 @@
                                 <div class="mb-6 last:mb-0 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden" data-checklist-id="{{ $checklist->id }}">
                                     <div class="p-6">
                                         <div class="flex items-center justify-between mb-4">
-                                            <div>
-                                                <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ $checklist->template->title }}</h4>
-                                                @if($checklist->template->description)
-                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $checklist->template->description }}</p>
-                                                @endif
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-2xl font-bold text-gray-900 dark:text-white" data-completion-display="{{ $checklist->id }}">{{ $checklist->completion_percentage }}%</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">Complete</div>
+                                            <div class="flex-1">
+                                                <div class="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ $checklist->template->title }}</h4>
+                                                        @if($checklist->template->description)
+                                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $checklist->template->description }}</p>
+                                                        @endif
+                                                        @if($checklist->email_sent_at)
+                                                            <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                                                                📧 Sent to email at {{ $checklist->email_sent_at->format('g:i A') }}
+                                                            </p>
+                                                        @endif
+                                                    </div>
+                                                    <div class="flex flex-col items-end gap-2">
+                                                        <div class="text-right">
+                                                            <div class="text-2xl font-bold text-gray-900 dark:text-white" data-completion-display="{{ $checklist->id }}">{{ $checklist->completion_percentage }}%</div>
+                                                            <div class="text-xs text-gray-500 dark:text-gray-400">Complete</div>
+                                                        </div>
+                                                        <button type="button" onclick="sendChecklistEmail({{ $employee->id }}, {{ $checklist->id }})" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm hover:shadow-md transition text-xs font-medium" data-send-btn="{{ $checklist->id }}">
+                                                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                            <span data-send-text="{{ $checklist->id }}">Send to Email</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         
@@ -1005,6 +1022,120 @@
                             @endforelse
                         </div>
                     </div>
+
+                    <!-- Checklist History -->
+                    @if($checklistHistory->isNotEmpty())
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                    <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sent Checklist History</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">All checklists sent to employee's email ({{ $checklistHistory->count() }} total)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-4">
+                                @foreach($checklistHistory as $history)
+                                    @php
+                                        $completedCount = $history->items->where('is_completed', true)->count();
+                                        $totalCount = $history->items->count();
+                                        $percentage = $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0;
+                                        $isExpired = $history->email_sent_at && $history->email_sent_at->copy()->addHours(12)->isPast();
+                                        $linkStatus = $isExpired ? 'Expired' : 'Active';
+                                        $linkStatusColor = $isExpired ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' : 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300';
+                                    @endphp
+
+                                    <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg transition-shadow bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+                                        <div class="p-5">
+                                            <!-- Header -->
+                                            <div class="flex items-start justify-between mb-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-2">
+                                                        <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ $history->template->title }}</h4>
+                                                        <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $linkStatusColor }}">
+                                                            {{ $linkStatus }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                                                        <span class="flex items-center gap-1">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                            {{ $history->date->format('M d, Y') }}
+                                                        </span>
+                                                        <span class="flex items-center gap-1">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                            Sent: {{ $history->email_sent_at->format('M d, g:i A') }}
+                                                        </span>
+                                                        @if($isExpired)
+                                                            <span class="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                                </svg>
+                                                                Expired: {{ $history->email_sent_at->copy()->addHours(12)->format('M d, g:i A') }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="text-right">
+                                                    <div class="text-3xl font-bold {{ $percentage == 100 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white' }}">
+                                                        {{ $percentage }}%
+                                                    </div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                        {{ $completedCount }}/{{ $totalCount }} completed
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Progress Bar -->
+                                            <div class="mb-4">
+                                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                                                    <div class="h-2.5 rounded-full transition-all duration-300 {{ $percentage == 100 ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-blue-500 to-blue-600' }}" style="width: {{ $percentage }}%"></div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Items List -->
+                                            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                                                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Checklist Items</p>
+                                                <div class="space-y-2">
+                                                    @foreach($history->items as $item)
+                                                        <div class="flex items-center gap-2 text-sm">
+                                                            @if($item->is_completed)
+                                                                <svg class="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                                                </svg>
+                                                                <span class="line-through text-gray-500 dark:text-gray-500">{{ $item->title }}</span>
+                                                                @if($item->completed_at)
+                                                                    <span class="ml-auto text-xs text-green-600 dark:text-green-400">
+                                                                        ✓ {{ $item->completed_at->format('g:i A') }}
+                                                                    </span>
+                                                                @endif
+                                                            @else
+                                                                <svg class="w-4 h-4 text-gray-400 dark:text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                                </svg>
+                                                                <span class="text-gray-700 dark:text-gray-300">{{ $item->title }}</span>
+                                                                <span class="ml-auto text-xs text-gray-400 dark:text-gray-600">Not completed</span>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <!-- Checklist Templates Management -->
                     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm">
@@ -1273,6 +1404,51 @@
                 showToast('Failed to generate checklists', 'error');
                 btn.disabled = false;
                 btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.textContent = originalText;
+            });
+        }
+
+        function sendChecklistEmail(employeeId, checklistId) {
+            const btn = document.querySelector(`[data-send-btn="${checklistId}"]`);
+            const btnText = document.querySelector(`[data-send-text="${checklistId}"]`);
+            const originalText = btnText.textContent;
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btnText.textContent = 'Sending...';
+            
+            fetch(`/employees/${employeeId}/checklists/${checklistId}/send-email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message || '📧 Email sent successfully!', 'success');
+                    btnText.textContent = '✓ Sent';
+                    setTimeout(() => {
+                        btnText.textContent = originalText;
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        // Reload to show updated timestamp
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showToast(data.message || 'Failed to send email', 'error');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnText.textContent = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Failed to send email', 'error');
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
                 btnText.textContent = originalText;
             });
         }

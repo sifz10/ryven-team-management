@@ -72,14 +72,24 @@ class EmployeeController extends Controller
      */
     public function show(Employee $employee)
     {
-        // Load checklist templates and today's checklists
+        // Load checklist templates
         $checklistTemplates = $employee->checklistTemplates()->with('items')->get();
+        
+        // Load today's checklists
         $todayChecklists = $employee->dailyChecklists()
             ->with(['template.items', 'items'])
             ->where('date', now()->toDateString())
             ->get();
 
-        return view('employees.show', compact('employee', 'checklistTemplates', 'todayChecklists'));
+        // Load all sent checklists (history) - ordered by date descending
+        $checklistHistory = $employee->dailyChecklists()
+            ->with(['template.items', 'items'])
+            ->whereNotNull('email_sent_at')
+            ->orderByDesc('date')
+            ->orderByDesc('email_sent_at')
+            ->get();
+
+        return view('employees.show', compact('employee', 'checklistTemplates', 'todayChecklists', 'checklistHistory'));
     }
 
     /**

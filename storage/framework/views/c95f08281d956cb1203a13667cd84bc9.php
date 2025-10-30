@@ -14,7 +14,7 @@
                 <?php echo e(__('Invoice')); ?> - <?php echo e($invoice->invoice_number); ?>
 
             </h2>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
                 <a href="<?php echo e(route('invoices.index')); ?>" 
                     class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,6 +29,31 @@
                     </svg>
                     Edit
                 </a>
+                
+                <?php if($invoice->client_email): ?>
+                    <form action="<?php echo e(route('invoices.send-email', $invoice)); ?>" method="POST" class="inline">
+                        <?php echo csrf_field(); ?>
+                        <button type="submit" 
+                            onclick="return confirm('Send invoice to <?php echo e($invoice->client_email); ?>?')"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 dark:bg-green-500 text-white rounded-full shadow hover:bg-green-700 dark:hover:bg-green-600 transition">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            Send Email
+                        </button>
+                    </form>
+                <?php else: ?>
+                    <button type="button" 
+                        disabled
+                        title="Add recipient email address to enable sending"
+                        class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 rounded-full shadow cursor-not-allowed opacity-50">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        Send Email
+                    </button>
+                <?php endif; ?>
+
                 <a href="<?php echo e(route('invoices.preview', $invoice)); ?>" target="_blank"
                     class="inline-flex items-center px-4 py-2 bg-black text-white rounded-full shadow hover:bg-gray-800 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,9 +76,26 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <?php if(session('success')): ?>
-                <div class="mb-4 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
-                    <?php echo e(session('success')); ?>
+                <div class="mb-4 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <?php echo e(session('success')); ?>
 
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <?php if(session('error')): ?>
+                <div class="mb-4 px-4 py-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        <?php echo e(session('error')); ?>
+
+                    </div>
                 </div>
             <?php endif; ?>
 

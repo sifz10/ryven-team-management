@@ -144,4 +144,27 @@ class InvoiceController extends Controller
         $pdf = Pdf::loadView('invoices.pdf', compact('invoice'));
         return $pdf->stream($invoice->invoice_number . '.pdf');
     }
+
+    /**
+     * Send invoice via email.
+     */
+    public function sendEmail(Invoice $invoice)
+    {
+        // Validate that client has an email
+        if (empty($invoice->client_email)) {
+            return redirect()->back()
+                ->with('error', 'Cannot send email: Recipient email address is missing.');
+        }
+
+        try {
+            // Send the email
+            \Mail::to($invoice->client_email)->send(new \App\Mail\InvoiceMail($invoice));
+
+            return redirect()->back()
+                ->with('success', 'Invoice sent successfully to ' . $invoice->client_email);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to send invoice: ' . $e->getMessage());
+        }
+    }
 }

@@ -12,10 +12,13 @@ class DailyChecklist extends Model
         'employee_id',
         'checklist_template_id',
         'date',
+        'email_token',
+        'email_sent_at',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'email_sent_at' => 'datetime',
     ];
 
     public function employee(): BelongsTo
