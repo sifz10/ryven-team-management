@@ -187,17 +187,17 @@ class ChecklistController extends Controller
             // Generate a unique token if not already set
             if (!$checklist->email_token) {
                 $checklist->email_token = Str::random(64);
-                $checklist->save();
             }
+
+            // Set email_sent_at timestamp BEFORE sending (needed for email template)
+            $checklist->email_sent_at = now();
+            $checklist->save();
 
             // Load relationships
             $checklist->load(['template', 'items']);
 
             // Send email
             Mail::to($employee->email)->send(new DailyChecklistMail($checklist, $employee));
-
-            // Update email_sent_at timestamp
-            $checklist->update(['email_sent_at' => now()]);
 
             return response()->json([
                 'success' => true,

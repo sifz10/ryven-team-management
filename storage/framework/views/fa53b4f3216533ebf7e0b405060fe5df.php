@@ -490,7 +490,7 @@ const GitHubActivities = {
             spinner.classList.add('hidden');
         }
     },
-    
+
     // Check for new activities
     async checkNewActivities() {
         if (this.polling) return;

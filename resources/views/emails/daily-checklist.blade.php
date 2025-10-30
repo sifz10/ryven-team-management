@@ -218,11 +218,19 @@
             <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
                 You can check off items directly from this email by clicking the "Mark as Complete" buttons above.
             </p>
+            @if($dailyChecklist->email_sent_at)
             <div style="margin-top: 15px; padding: 12px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
                 <p style="margin: 0; color: #92400e; font-size: 13px; font-weight: 500;">
                     ⏰ <strong>Important:</strong> This link will expire in 12 hours from the time it was sent. Complete your checklist before {{ $dailyChecklist->email_sent_at->copy()->addHours(12)->format('M d, g:i A') }}.
                 </p>
             </div>
+            @else
+            <div style="margin-top: 15px; padding: 12px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+                <p style="margin: 0; color: #92400e; font-size: 13px; font-weight: 500;">
+                    ⏰ <strong>Important:</strong> This link will expire in 12 hours from the time it was sent.
+                </p>
+            </div>
+            @endif
         </div>
         
         <div class="footer">
