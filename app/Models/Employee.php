@@ -65,4 +65,9 @@ class Employee extends Model
     {
         return $this->hasMany(DailyChecklist::class);
     }
+
+    public function githubLogs(): HasMany
+    {
+        return $this->hasMany(GitHubLog::class)->latest('event_at');
+    }
 }

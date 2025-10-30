@@ -134,7 +134,7 @@
                     <tr>
                         <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
                             <p style="margin: 0 0 8px; color: #6b7280; font-size: 12px;">
-                                This is an automated notification from <strong style="color: #111827;">Ryven Salary Management System</strong>
+                                This is an automated notification from <strong style="color: #111827;">{{}}</strong>
                             </p>
                             <p style="margin: 0; color: #9ca3af; font-size: 11px;">
                                 &copy; {{ date('Y') }} Ryven. All rights reserved.

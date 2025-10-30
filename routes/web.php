@@ -9,6 +9,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmploymentContractController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\GitHubWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,6 +19,9 @@ Route::get('/', function () {
 // Public checklist routes (no authentication required)
 Route::get('/checklist/{token}', [ChecklistController::class, 'publicView'])->name('checklist.public.view');
 Route::get('/checklist/{token}/item/{item}/toggle', [ChecklistController::class, 'publicToggleItem'])->name('checklist.public.toggle');
+
+// GitHub Webhook (no authentication required)
+Route::post('/webhook/github', [GitHubWebhookController::class, 'handle'])->name('webhook.github');
 
 // SOP page (authenticated)
 Route::get('/sop', function () {
