@@ -13,6 +13,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        @stack('styles')
     </head>
     <body class="font-sans antialiased" x-data x-init="document.documentElement.classList.toggle('dark', localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches))">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -42,5 +44,7 @@
                 </div>
             @endif
         </div>
+        
+        @stack('scripts')
     </body>
 </html>

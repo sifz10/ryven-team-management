@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('attendance.index')" :active="request()->routeIs('attendance.*')">
                         {{ __('Attendance') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('invoices.index')" :active="request()->routeIs('invoices.*')">
+                        {{ __('Invoices') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('sop')" :active="request()->routeIs('sop')">
                         {{ __('SOP') }}
                     </x-nav-link>
@@ -88,6 +91,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('attendance.index')" :active="request()->routeIs('attendance.*')">
                 {{ __('Attendance') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('invoices.index')" :active="request()->routeIs('invoices.*')">
+                {{ __('Invoices') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('sop')" :active="request()->routeIs('sop')">
                 {{ __('SOP') }}

@@ -8,6 +8,7 @@ use App\Http\Controllers\EmployeeAccessController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmploymentContractController;
 use App\Http\Controllers\ChecklistController;
+use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -72,6 +73,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('employees/{employee}/checklists/templates/{template}', [ChecklistController::class, 'destroyTemplate'])->name('employees.checklists.templates.destroy');
     Route::post('employees/{employee}/checklists/items/{item}/toggle', [ChecklistController::class, 'toggleItem'])->name('employees.checklists.items.toggle');
     Route::post('employees/{employee}/checklists/generate-today', [ChecklistController::class, 'generateTodayChecklists'])->name('employees.checklists.generate-today');
+
+    // Invoice routes
+    Route::resource('invoices', InvoiceController::class);
+    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
+    Route::get('invoices/{invoice}/preview', [InvoiceController::class, 'previewPdf'])->name('invoices.preview');
 });
 
 require __DIR__.'/auth.php';
