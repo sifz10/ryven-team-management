@@ -1,0 +1,1 @@
+<img src="<?php echo e(asset('black-logo.png')); ?>" alt="Logo" <?php echo e($attributes); ?>><?php /**PATH F:\Project\salary\resources\views/components/application-logo.blade.php ENDPATH**/ ?>
