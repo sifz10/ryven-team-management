@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Exclude GitHub webhook from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'webhook/github',
+        ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
         // Generate daily checklists every day at midnight
