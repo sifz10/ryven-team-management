@@ -267,21 +267,19 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center gap-3">
                                                 <?php if($log->author_avatar_url): ?>
-                                                    <img src="<?php echo e($log->author_avatar_url); ?>" alt="<?php echo e($log->author_username); ?>" class="w-8 h-8 rounded-full">
+                                                    <img src="<?php echo $log->author_avatar_url; ?>" alt="<?php echo $log->author_username; ?>" class="w-8 h-8 rounded-full">
                                                 <?php else: ?>
                                                     <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
                                                         <span class="text-xs font-medium text-gray-600 dark:text-gray-300">
-                                                            <?php echo e(strtoupper(substr($log->author_username, 0, 2))); ?>
-
+                                                            <?php echo strtoupper(substr($log->author_username, 0, 2)); ?>
                                                         </span>
                                                     </div>
                                                 <?php endif; ?>
                                                 <div>
                                                     <div class="font-medium text-gray-900 dark:text-gray-100">
-                                                        <?php echo e($log->employee->first_name ?? 'Unknown'); ?> <?php echo e($log->employee->last_name ?? ''); ?>
-
+                                                        <?php echo $log->employee->first_name ?? 'Unknown'; ?> <?php echo $log->employee->last_name ?? ''; ?>
                                                     </div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ $log->author_username }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">@<?php echo $log->author_username; ?></div>
                                                 </div>
                                             </div>
                                         </td>

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\GitHubLog;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -277,7 +279,7 @@ class GitHubWebhookController extends Controller
                 // Get the last commit message as the main message
                 $lastCommit = end($data['commits']);
                 
-                GitHubLog::create([
+                $log = GitHubLog::create([
                     'employee_id' => $employee->id,
                     'event_type' => 'push',
                     'action' => null,
@@ -294,6 +296,9 @@ class GitHubWebhookController extends Controller
                     'payload' => $payload,
                     'event_at' => now(),
                 ]);
+
+                // Create notification
+                $this->createNotification($log);
             }
         }
     }
@@ -315,7 +320,7 @@ class GitHubWebhookController extends Controller
         $employee = $this->findEmployeeByEmailOrUsername($authorEmail, $authorUsername);
 
         if ($employee) {
-            GitHubLog::create([
+            $log = GitHubLog::create([
                 'employee_id' => $employee->id,
                 'event_type' => 'pull_request',
                 'action' => $action,
@@ -333,6 +338,9 @@ class GitHubWebhookController extends Controller
                 'payload' => $payload,
                 'event_at' => now(),
             ]);
+
+            // Create notification
+            $this->createNotification($log);
         }
     }
 
@@ -528,5 +536,71 @@ class GitHubWebhookController extends Controller
         }
         
         return null;
+    }
+
+    /**
+     * Create notification for GitHub log
+     */
+    protected function createNotification(GitHubLog $log): void
+    {
+        // Get all users to notify (you can customize this logic)
+        $users = User::all();
+
+        $title = $this->getNotificationTitle($log);
+        $message = $this->getNotificationMessage($log);
+
+        foreach ($users as $user) {
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => 'github_log',
+                'title' => $title,
+                'message' => $message,
+                'icon' => 'github',
+                'data' => [
+                    'log_id' => $log->id,
+                    'employee_id' => $log->employee_id,
+                    'event_type' => $log->event_type,
+                    'repository_name' => $log->repository_name,
+                    'url' => $log->commit_url ?? $log->pr_url ?? $log->repository_url,
+                ],
+            ]);
+        }
+    }
+
+    /**
+     * Get notification title based on event type
+     */
+    protected function getNotificationTitle(GitHubLog $log): string
+    {
+        $employee = $log->employee;
+        $name = $employee ? "{$employee->first_name} {$employee->last_name}" : $log->author_username;
+
+        return match($log->event_type) {
+            'push' => "🚀 New Push by {$name}",
+            'pull_request' => "🔀 New Pull Request by {$name}",
+            'pull_request_review' => "👀 New PR Review by {$name}",
+            'issues' => "🐛 New Issue by {$name}",
+            'create' => "✨ Branch/Tag Created by {$name}",
+            'delete' => "🗑️ Branch/Tag Deleted by {$name}",
+            default => "📝 New GitHub Activity by {$name}",
+        };
+    }
+
+    /**
+     * Get notification message based on event type
+     */
+    protected function getNotificationMessage(GitHubLog $log): string
+    {
+        $repo = $log->repository_name;
+        
+        return match($log->event_type) {
+            'push' => "{$log->commits_count} commit(s) pushed to {$repo}",
+            'pull_request' => "PR #{$log->pr_number}: {$log->pr_title} in {$repo}",
+            'pull_request_review' => "Reviewed PR #{$log->pr_number} in {$repo}",
+            'issues' => "Issue #{$log->pr_number}: {$log->pr_title} in {$repo}",
+            'create' => "{$log->action} '{$log->ref}' in {$repo}",
+            'delete' => "{$log->action} '{$log->ref}' in {$repo}",
+            default => "Activity in {$repo}",
+        };
     }
 }
