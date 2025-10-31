@@ -111,6 +111,85 @@ class GitHubWebhookController extends Controller
     }
 
     /**
+     * Display all GitHub webhook logs with filters
+     */
+    public function logs(Request $request)
+    {
+        // Get filters from request
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $eventType = $request->input('event_type');
+        $repository = $request->input('repository');
+        $employeeId = $request->input('employee_id');
+        
+        // Build query
+        $logsQuery = GitHubLog::with('employee');
+        $statsQuery = GitHubLog::query();
+        
+        // Apply filters
+        if ($startDate) {
+            $logsQuery->whereDate('event_at', '>=', $startDate);
+            $statsQuery->whereDate('event_at', '>=', $startDate);
+        }
+        
+        if ($endDate) {
+            $logsQuery->whereDate('event_at', '<=', $endDate);
+            $statsQuery->whereDate('event_at', '<=', $endDate);
+        }
+        
+        if ($eventType) {
+            $logsQuery->where('event_type', $eventType);
+        }
+        
+        if ($repository) {
+            $logsQuery->where('repository_name', $repository);
+        }
+        
+        if ($employeeId) {
+            $logsQuery->where('employee_id', $employeeId);
+            $statsQuery->where('employee_id', $employeeId);
+        }
+        
+        // Get paginated logs
+        $logs = $logsQuery->orderBy('event_at', 'desc')->paginate(50);
+        
+        // Get statistics
+        $totalLogs = (clone $statsQuery)->count();
+        $pushCount = (clone $statsQuery)->where('event_type', 'push')->count();
+        $prCount = (clone $statsQuery)->where('event_type', 'pull_request')->count();
+        $totalCommits = (clone $statsQuery)->where('event_type', 'push')->sum('commits_count') ?: 0;
+        
+        // Get unique values for filters
+        $repositories = GitHubLog::select('repository_name')
+            ->groupBy('repository_name')
+            ->orderBy('repository_name')
+            ->pluck('repository_name');
+        
+        $eventTypes = GitHubLog::select('event_type')
+            ->groupBy('event_type')
+            ->orderBy('event_type')
+            ->pluck('event_type');
+        
+        $employees = Employee::orderBy('first_name')->get();
+        
+        return view('github-logs', compact(
+            'logs',
+            'totalLogs',
+            'pushCount',
+            'prCount',
+            'totalCommits',
+            'repositories',
+            'eventTypes',
+            'employees',
+            'startDate',
+            'endDate',
+            'eventType',
+            'repository',
+            'employeeId'
+        ));
+    }
+
+    /**
      * Handle incoming GitHub webhook
      */
     public function handle(Request $request)

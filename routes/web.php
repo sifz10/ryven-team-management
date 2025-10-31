@@ -27,6 +27,9 @@ Route::post('/webhook/github', [GitHubWebhookController::class, 'handle'])->name
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/employees/{employee}/github/activities', [GitHubWebhookController::class, 'loadActivities'])->name('github.activities.load');
     Route::get('/employees/{employee}/github/check-new', [GitHubWebhookController::class, 'checkNew'])->name('github.activities.checkNew');
+    
+    // GitHub Logs Page
+    Route::get('/github-logs', [GitHubWebhookController::class, 'logs'])->name('github.logs');
 });
 
 // SOP page (authenticated)
