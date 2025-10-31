@@ -8,7 +8,28 @@ use Illuminate\Http\Request;
 class NotificationController extends Controller
 {
     /**
-     * Get all notifications for the authenticated user
+     * Display notifications page
+     */
+    public function page(Request $request)
+    {
+        $filter = $request->input('filter', 'all'); // all, unread, read
+        
+        $query = $request->user()->notifications();
+        
+        if ($filter === 'unread') {
+            $query->whereNull('read_at');
+        } elseif ($filter === 'read') {
+            $query->whereNotNull('read_at');
+        }
+        
+        $notifications = $query->orderBy('created_at', 'desc')->paginate(20);
+        $unreadCount = $request->user()->notifications()->whereNull('read_at')->count();
+        
+        return view('notifications.index', compact('notifications', 'unreadCount', 'filter'));
+    }
+
+    /**
+     * Get all notifications for the authenticated user (API)
      */
     public function index(Request $request)
     {
@@ -48,18 +69,53 @@ class NotificationController extends Controller
     {
         // Ensure notification belongs to the authenticated user
         if ($notification->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized',
+                ], 403);
+            }
+            abort(403);
         }
 
         $notification->markAsRead();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Notification marked as read',
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification marked as read',
+            ]);
+        }
+
+        return back()->with('status', 'Notification marked as read');
+    }
+
+    /**
+     * Mark a notification as unread
+     */
+    public function markAsUnread(Request $request, Notification $notification)
+    {
+        // Ensure notification belongs to the authenticated user
+        if ($notification->user_id !== $request->user()->id) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized',
+                ], 403);
+            }
+            abort(403);
+        }
+
+        $notification->update(['read_at' => null]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification marked as unread',
+            ]);
+        }
+
+        return back()->with('status', 'Notification marked as unread');
     }
 
     /**
@@ -85,17 +141,44 @@ class NotificationController extends Controller
     {
         // Ensure notification belongs to the authenticated user
         if ($notification->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized',
+                ], 403);
+            }
+            abort(403);
         }
 
         $notification->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Notification deleted',
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification deleted',
+            ]);
+        }
+
+        return back()->with('status', 'Notification deleted');
+    }
+
+    /**
+     * Clear all read notifications
+     */
+    public function clearRead(Request $request)
+    {
+        $request->user()
+            ->notifications()
+            ->whereNotNull('read_at')
+            ->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'All read notifications cleared',
+            ]);
+        }
+
+        return back()->with('status', 'All read notifications cleared');
     }
 }
