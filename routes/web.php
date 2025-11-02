@@ -38,6 +38,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/github/pr/{log}/comment', [GitHubPullRequestController::class, 'comment'])->name('github.pr.comment');
     Route::post('/github/pr/{log}/review', [GitHubPullRequestController::class, 'review'])->name('github.pr.review');
     Route::post('/github/pr/{log}/assign', [GitHubPullRequestController::class, 'assign'])->name('github.pr.assign');
+    Route::delete('/github/pr/{log}/assign/reviewer/{username}', [GitHubPullRequestController::class, 'removeReviewer'])->name('github.pr.removeReviewer');
+    Route::delete('/github/pr/{log}/assign/assignee/{username}', [GitHubPullRequestController::class, 'removeAssignee'])->name('github.pr.removeAssignee');
     Route::post('/github/pr/{log}/labels', [GitHubPullRequestController::class, 'addLabel'])->name('github.pr.addLabel');
     Route::delete('/github/pr/{log}/labels/{label}', [GitHubPullRequestController::class, 'removeLabel'])->name('github.pr.removeLabel');
 });

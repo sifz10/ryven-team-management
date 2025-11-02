@@ -287,6 +287,88 @@ class GitHubPullRequestController extends Controller
     }
 
     /**
+     * Remove a reviewer from a Pull Request
+     */
+    public function removeReviewer(Request $request, GitHubLog $log, string $username)
+    {
+        // Only allow for pull request events
+        if ($log->event_type !== 'pull_request') {
+            return response()->json([
+                'error' => 'This is not a pull request event',
+            ], 400);
+        }
+
+        // Parse repository URL
+        $repo = GitHubApiService::parseRepoUrl($log->repository_url);
+        if (!$repo) {
+            return response()->json([
+                'error' => 'Invalid repository URL',
+            ], 400);
+        }
+
+        // Remove reviewer from GitHub
+        $result = $this->github->removeReviewers(
+            $repo['owner'],
+            $repo['repo'],
+            (int) $log->pr_number,
+            [$username]
+        );
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $result['error'],
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reviewer removed successfully',
+        ]);
+    }
+
+    /**
+     * Remove an assignee from a Pull Request
+     */
+    public function removeAssignee(Request $request, GitHubLog $log, string $username)
+    {
+        // Only allow for pull request events
+        if ($log->event_type !== 'pull_request') {
+            return response()->json([
+                'error' => 'This is not a pull request event',
+            ], 400);
+        }
+
+        // Parse repository URL
+        $repo = GitHubApiService::parseRepoUrl($log->repository_url);
+        if (!$repo) {
+            return response()->json([
+                'error' => 'Invalid repository URL',
+            ], 400);
+        }
+
+        // Remove assignee from GitHub
+        $result = $this->github->removeAssignees(
+            $repo['owner'],
+            $repo['repo'],
+            (int) $log->pr_number,
+            [$username]
+        );
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $result['error'],
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Assignee removed successfully',
+        ]);
+    }
+
+    /**
      * Add a label to a Pull Request
      */
     public function addLabel(Request $request, GitHubLog $log)

@@ -269,40 +269,56 @@
                     </div>
                 </div>
 
-                <!-- Current Assignees/Reviewers -->
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Current Reviewers -->
-                        @if(!empty($pr['requested_reviewers']))
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reviewers</h4>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach($pr['requested_reviewers'] as $reviewer)
-                                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-xs">
-                                            <img src="<?php echo e($reviewer['avatar_url']); ?>" alt="<?php echo e($reviewer['login']); ?>" class="w-4 h-4 rounded-full">
-                                            <?php echo e($reviewer['login']); ?>
-                                        </span>
-                                    @endforeach
-                                </div>
+            <!-- Current Assignees/Reviewers -->
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Current Reviewers -->
+                    @if(!empty($pr['requested_reviewers']))
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reviewers</h4>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($pr['requested_reviewers'] as $reviewer)
+                                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-xs border border-purple-200 dark:border-purple-800 group">
+                                        <img src="<?php echo e($reviewer['avatar_url']); ?>" alt="<?php echo e($reviewer['login']); ?>" class="w-4 h-4 rounded-full">
+                                        <?php echo e($reviewer['login']); ?>
+                                        <button @click="removeReviewer('<?php echo e($reviewer['login']); ?>')" 
+                                                :disabled="assigning"
+                                                class="ml-1 hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full p-0.5 transition-colors disabled:opacity-50"
+                                                title="Remove reviewer">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </span>
+                                @endforeach
                             </div>
-                        @endif
+                        </div>
+                    @endif
 
-                        <!-- Current Assignees -->
-                        @if(!empty($pr['assignees']))
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assignees</h4>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach($pr['assignees'] as $assignee)
-                                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-xs">
-                                            <img src="<?php echo e($assignee['avatar_url']); ?>" alt="<?php echo e($assignee['login']); ?>" class="w-4 h-4 rounded-full">
-                                            <?php echo e($assignee['login']); ?>
-                                        </span>
-                                    @endforeach
-                                </div>
+                    <!-- Current Assignees -->
+                    @if(!empty($pr['assignees']))
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assignees</h4>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($pr['assignees'] as $assignee)
+                                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-xs border border-blue-200 dark:border-blue-800 group">
+                                        <img src="<?php echo e($assignee['avatar_url']); ?>" alt="<?php echo e($assignee['login']); ?>" class="w-4 h-4 rounded-full">
+                                        <?php echo e($assignee['login']); ?>
+                                        <button @click="removeAssignee('<?php echo e($assignee['login']); ?>')" 
+                                                :disabled="assigning"
+                                                class="ml-1 hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors disabled:opacity-50"
+                                                title="Remove assignee">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </span>
+                                @endforeach
                             </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
+            </div>
             </div>
 
             <!-- Label Management Section -->
@@ -831,6 +847,78 @@
                     showToast('error', 'Failed to remove label. Please try again.');
                 } finally {
                     this.labelManaging = false;
+                }
+            },
+
+            async removeReviewer(username) {
+                if (this.assigning) return;
+                
+                this.assigning = true;
+                console.log('Removing reviewer:', username);
+                
+                try {
+                    const url = '{{ route('github.pr.removeReviewer', ['log' => $log, 'username' => '__USERNAME__']) }}'.replace('__USERNAME__', encodeURIComponent(username));
+                    
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Response:', data);
+                    
+                    if (data.success) {
+                        showToast('success', 'Reviewer removed successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('error', data.error || 'Failed to remove reviewer');
+                    }
+                } catch (error) {
+                    console.error('Exception removing reviewer:', error);
+                    showToast('error', 'Failed to remove reviewer. Please try again.');
+                } finally {
+                    this.assigning = false;
+                }
+            },
+
+            async removeAssignee(username) {
+                if (this.assigning) return;
+                
+                this.assigning = true;
+                console.log('Removing assignee:', username);
+                
+                try {
+                    const url = '{{ route('github.pr.removeAssignee', ['log' => $log, 'username' => '__USERNAME__']) }}'.replace('__USERNAME__', encodeURIComponent(username));
+                    
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Response:', data);
+                    
+                    if (data.success) {
+                        showToast('success', 'Assignee removed successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('error', data.error || 'Failed to remove assignee');
+                    }
+                } catch (error) {
+                    console.error('Exception removing assignee:', error);
+                    showToast('error', 'Failed to remove assignee. Please try again.');
+                } finally {
+                    this.assigning = false;
                 }
             }
         }

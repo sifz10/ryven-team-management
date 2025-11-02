@@ -320,6 +320,70 @@ class GitHubApiService
     }
 
     /**
+     * Remove reviewers from a Pull Request
+     */
+    public function removeReviewers(string $owner, string $repo, int $prNumber, array $reviewers): array
+    {
+        try {
+            $response = $this->http()
+                ->delete("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}/requested_reviewers", [
+                    'reviewers' => $reviewers,
+                ]);
+
+            if ($response->successful()) {
+                return ['success' => true, 'data' => $response->json()];
+            }
+
+            $errorBody = $response->json();
+            $errorMessage = $errorBody['message'] ?? 'Failed to remove reviewers';
+            
+            Log::error('GitHub API: Failed to remove reviewers', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return ['success' => false, 'error' => $errorMessage];
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception removing reviewers', [
+                'message' => $e->getMessage(),
+            ]);
+            return ['success' => false, 'error' => 'An unexpected error occurred'];
+        }
+    }
+
+    /**
+     * Remove assignees from a Pull Request
+     */
+    public function removeAssignees(string $owner, string $repo, int $prNumber, array $assignees): array
+    {
+        try {
+            $response = $this->http()
+                ->delete("{$this->baseUrl}/repos/{$owner}/{$repo}/issues/{$prNumber}/assignees", [
+                    'assignees' => $assignees,
+                ]);
+
+            if ($response->successful()) {
+                return ['success' => true, 'data' => $response->json()];
+            }
+
+            $errorBody = $response->json();
+            $errorMessage = $errorBody['message'] ?? 'Failed to remove assignees';
+            
+            Log::error('GitHub API: Failed to remove assignees', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return ['success' => false, 'error' => $errorMessage];
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception removing assignees', [
+                'message' => $e->getMessage(),
+            ]);
+            return ['success' => false, 'error' => 'An unexpected error occurred'];
+        }
+    }
+
+    /**
      * Parse repository owner and name from URL
      */
     public static function parseRepoUrl(string $url): ?array
