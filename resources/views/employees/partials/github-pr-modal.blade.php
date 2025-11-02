@@ -72,7 +72,7 @@
                 </div>
 
                 <!-- Tabs -->
-                <div class="border-b border-gray-200 dark:border-gray-700 px-6" x-data="{ prTab: 'description' }">
+                <div class="border-b border-gray-200 dark:border-gray-700 px-6">
                     <nav class="-mb-px flex gap-6">
                         <button @click="prTab = 'description'" 
                                 :class="prTab === 'description' ? 'border-black text-black dark:border-white dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"

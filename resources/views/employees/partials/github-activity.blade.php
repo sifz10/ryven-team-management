@@ -629,11 +629,8 @@ if (document.readyState === 'loading') {
 }
 </style>
 
-<!-- Include PR Details Modal -->
-@include('employees.partials.github-pr-modal')
-
 <script>
-// Alpine.js data for PR Modal
+// Alpine.js data for PR Modal - Initialize BEFORE modal is included
 document.addEventListener('alpine:init', () => {
     Alpine.data('prModalData', () => ({
         showPrModal: false,
@@ -642,12 +639,15 @@ document.addEventListener('alpine:init', () => {
         prComment: '',
         submittingComment: false,
         currentLogId: null,
+        prTab: 'description',
         
         openPrModal(logId) {
             this.currentLogId = logId;
             this.showPrModal = true;
             this.prLoading = true;
             this.prData = null;
+            this.prTab = 'description';
+            this.prComment = '';
             this.loadPrDetails(logId);
         },
         
@@ -770,4 +770,7 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 </script>
+
+<!-- Include PR Details Modal AFTER Alpine.js data is registered -->
+@include('employees.partials.github-pr-modal')
 

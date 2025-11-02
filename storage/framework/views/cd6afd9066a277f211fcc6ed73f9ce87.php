@@ -415,11 +415,8 @@
         </div>
     </div>
 
-    <!-- Include PR Details Modal -->
-    <?php echo $__env->make('employees.partials.github-pr-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
-
     <script>
-    // Alpine.js data for PR Modal
+    // Alpine.js data for PR Modal - Initialize BEFORE modal is included
     document.addEventListener('alpine:init', () => {
         Alpine.data('prModalData', () => ({
             showPrModal: false,
@@ -428,12 +425,15 @@
             prComment: '',
             submittingComment: false,
             currentLogId: null,
+            prTab: 'description',
             
             openPrModal(logId) {
                 this.currentLogId = logId;
                 this.showPrModal = true;
                 this.prLoading = true;
                 this.prData = null;
+                this.prTab = 'description';
+                this.prComment = '';
                 this.loadPrDetails(logId);
             },
             
@@ -602,6 +602,9 @@
         }
     });
     </script>
+
+    <!-- Include PR Details Modal -->
+    <?php echo $__env->make('employees.partials.github-pr-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
