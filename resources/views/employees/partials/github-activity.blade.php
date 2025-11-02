@@ -630,8 +630,8 @@ if (document.readyState === 'loading') {
 </style>
 
 <script>
-// Alpine.js data for PR Modal - Initialize BEFORE modal is included
-document.addEventListener('alpine:init', () => {
+// Alpine.js data for PR Modal
+if (window.Alpine) {
     Alpine.data('prModalData', () => ({
         showPrModal: false,
         prLoading: false,
@@ -768,7 +768,7 @@ document.addEventListener('alpine:init', () => {
             }
         }
     }));
-});
+}
 </script>
 
 <!-- Include PR Details Modal AFTER Alpine.js data is registered -->

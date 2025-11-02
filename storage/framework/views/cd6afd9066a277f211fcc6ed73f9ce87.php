@@ -28,7 +28,7 @@
                         </span>
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                        View and filter all GitHub webhook activities • Auto-refreshes every 30s
+                        View and filter all GitHub webhook activities • Real-time updates via Reverb
                     </p>
                 </div>
             </div>
@@ -225,7 +225,7 @@
                 </form>
             </div>
 
-            <!-- Logs Table -->
+            <!-- Logs Cards -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
                 <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -238,153 +238,128 @@
                 </div>
 
                 <?php if($logs->count() > 0): ?>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-900">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Time
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Employee
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Event Type
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Repository
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Details
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <?php $__currentLoopData = $logs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            <div class="flex flex-col">
-                                                <span class="font-medium"><?php echo e($log->event_at->format('M d, Y')); ?></span>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400"><?php echo e($log->event_at->format('h:i A')); ?></span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <div class="flex items-center gap-3">
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700" data-logs-container>
+                        <?php $__currentLoopData = $logs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
+                                $eventColors = [
+                                    'push' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+                                    'pull_request' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+                                    'pull_request_review' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+                                    'issues' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+                                    'create' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+                                    'delete' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+                                ];
+                                $color = $eventColors[$log->event_type] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600';
+                            ?>
+                            
+                            <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <div class="flex items-start justify-between gap-4">
+                                    <!-- Left: Event Info -->
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <!-- Employee Avatar & Name -->
+                                            <div class="flex items-center gap-2 flex-shrink-0">
                                                 <?php if($log->author_avatar_url): ?>
-                                                    <img src="<?php echo $log->author_avatar_url; ?>" alt="<?php echo $log->author_username; ?>" class="w-8 h-8 rounded-full">
+                                                    <img src="<?php echo $log->author_avatar_url; ?>" alt="<?php echo $log->author_username; ?>" class="w-7 h-7 rounded-full">
                                                 <?php else: ?>
-                                                    <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                                                        <span class="text-xs font-medium text-gray-600 dark:text-gray-300">
+                                                    <div class="w-7 h-7 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                                                        <span class="text-[10px] font-medium text-gray-600 dark:text-gray-300">
                                                             <?php echo strtoupper(substr($log->author_username, 0, 2)); ?>
                                                         </span>
                                                     </div>
                                                 <?php endif; ?>
-                                                <div>
-                                                    <div class="font-medium text-gray-900 dark:text-gray-100">
-                                                        <?php echo $log->employee->first_name ?? 'Unknown'; ?> <?php echo $log->employee->last_name ?? ''; ?>
-                                                    </div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400">@<?php echo $log->author_username; ?></div>
-                                                </div>
+                                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                    <?php echo $log->employee->first_name ?? 'Unknown'; ?> <?php echo $log->employee->last_name ?? ''; ?>
+                                                </span>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <?php
-                                                $eventColors = [
-                                                    'push' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-                                                    'pull_request' => 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-                                                    'pull_request_review' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-                                                    'issues' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                                                    'create' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-                                                    'delete' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-                                                ];
-                                                $color = $eventColors[$log->event_type] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-                                            ?>
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo e($color); ?>">
+
+                                            <!-- Event Badge -->
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold <?php echo e($color); ?> border">
                                                 <?php echo e(ucfirst(str_replace('_', ' ', $log->event_type))); ?>
 
+                                                <?php if($log->action): ?>
+                                                    <span class="ml-1 opacity-75">• <?php echo e($log->action); ?></span>
+                                                <?php endif; ?>
                                             </span>
-                                            <?php if($log->action): ?>
-                                                <span class="block text-xs text-gray-500 dark:text-gray-400 mt-1"><?php echo e($log->action); ?></span>
+
+                                            <!-- Time -->
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                                                <?php echo e($log->event_at->format('M d, h:i A')); ?>
+
+                                            </span>
+                                        </div>
+
+                                        <!-- Repository & Branch -->
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <a href="<?php echo e($log->repository_url); ?>" target="_blank" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 truncate">
+                                                <?php echo e($log->repository_name); ?>
+
+                                            </a>
+                                            <?php if($log->branch): ?>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-mono">
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    <?php echo e($log->branch); ?>
+
+                                                </span>
                                             <?php endif; ?>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm">
-                                            <div class="flex flex-col max-w-xs">
-                                                <a href="<?php echo e($log->repository_url); ?>" target="_blank" class="font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 truncate">
-                                                    <?php echo e($log->repository_name); ?>
+                                        </div>
 
-                                                </a>
-                                                <?php if($log->branch): ?>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                        <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                                        </svg>
-                                                        <?php echo e($log->branch); ?>
+                                        <!-- Details -->
+                                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                                            <?php if($log->event_type === 'push'): ?>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-medium text-gray-900 dark:text-gray-100"><?php echo e($log->commits_count); ?> <?php echo e(Str::plural('commit', $log->commits_count)); ?></span>
+                                                    <?php if($log->commit_message): ?>
+                                                        <span class="text-xs">• <?php echo e(Str::limit($log->commit_message, 80)); ?></span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php elseif($log->event_type === 'pull_request' || $log->event_type === 'issues'): ?>
+                                                <div>
+                                                    <span class="font-medium text-gray-900 dark:text-gray-100">#<?php echo e($log->pr_number); ?></span>
+                                                    <span class="ml-2"><?php echo e($log->pr_title); ?></span>
+                                                </div>
+                                            <?php else: ?>
+                                                <?php echo e(Str::limit($log->commit_message, 80)); ?>
 
-                                                    </span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                                            <div class="max-w-md">
-                                                <?php if($log->event_type === 'push'): ?>
-                                                    <div class="flex items-start gap-2">
-                                                        <svg class="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                                        </svg>
-                                                        <div>
-                                                            <div class="font-medium"><?php echo e($log->commits_count); ?> <?php echo e(Str::plural('commit', $log->commits_count)); ?></div>
-                                                            <?php if($log->commit_message): ?>
-                                                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate"><?php echo e(Str::limit($log->commit_message, 60)); ?></div>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </div>
-                                                <?php elseif($log->event_type === 'pull_request' || $log->event_type === 'issues'): ?>
-                                                    <div>
-                                                        <div class="font-medium"><?php echo e($log->pr_title); ?></div>
-                                                        <?php if($log->pr_number): ?>
-                                                            <span class="text-xs text-gray-500 dark:text-gray-400">#<?php echo e($log->pr_number); ?></span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                <?php else: ?>
-                                                    <div class="text-gray-600 dark:text-gray-400"><?php echo e(Str::limit($log->commit_message, 60)); ?></div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <div class="flex items-center gap-2">
-                                                <?php if($log->event_type === 'pull_request'): ?>
-                                                    <button @click="$dispatch('open-pr-modal', <?php echo e($log->id); ?>)" class="inline-flex items-center gap-1 px-3 py-1 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-xs font-medium">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                        </svg>
-                                                        Review PR
-                                                    </button>
-                                                <?php elseif($log->commit_url || $log->pr_url): ?>
-                                                    <a href="<?php echo e($log->commit_url ?? $log->pr_url); ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                                        </svg>
-                                                        View
-                                                    </a>
-                                                <?php endif; ?>
-                                                <?php if($log->employee): ?>
-                                                    <a href="<?php echo e(route('employees.show', $log->employee)); ?>?tab=github" class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                                        </svg>
-                                                        Profile
-                                                    </a>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </tbody>
-                        </table>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right: Actions -->
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                    <?php if($log->event_type === 'pull_request'): ?>
+                                        <a href="<?php echo e(route('github.pr.details', $log)); ?>" class="inline-flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-xs font-medium shadow-sm">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                            Review
+                                        </a>
+                                        <?php elseif($log->commit_url || $log->pr_url): ?>
+                                            <a href="<?php echo e($log->commit_url ?? $log->pr_url); ?>" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                                </svg>
+                                                View
+                                            </a>
+                                        <?php endif; ?>
+                                        <?php if($log->employee): ?>
+                                            <a href="<?php echo e(route('employees.show', $log->employee)); ?>?tab=github" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                                </svg>
+                                                Profile
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
 
                     <!-- Pagination -->
@@ -416,8 +391,8 @@
     </div>
 
     <script>
-    // Alpine.js data for PR Modal - Initialize BEFORE modal is included
-    document.addEventListener('alpine:init', () => {
+    // Alpine.js data for PR Modal
+    if (window.Alpine) {
         Alpine.data('prModalData', () => ({
             showPrModal: false,
             prLoading: false,
@@ -554,53 +529,144 @@
                 }
             }
         }));
-    });
+    }
 
-    // Realtime auto-refresh
-    let refreshInterval;
-    const REFRESH_INTERVAL = 30000; // 30 seconds
-
-    function startAutoRefresh() {
-        refreshInterval = setInterval(() => {
-            // Only refresh if no filters are active (to avoid messing with user's filtered view)
-            const urlParams = new URLSearchParams(window.location.search);
-            if (!urlParams.has('start_date') && !urlParams.has('end_date') && 
-                !urlParams.has('event_type') && !urlParams.has('repository') && 
-                !urlParams.has('employee_id')) {
-                
-                console.log('Auto-refreshing GitHub logs...');
-                location.reload();
-            }
-        }, REFRESH_INTERVAL);
+    // Real-time updates using Laravel Echo & Reverb
+    if (window.Echo) {
+        console.log('GitHub Logs: Listening for real-time updates via Reverb...');
         
-        console.log('GitHub Logs: Auto-refresh enabled (every 30 seconds)');
-    }
-
-    function stopAutoRefresh() {
-        if (refreshInterval) {
-            clearInterval(refreshInterval);
-            console.log('GitHub Logs: Auto-refresh disabled');
-        }
-    }
-
-    // Start auto-refresh when page loads
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startAutoRefresh);
+        window.Echo.channel('github-activities')
+            .listen('.activity.received', (event) => {
+                console.log('New GitHub activity received:', event);
+                
+                // Only auto-update if no filters are active
+                const urlParams = new URLSearchParams(window.location.search);
+                if (!urlParams.has('start_date') && !urlParams.has('end_date') && 
+                    !urlParams.has('event_type') && !urlParams.has('repository') && 
+                    !urlParams.has('employee_id')) {
+                    
+                    // Add the new activity to the top of the list
+                    prependNewActivity(event.log);
+                }
+            });
     } else {
-        startAutoRefresh();
+        console.error('Laravel Echo not loaded. Real-time updates unavailable.');
     }
 
-    // Stop auto-refresh when leaving page
-    window.addEventListener('beforeunload', stopAutoRefresh);
+    function prependNewActivity(log) {
+        const container = document.querySelector('[data-logs-container]');
+        if (!container) return;
+        
+        // Create the new activity card HTML
+        const activityCard = createActivityCard(log);
+        
+        // Insert at the top with animation
+        container.insertAdjacentHTML('afterbegin', activityCard);
+        
+        // Add fade-in animation
+        const newCard = container.firstElementChild;
+        newCard.style.opacity = '0';
+        newCard.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            newCard.style.transition = 'all 0.5s ease-out';
+            newCard.style.opacity = '1';
+            newCard.style.transform = 'translateY(0)';
+        }, 10);
+    }
 
-    // Stop/start auto-refresh based on tab visibility
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            stopAutoRefresh();
-        } else {
-            startAutoRefresh();
-        }
-    });
+    function createActivityCard(log) {
+        const eventColors = {
+            'push': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+            'pull_request': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+            'pull_request_review': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+            'issues': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+            'create': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+            'delete': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+        };
+        const colorClass = eventColors[log.event_type] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600';
+        
+        const eventDate = new Date(log.event_at);
+        const formattedDate = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        
+        return `
+            <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                ${log.author_avatar_url ? 
+                                    `<img src="${log.author_avatar_url}" alt="${log.author_username}" class="w-7 h-7 rounded-full">` :
+                                    `<div class="w-7 h-7 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                                        <span class="text-[10px] font-medium text-gray-600 dark:text-gray-300">${log.author_username.substring(0, 2).toUpperCase()}</span>
+                                    </div>`
+                                }
+                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    ${log.employee.first_name} ${log.employee.last_name}
+                                </span>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${colorClass} border">
+                                ${log.event_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                ${log.action ? `<span class="ml-1 opacity-75">• ${log.action}</span>` : ''}
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">${formattedDate}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <a href="${log.repository_url}" target="_blank" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 truncate">
+                                ${log.repository_name}
+                            </a>
+                            ${log.branch ? `
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-mono">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    ${log.branch}
+                                </span>
+                            ` : ''}
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            ${log.event_type === 'push' ? 
+                                `<span class="font-medium text-gray-900 dark:text-gray-100">${log.commits_count} commit${log.commits_count !== 1 ? 's' : ''}</span>
+                                ${log.commit_message ? `<span class="text-xs">• ${log.commit_message.substring(0, 80)}</span>` : ''}` :
+                            log.event_type === 'pull_request' ?
+                                `<span class="font-medium text-gray-900 dark:text-gray-100">#${log.pr_number}</span> ${log.pr_title}` :
+                                log.commit_message ? log.commit_message.substring(0, 80) : ''
+                            }
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        ${log.event_type === 'pull_request' ?
+                            `<a href="/github/pr/${log.id}/details" class="inline-flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-xs font-medium shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                Review
+                            </a>` :
+                        (log.commit_url || log.pr_url) ?
+                            `<a href="${log.commit_url || log.pr_url}" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                View
+                            </a>` : ''
+                        }
+                        ${log.employee.id ?
+                            `<a href="/employees/${log.employee.id}?tab=github" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Profile
+                            </a>` : ''
+                        }
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     </script>
 
     <!-- Include PR Details Modal -->
