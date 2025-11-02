@@ -269,10 +269,11 @@ class GitHubPullRequestController extends Controller
             );
         }
 
-        if (!$result) {
+        if (!$result['success']) {
             return response()->json([
-                'error' => 'Failed to assign on GitHub',
-            ], 500);
+                'success' => false,
+                'error' => $result['error'],
+            ], 400);
         }
 
         return response()->json([

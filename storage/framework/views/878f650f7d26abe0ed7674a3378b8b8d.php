@@ -407,8 +407,8 @@
         }));
     };
 
-    // Listen for toast events
-    document.addEventListener('alpine:init', () => {
+    // Listen for toast events (initialize immediately after DOM load)
+    document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('show-toast', (event) => {
             const toastEl = document.querySelector('[x-data*="toastNotification"]');
             if (toastEl && toastEl.__x) {
@@ -508,6 +508,7 @@
                 if (!this.selectedReviewer || this.assigning) return;
                 
                 this.assigning = true;
+                console.log('Requesting reviewer:', this.selectedReviewer);
                 
                 try {
                     const response = await fetch('<?php echo e(route('github.pr.assign', $log)); ?>', {
@@ -525,15 +526,18 @@
                     });
                     
                     const data = await response.json();
+                    console.log('Response:', data);
                     
                     if (data.success) {
+                        console.log('Success! Showing toast...');
                         showToast('success', 'Reviewer requested successfully! Reloading...');
                         setTimeout(() => window.location.reload(), 1500);
                     } else {
+                        console.log('Error from API:', data.error);
                         showToast('error', data.error || 'Failed to request reviewer');
                     }
                 } catch (error) {
-                    console.error('Error requesting reviewer:', error);
+                    console.error('Exception requesting reviewer:', error);
                     showToast('error', 'Failed to request reviewer. Please try again.');
                 } finally {
                     this.assigning = false;
