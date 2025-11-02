@@ -173,14 +173,40 @@
                             Request Review From
                         </label>
                         <div class="flex gap-2">
-                            <select x-model="selectedReviewer" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
-                                <option value="">Select a reviewer...</option>
+                            <!-- Searchable Dropdown -->
+                            <div class="flex-1 relative" x-data="searchableDropdown([
                                 <?php $__currentLoopData = $employees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $employee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($employee->github_username); ?>">
-                                        <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> (@<?php echo e($employee->github_username); ?>)
-                                    </option>
+                                    { value: '<?php echo e($employee->github_username); ?>', label: '<?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> (@<?php echo e($employee->github_username); ?>)' },
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </select>
+                            ], 'selectedReviewer')">
+                                <button @click="toggleDropdown()" type="button" 
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent text-left flex items-center justify-between">
+                                    <span x-text="selectedLabel || 'Select a reviewer...'" class="truncate"></span>
+                                    <svg class="w-4 h-4 ml-2 flex-shrink-0" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                
+                                <div x-show="open" @click.away="open = false" x-transition 
+                                     class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-2xl max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                                        <input x-model="search" @input="filterOptions()" type="text" placeholder="Search..." 
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
+                                    </div>
+                                    <div class="max-h-48 overflow-y-auto">
+                                        <template x-for="option in filteredOptions" :key="option.value">
+                                            <button @click="selectOption(option)" type="button"
+                                                    class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                                                    :class="{'bg-gray-100 dark:bg-gray-700': option.value === selectedValue}">
+                                                <span x-text="option.label"></span>
+                                            </button>
+                                        </template>
+                                        <div x-show="filteredOptions.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                            No results found
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <button @click="assignReviewer()" :disabled="!selectedReviewer || assigning" 
                                     class="inline-flex items-center gap-2 px-5 py-2 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
                                 <svg x-show="!assigning" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,14 +229,40 @@
                             Assign PR To
                         </label>
                         <div class="flex gap-2">
-                            <select x-model="selectedAssignee" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
-                                <option value="">Select an assignee...</option>
+                            <!-- Searchable Dropdown -->
+                            <div class="flex-1 relative" x-data="searchableDropdown([
                                 <?php $__currentLoopData = $employees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $employee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($employee->github_username); ?>">
-                                        <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> (@<?php echo e($employee->github_username); ?>)
-                                    </option>
+                                    { value: '<?php echo e($employee->github_username); ?>', label: '<?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> (@<?php echo e($employee->github_username); ?>)' },
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </select>
+                            ], 'selectedAssignee')">
+                                <button @click="toggleDropdown()" type="button" 
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent text-left flex items-center justify-between">
+                                    <span x-text="selectedLabel || 'Select an assignee...'" class="truncate"></span>
+                                    <svg class="w-4 h-4 ml-2 flex-shrink-0" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                
+                                <div x-show="open" @click.away="open = false" x-transition 
+                                     class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-2xl max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                                        <input x-model="search" @input="filterOptions()" type="text" placeholder="Search..." 
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
+                                    </div>
+                                    <div class="max-h-48 overflow-y-auto">
+                                        <template x-for="option in filteredOptions" :key="option.value">
+                                            <button @click="selectOption(option)" type="button"
+                                                    class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                                                    :class="{'bg-gray-100 dark:bg-gray-700': option.value === selectedValue}">
+                                                <span x-text="option.label"></span>
+                                            </button>
+                                        </template>
+                                        <div x-show="filteredOptions.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                            No results found
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <button @click="assignAssignee()" :disabled="!selectedAssignee || assigning" 
                                     class="inline-flex items-center gap-2 px-5 py-2 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
                                 <svg x-show="!assigning" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,14 +331,40 @@
                             Add Label to PR
                         </label>
                         <div class="flex gap-2">
-                            <select x-model="selectedLabel" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
-                                <option value="">Select a label...</option>
+                            <!-- Searchable Dropdown -->
+                            <div class="flex-1 relative" x-data="searchableDropdown([
                                 <?php $__currentLoopData = $repoLabels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($label['name']); ?>">
-                                        <?php echo e($label['name']); ?>
-                                    </option>
+                                    { value: '<?php echo e($label['name']); ?>', label: '<?php echo e($label['name']); ?>' },
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </select>
+                            ], 'selectedLabel')">
+                                <button @click="toggleDropdown()" type="button" 
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent text-left flex items-center justify-between">
+                                    <span x-text="selectedLabel || 'Select a label...'" class="truncate"></span>
+                                    <svg class="w-4 h-4 ml-2 flex-shrink-0" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                
+                                <div x-show="open" @click.away="open = false" x-transition 
+                                     class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-2xl max-h-64 overflow-hidden">
+                                    <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+                                        <input x-model="search" @input="filterOptions()" type="text" placeholder="Search labels..." 
+                                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
+                                    </div>
+                                    <div class="max-h-48 overflow-y-auto">
+                                        <template x-for="option in filteredOptions" :key="option.value">
+                                            <button @click="selectOption(option)" type="button"
+                                                    class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                                                    :class="{'bg-gray-100 dark:bg-gray-700': option.value === selectedValue}">
+                                                <span x-text="option.label"></span>
+                                            </button>
+                                        </template>
+                                        <div x-show="filteredOptions.length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                            No results found
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <button @click="addLabel()" :disabled="!selectedLabel || labelManaging" 
                                     class="inline-flex items-center gap-2 px-5 py-2 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
                                 <svg x-show="!labelManaging" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,6 +513,51 @@
     </div>
 
     <script>
+    // Searchable Dropdown Component
+    function searchableDropdown(options, bindTo) {
+        return {
+            options: options,
+            filteredOptions: options,
+            selectedValue: '',
+            selectedLabel: '',
+            search: '',
+            open: false,
+            bindTo: bindTo,
+            
+            init() {
+                // Watch for changes in the parent component's variable
+                this.$watch('selectedValue', (value) => {
+                    // Update the parent component's bound variable
+                    this.$root[this.bindTo] = value;
+                });
+            },
+            
+            toggleDropdown() {
+                this.open = !this.open;
+                if (this.open) {
+                    this.$nextTick(() => {
+                        this.$el.querySelector('input[type="text"]')?.focus();
+                    });
+                }
+            },
+            
+            filterOptions() {
+                const searchLower = this.search.toLowerCase();
+                this.filteredOptions = this.options.filter(option => 
+                    option.label.toLowerCase().includes(searchLower)
+                );
+            },
+            
+            selectOption(option) {
+                this.selectedValue = option.value;
+                this.selectedLabel = option.label;
+                this.open = false;
+                this.search = '';
+                this.filteredOptions = this.options;
+            }
+        }
+    }
+
     // Toast Notification Component
     function toastNotification() {
         return {
