@@ -139,7 +139,7 @@
                                 <option value="">Select a reviewer...</option>
                                 <?php $__currentLoopData = $employees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $employee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <option value="<?php echo e($employee->github_username); ?>">
-                                        <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> ({{ $employee->github_username }})
+                                        <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> (@<?php echo e($employee->github_username); ?>)
                                     </option>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
@@ -169,7 +169,7 @@
                                 <option value="">Select an assignee...</option>
                                 <?php $__currentLoopData = $employees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $employee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <option value="<?php echo e($employee->github_username); ?>">
-                                        <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> ({{ $employee->github_username }})
+                                        <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> (@<?php echo e($employee->github_username); ?>)
                                     </option>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </select>
@@ -201,7 +201,6 @@
                                         <span class="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-xs">
                                             <img src="<?php echo e($reviewer['avatar_url']); ?>" alt="<?php echo e($reviewer['login']); ?>" class="w-4 h-4 rounded-full">
                                             <?php echo e($reviewer['login']); ?>
-
                                         </span>
                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
@@ -217,7 +216,6 @@
                                         <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-xs">
                                             <img src="<?php echo e($assignee['avatar_url']); ?>" alt="<?php echo e($assignee['login']); ?>" class="w-4 h-4 rounded-full">
                                             <?php echo e($assignee['login']); ?>
-
                                         </span>
                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>

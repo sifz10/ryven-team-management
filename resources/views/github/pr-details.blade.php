@@ -128,8 +128,8 @@
                             <select x-model="selectedReviewer" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
                                 <option value="">Select a reviewer...</option>
                                 @foreach($employees as $employee)
-                                    <option value="{{ $employee->github_username }}">
-                                        {{ $employee->first_name }} {{ $employee->last_name }} (@{{ $employee->github_username }})
+                                    <option value="<?php echo e($employee->github_username); ?>">
+                                        <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> (@<?php echo e($employee->github_username); ?>)
                                     </option>
                                 @endforeach
                             </select>
@@ -158,8 +158,8 @@
                             <select x-model="selectedAssignee" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
                                 <option value="">Select an assignee...</option>
                                 @foreach($employees as $employee)
-                                    <option value="{{ $employee->github_username }}">
-                                        {{ $employee->first_name }} {{ $employee->last_name }} (@{{ $employee->github_username }})
+                                    <option value="<?php echo e($employee->github_username); ?>">
+                                        <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?> (@<?php echo e($employee->github_username); ?>)
                                     </option>
                                 @endforeach
                             </select>
@@ -189,8 +189,8 @@
                                 <div class="flex flex-wrap gap-2">
                                     @foreach($pr['requested_reviewers'] as $reviewer)
                                         <span class="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full text-xs">
-                                            <img src="{{ $reviewer['avatar_url'] }}" alt="{{ $reviewer['login'] }}" class="w-4 h-4 rounded-full">
-                                            {{ $reviewer['login'] }}
+                                            <img src="<?php echo e($reviewer['avatar_url']); ?>" alt="<?php echo e($reviewer['login']); ?>" class="w-4 h-4 rounded-full">
+                                            <?php echo e($reviewer['login']); ?>
                                         </span>
                                     @endforeach
                                 </div>
@@ -204,8 +204,8 @@
                                 <div class="flex flex-wrap gap-2">
                                     @foreach($pr['assignees'] as $assignee)
                                         <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-xs">
-                                            <img src="{{ $assignee['avatar_url'] }}" alt="{{ $assignee['login'] }}" class="w-4 h-4 rounded-full">
-                                            {{ $assignee['login'] }}
+                                            <img src="<?php echo e($assignee['avatar_url']); ?>" alt="<?php echo e($assignee['login']); ?>" class="w-4 h-4 rounded-full">
+                                            <?php echo e($assignee['login']); ?>
                                         </span>
                                     @endforeach
                                 </div>
