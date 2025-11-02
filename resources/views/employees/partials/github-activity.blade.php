@@ -668,7 +668,6 @@ document.addEventListener('alpine:init', () => {
                 
                 if (data.success) {
                     this.prData = data;
-                    this.prTab = 'description';
                 } else {
                     alert('Error: ' + (data.error || 'Failed to load PR details'));
                     this.showPrModal = false;

@@ -7,7 +7,7 @@
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\App\View\Components\AppLayout::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes([]); ?>
+<?php $component->withAttributes(['x-data' => 'prModalData','@open-pr-modal.window' => 'openPrModal($event.detail)']); ?>
      <?php $__env->slot('header', null, []); ?> 
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -17,11 +17,18 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center gap-3">
                         GitHub Webhook Logs
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            Live
+                        </span>
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                        View and filter all GitHub webhook activities
+                        View and filter all GitHub webhook activities • Auto-refreshes every 30s
                     </p>
                 </div>
             </div>
@@ -348,7 +355,15 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                                             <div class="flex items-center gap-2">
-                                                <?php if($log->commit_url || $log->pr_url): ?>
+                                                <?php if($log->event_type === 'pull_request'): ?>
+                                                    <button @click="$dispatch('open-pr-modal', <?php echo e($log->id); ?>)" class="inline-flex items-center gap-1 px-3 py-1 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-xs font-medium">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                        </svg>
+                                                        Review PR
+                                                    </button>
+                                                <?php elseif($log->commit_url || $log->pr_url): ?>
                                                     <a href="<?php echo e($log->commit_url ?? $log->pr_url); ?>" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
                                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
@@ -357,7 +372,7 @@
                                                     </a>
                                                 <?php endif; ?>
                                                 <?php if($log->employee): ?>
-                                                    <a href="<?php echo e(route('employees.show', $log->employee)); ?>?tab=github" class="inline-flex items-center gap-1 px-3 py-1 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-xs font-medium">
+                                                    <a href="<?php echo e(route('employees.show', $log->employee)); ?>?tab=github" class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
                                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                                         </svg>
@@ -399,6 +414,194 @@
             </div>
         </div>
     </div>
+
+    <!-- Include PR Details Modal -->
+    <?php echo $__env->make('employees.partials.github-pr-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+
+    <script>
+    // Alpine.js data for PR Modal
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('prModalData', () => ({
+            showPrModal: false,
+            prLoading: false,
+            prData: null,
+            prComment: '',
+            submittingComment: false,
+            currentLogId: null,
+            
+            openPrModal(logId) {
+                this.currentLogId = logId;
+                this.showPrModal = true;
+                this.prLoading = true;
+                this.prData = null;
+                this.loadPrDetails(logId);
+            },
+            
+            async loadPrDetails(logId) {
+                try {
+                    const response = await fetch(`/github/pr/${logId}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch PR details');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.prData = data;
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to load PR details'));
+                        this.showPrModal = false;
+                    }
+                } catch (error) {
+                    console.error('Error loading PR details:', error);
+                    alert('Failed to load PR details. Please try again.');
+                    this.showPrModal = false;
+                } finally {
+                    this.prLoading = false;
+                }
+            },
+            
+            async submitPrComment() {
+                if (!this.prComment.trim() || this.submittingComment) return;
+                
+                this.submittingComment = true;
+                
+                try {
+                    const response = await fetch(`/github/pr/${this.currentLogId}/comment`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            body: this.prComment
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Add the new comment to the list
+                        if (!this.prData.comments) {
+                            this.prData.comments = [];
+                        }
+                        this.prData.comments.push(data.comment);
+                        
+                        // Clear the comment field
+                        this.prComment = '';
+                        
+                        // Show success message
+                        alert('Comment posted successfully!');
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to post comment'));
+                    }
+                } catch (error) {
+                    console.error('Error posting comment:', error);
+                    alert('Failed to post comment. Please try again.');
+                } finally {
+                    this.submittingComment = false;
+                }
+            },
+            
+            async submitPrReview(event) {
+                if (!this.prComment.trim() || this.submittingComment) return;
+                
+                this.submittingComment = true;
+                
+                try {
+                    const response = await fetch(`/github/pr/${this.currentLogId}/review`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            body: this.prComment,
+                            event: event
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Clear the comment field
+                        this.prComment = '';
+                        
+                        // Show success message
+                        const eventText = event === 'APPROVE' ? 'approved' : 'requested changes for';
+                        alert(`Successfully ${eventText} the pull request!`);
+                        
+                        // Reload PR details to show updated status
+                        this.loadPrDetails(this.currentLogId);
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to post review'));
+                    }
+                } catch (error) {
+                    console.error('Error posting review:', error);
+                    alert('Failed to post review. Please try again.');
+                } finally {
+                    this.submittingComment = false;
+                }
+            }
+        }));
+    });
+
+    // Realtime auto-refresh
+    let refreshInterval;
+    const REFRESH_INTERVAL = 30000; // 30 seconds
+
+    function startAutoRefresh() {
+        refreshInterval = setInterval(() => {
+            // Only refresh if no filters are active (to avoid messing with user's filtered view)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('start_date') && !urlParams.has('end_date') && 
+                !urlParams.has('event_type') && !urlParams.has('repository') && 
+                !urlParams.has('employee_id')) {
+                
+                console.log('Auto-refreshing GitHub logs...');
+                location.reload();
+            }
+        }, REFRESH_INTERVAL);
+        
+        console.log('GitHub Logs: Auto-refresh enabled (every 30 seconds)');
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            console.log('GitHub Logs: Auto-refresh disabled');
+        }
+    }
+
+    // Start auto-refresh when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startAutoRefresh);
+    } else {
+        startAutoRefresh();
+    }
+
+    // Stop auto-refresh when leaving page
+    window.addEventListener('beforeunload', stopAutoRefresh);
+
+    // Stop/start auto-refresh based on tab visibility
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+        }
+    });
+    </script>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
