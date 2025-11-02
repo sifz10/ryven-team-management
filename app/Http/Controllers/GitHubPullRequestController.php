@@ -65,6 +65,43 @@ class GitHubPullRequestController extends Controller
     }
 
     /**
+     * Show Pull Request details page
+     */
+    public function details(GitHubLog $log)
+    {
+        // Only allow for pull request events
+        if ($log->event_type !== 'pull_request') {
+            abort(404, 'Not a pull request');
+        }
+
+        // Parse repository URL
+        $repo = GitHubApiService::parseRepoUrl($log->repository_url);
+        if (!$repo) {
+            abort(500, 'Invalid repository URL');
+        }
+
+        // Fetch PR details
+        $prDetails = $this->github->getPullRequest($repo['owner'], $repo['repo'], (int) $log->pr_number);
+        if (!$prDetails) {
+            abort(500, 'Failed to fetch pull request details from GitHub');
+        }
+
+        // Fetch PR files (diff)
+        $prFiles = $this->github->getPullRequestFiles($repo['owner'], $repo['repo'], (int) $log->pr_number);
+        
+        // Fetch PR comments
+        $prComments = $this->github->getPullRequestComments($repo['owner'], $repo['repo'], (int) $log->pr_number);
+
+        return view('github.pr-details', [
+            'log' => $log,
+            'pr' => $prDetails,
+            'files' => $prFiles ?? [],
+            'comments' => $prComments ?? [],
+            'repo' => $repo,
+        ]);
+    }
+
+    /**
      * Post a comment on a Pull Request
      */
     public function comment(Request $request, GitHubLog $log)
