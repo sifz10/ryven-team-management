@@ -42,6 +42,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/github/pr/{log}/assign/assignee/{username}', [GitHubPullRequestController::class, 'removeAssignee'])->name('github.pr.removeAssignee');
     Route::post('/github/pr/{log}/labels', [GitHubPullRequestController::class, 'addLabel'])->name('github.pr.addLabel');
     Route::delete('/github/pr/{log}/labels/{label}', [GitHubPullRequestController::class, 'removeLabel'])->name('github.pr.removeLabel');
+    Route::post('/github/pr/{log}/merge', [GitHubPullRequestController::class, 'merge'])->name('github.pr.merge');
+    Route::post('/github/pr/{log}/close', [GitHubPullRequestController::class, 'close'])->name('github.pr.close');
 });
 
 // SOP page (authenticated)

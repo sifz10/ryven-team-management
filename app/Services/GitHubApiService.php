@@ -384,6 +384,80 @@ class GitHubApiService
     }
 
     /**
+     * Merge a Pull Request
+     */
+    public function mergePullRequest(string $owner, string $repo, int $prNumber, ?string $commitTitle = null, ?string $commitMessage = null, ?string $mergeMethod = 'merge'): array
+    {
+        try {
+            $payload = [
+                'merge_method' => $mergeMethod, // 'merge', 'squash', or 'rebase'
+            ];
+
+            if ($commitTitle) {
+                $payload['commit_title'] = $commitTitle;
+            }
+
+            if ($commitMessage) {
+                $payload['commit_message'] = $commitMessage;
+            }
+
+            $response = $this->http()
+                ->put("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}/merge", $payload);
+
+            if ($response->successful()) {
+                return ['success' => true, 'data' => $response->json()];
+            }
+
+            $errorBody = $response->json();
+            $errorMessage = $errorBody['message'] ?? 'Failed to merge pull request';
+            
+            Log::error('GitHub API: Failed to merge PR', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return ['success' => false, 'error' => $errorMessage];
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception merging PR', [
+                'message' => $e->getMessage(),
+            ]);
+            return ['success' => false, 'error' => 'An unexpected error occurred'];
+        }
+    }
+
+    /**
+     * Close a Pull Request
+     */
+    public function closePullRequest(string $owner, string $repo, int $prNumber): array
+    {
+        try {
+            $response = $this->http()
+                ->patch("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}", [
+                    'state' => 'closed',
+                ]);
+
+            if ($response->successful()) {
+                return ['success' => true, 'data' => $response->json()];
+            }
+
+            $errorBody = $response->json();
+            $errorMessage = $errorBody['message'] ?? 'Failed to close pull request';
+            
+            Log::error('GitHub API: Failed to close PR', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return ['success' => false, 'error' => $errorMessage];
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception closing PR', [
+                'message' => $e->getMessage(),
+            ]);
+            return ['success' => false, 'error' => 'An unexpected error occurred'];
+        }
+    }
+
+    /**
      * Parse repository owner and name from URL
      */
     public static function parseRepoUrl(string $url): ?array

@@ -463,5 +463,91 @@ class GitHubPullRequestController extends Controller
             'message' => 'Label removed successfully',
         ]);
     }
+
+    /**
+     * Merge a Pull Request
+     */
+    public function merge(Request $request, GitHubLog $log)
+    {
+        // Only allow for pull request events
+        if ($log->event_type !== 'pull_request') {
+            return response()->json([
+                'error' => 'This is not a pull request event',
+            ], 400);
+        }
+
+        // Parse repository URL
+        $repo = GitHubApiService::parseRepoUrl($log->repository_url);
+        if (!$repo) {
+            return response()->json([
+                'error' => 'Invalid repository URL',
+            ], 400);
+        }
+
+        // Get merge method from request (default: merge)
+        $mergeMethod = $request->input('merge_method', 'merge');
+
+        // Merge PR on GitHub
+        $result = $this->github->mergePullRequest(
+            $repo['owner'],
+            $repo['repo'],
+            (int) $log->pr_number,
+            null,
+            null,
+            $mergeMethod
+        );
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $result['error'],
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pull request merged successfully',
+        ]);
+    }
+
+    /**
+     * Close a Pull Request
+     */
+    public function close(Request $request, GitHubLog $log)
+    {
+        // Only allow for pull request events
+        if ($log->event_type !== 'pull_request') {
+            return response()->json([
+                'error' => 'This is not a pull request event',
+            ], 400);
+        }
+
+        // Parse repository URL
+        $repo = GitHubApiService::parseRepoUrl($log->repository_url);
+        if (!$repo) {
+            return response()->json([
+                'error' => 'Invalid repository URL',
+            ], 400);
+        }
+
+        // Close PR on GitHub
+        $result = $this->github->closePullRequest(
+            $repo['owner'],
+            $repo['repo'],
+            (int) $log->pr_number
+        );
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $result['error'],
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pull request closed successfully',
+        ]);
+    }
 }
 

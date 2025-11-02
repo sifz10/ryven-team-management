@@ -30,6 +30,32 @@
                         </svg>
                         Open
                     </span>
+                    
+                    <!-- Merge Pull Request Button -->
+                    <button @click="mergePullRequest()" :disabled="prActionProcessing" 
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg x-show="!prActionProcessing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <svg x-show="prActionProcessing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="prActionProcessing ? 'Merging...' : 'Merge Pull Request'"></span>
+                    </button>
+                    
+                    <!-- Close Pull Request Button -->
+                    <button @click="closePullRequest()" :disabled="prActionProcessing" 
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg x-show="!prActionProcessing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <svg x-show="prActionProcessing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="prActionProcessing ? 'Closing...' : 'Close Pull Request'"></span>
+                    </button>
                 @else
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
                         <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
@@ -649,6 +675,7 @@
             assigning: false,
             selectedLabel: '',
             labelManaging: false,
+            prActionProcessing: false,
 
             init() {
                 console.log('PR Details page initialized');
@@ -987,6 +1014,111 @@
                     showToast('error', 'Failed to remove assignee. Please try again.');
                 } finally {
                     this.assigning = false;
+                }
+            },
+
+            async mergePullRequest() {
+                if (this.prActionProcessing) {
+                    console.log('PR action already in progress');
+                    return;
+                }
+
+                if (!confirm('Are you sure you want to merge this pull request?')) {
+                    return;
+                }
+
+                this.prActionProcessing = true;
+                console.log('Merging pull request...');
+
+                try {
+                    const response = await fetch('{{ route('github.pr.merge', $log) }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            merge_method: 'merge'
+                        })
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Error response:', errorData);
+                        showToast('error', errorData.error || `Server error: ${response.status}`);
+                        this.prActionProcessing = false;
+                        return;
+                    }
+
+                    const data = await response.json();
+                    console.log('Success response:', data);
+
+                    if (data.success) {
+                        showToast('success', 'Pull request merged successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('error', data.error || 'Failed to merge pull request');
+                        this.prActionProcessing = false;
+                    }
+                } catch (error) {
+                    console.error('Exception merging PR:', error);
+                    showToast('error', 'Network error: Failed to merge pull request. Please try again.');
+                    this.prActionProcessing = false;
+                }
+            },
+
+            async closePullRequest() {
+                if (this.prActionProcessing) {
+                    console.log('PR action already in progress');
+                    return;
+                }
+
+                if (!confirm('Are you sure you want to close this pull request?')) {
+                    return;
+                }
+
+                this.prActionProcessing = true;
+                console.log('Closing pull request...');
+
+                try {
+                    const response = await fetch('{{ route('github.pr.close', $log) }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Error response:', errorData);
+                        showToast('error', errorData.error || `Server error: ${response.status}`);
+                        this.prActionProcessing = false;
+                        return;
+                    }
+
+                    const data = await response.json();
+                    console.log('Success response:', data);
+
+                    if (data.success) {
+                        showToast('success', 'Pull request closed successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('error', data.error || 'Failed to close pull request');
+                        this.prActionProcessing = false;
+                    }
+                } catch (error) {
+                    console.error('Exception closing PR:', error);
+                    showToast('error', 'Network error: Failed to close pull request. Please try again.');
+                    this.prActionProcessing = false;
                 }
             }
         }
