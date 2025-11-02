@@ -791,7 +791,17 @@
             },
 
             async addLabel() {
-                if (!this.selectedLabel || this.labelManaging) return;
+                console.log('addLabel called. selectedLabel:', this.selectedLabel, 'labelManaging:', this.labelManaging);
+                
+                if (!this.selectedLabel) {
+                    showToast('error', 'Please select a label first');
+                    return;
+                }
+                
+                if (this.labelManaging) {
+                    console.log('Label operation already in progress');
+                    return;
+                }
                 
                 this.labelManaging = true;
                 console.log('Adding label:', this.selectedLabel);
@@ -810,25 +820,38 @@
                         })
                     });
                     
+                    console.log('Response status:', response.status);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Error response:', errorData);
+                        showToast('error', errorData.error || `Server error: ${response.status}`);
+                        this.labelManaging = false;
+                        return;
+                    }
+                    
                     const data = await response.json();
-                    console.log('Response:', data);
+                    console.log('Success response:', data);
                     
                     if (data.success) {
                         showToast('success', 'Label added successfully! Reloading...');
                         setTimeout(() => window.location.reload(), 1500);
                     } else {
                         showToast('error', data.error || 'Failed to add label');
+                        this.labelManaging = false;
                     }
                 } catch (error) {
                     console.error('Exception adding label:', error);
-                    showToast('error', 'Failed to add label. Please try again.');
-                } finally {
+                    showToast('error', 'Network error: Failed to add label. Please try again.');
                     this.labelManaging = false;
                 }
             },
 
             async removeLabel(labelName) {
-                if (this.labelManaging) return;
+                if (this.labelManaging) {
+                    console.log('Label operation already in progress');
+                    return;
+                }
                 
                 this.labelManaging = true;
                 console.log('Removing label:', labelName);
@@ -846,19 +869,29 @@
                         }
                     });
                     
+                    console.log('Response status:', response.status);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Error response:', errorData);
+                        showToast('error', errorData.error || `Server error: ${response.status}`);
+                        this.labelManaging = false;
+                        return;
+                    }
+                    
                     const data = await response.json();
-                    console.log('Response:', data);
+                    console.log('Success response:', data);
                     
                     if (data.success) {
                         showToast('success', 'Label removed successfully! Reloading...');
                         setTimeout(() => window.location.reload(), 1500);
                     } else {
                         showToast('error', data.error || 'Failed to remove label');
+                        this.labelManaging = false;
                     }
                 } catch (error) {
                     console.error('Exception removing label:', error);
-                    showToast('error', 'Failed to remove label. Please try again.');
-                } finally {
+                    showToast('error', 'Network error: Failed to remove label. Please try again.');
                     this.labelManaging = false;
                 }
             },
