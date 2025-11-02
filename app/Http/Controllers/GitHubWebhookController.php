@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewNotification as NewNotificationEvent;
 use App\Models\Employee;
 use App\Models\GitHubLog;
 use App\Models\Notification;
@@ -550,7 +551,7 @@ class GitHubWebhookController extends Controller
         $message = $this->getNotificationMessage($log);
 
         foreach ($users as $user) {
-            Notification::create([
+            $notification = Notification::create([
                 'user_id' => $user->id,
                 'type' => 'github_log',
                 'title' => $title,
@@ -564,6 +565,9 @@ class GitHubWebhookController extends Controller
                     'url' => $log->commit_url ?? $log->pr_url ?? $log->repository_url,
                 ],
             ]);
+
+            // Broadcast the notification in real-time
+            broadcast(new NewNotificationEvent($notification))->toOthers();
         }
     }
 
