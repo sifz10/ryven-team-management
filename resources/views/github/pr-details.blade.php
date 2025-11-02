@@ -607,12 +607,34 @@
         const toastEl = document.querySelector('[x-data*="toastNotification"]');
         console.log('Toast element found:', !!toastEl);
         
-        if (toastEl && toastEl.__x) {
-            console.log('Calling toast showToast method');
+        if (toastEl) {
+            console.log('Toast element __x:', !!toastEl.__x);
+            if (toastEl.__x) {
+                console.log('Toast $data:', toastEl.__x.$data);
+                console.log('showToast method exists:', typeof toastEl.__x.$data.showToast);
+            }
+        }
+        
+        // Try multiple access methods
+        if (toastEl && toastEl.__x && toastEl.__x.$data && typeof toastEl.__x.$data.showToast === 'function') {
+            console.log('Calling toast showToast method via __x.$data');
             toastEl.__x.$data.showToast(type, message, duration);
+        } else if (toastEl && toastEl._x_dataStack && toastEl._x_dataStack[0] && typeof toastEl._x_dataStack[0].showToast === 'function') {
+            console.log('Calling toast showToast method via _x_dataStack');
+            toastEl._x_dataStack[0].showToast(type, message, duration);
+        } else if (window.Alpine && window.Alpine.$data) {
+            console.log('Trying Alpine.$data');
+            const alpineData = window.Alpine.$data(toastEl);
+            if (alpineData && typeof alpineData.showToast === 'function') {
+                console.log('Calling toast via Alpine.$data');
+                alpineData.showToast(type, message, duration);
+            } else {
+                console.error('Toast component not accessible via Alpine.$data');
+                alert(`${type.toUpperCase()}: ${message}`);
+            }
         } else {
             console.error('Toast component not found or not initialized');
-            // Fallback to alert
+            console.log('Fallback to alert');
             alert(`${type.toUpperCase()}: ${message}`);
         }
     };
