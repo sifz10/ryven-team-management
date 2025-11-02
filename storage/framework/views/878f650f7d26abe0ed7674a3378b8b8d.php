@@ -59,6 +59,44 @@
         </div>
      <?php $__env->endSlot(); ?>
 
+    <!-- Toast Notification Container -->
+    <div x-data="toastNotification()" x-show="show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" 
+         class="fixed top-4 right-4 z-50 max-w-sm w-full pointer-events-auto" style="display: none;">
+        <div class="rounded-2xl shadow-2xl overflow-hidden" :class="{
+            'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800': type === 'success',
+            'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800': type === 'error',
+            'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800': type === 'info'
+        }">
+            <div class="p-4">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <svg x-show="type === 'success'" class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <svg x-show="type === 'error'" class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <svg x-show="type === 'info'" class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium" :class="{
+                            'text-green-900 dark:text-green-100': type === 'success',
+                            'text-red-900 dark:text-red-100': type === 'error',
+                            'text-blue-900 dark:text-blue-100': type === 'info'
+                        }" x-text="message"></p>
+                    </div>
+                    <button @click="hide()" class="flex-shrink-0 ml-4 inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="py-12" x-data="prDetailsPage()" x-init="init()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
@@ -330,6 +368,55 @@
     </div>
 
     <script>
+    // Toast Notification Component
+    function toastNotification() {
+        return {
+            show: false,
+            type: 'info',
+            message: '',
+            timeout: null,
+            
+            showToast(type, message, duration = 5000) {
+                this.type = type;
+                this.message = message;
+                this.show = true;
+                
+                if (this.timeout) {
+                    clearTimeout(this.timeout);
+                }
+                
+                this.timeout = setTimeout(() => {
+                    this.hide();
+                }, duration);
+            },
+            
+            hide() {
+                this.show = false;
+                if (this.timeout) {
+                    clearTimeout(this.timeout);
+                }
+            }
+        }
+    }
+
+    // Global toast function
+    window.showToast = function(type, message, duration = 5000) {
+        // Dispatch event to Alpine component
+        window.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { type, message, duration }
+        }));
+    };
+
+    // Listen for toast events
+    document.addEventListener('alpine:init', () => {
+        window.addEventListener('show-toast', (event) => {
+            const toastEl = document.querySelector('[x-data*="toastNotification"]');
+            if (toastEl && toastEl.__x) {
+                toastEl.__x.$data.showToast(event.detail.type, event.detail.message, event.detail.duration);
+            }
+        });
+    });
+
     function prDetailsPage() {
         return {
             activeTab: 'files',
@@ -366,14 +453,14 @@
                     
                     if (data.success) {
                         this.commentBody = '';
-                        alert('Comment posted successfully!');
-                        window.location.reload();
+                        showToast('success', 'Comment posted successfully!');
+                        setTimeout(() => window.location.reload(), 1500);
                     } else {
-                        alert('Error: ' + (data.error || 'Failed to post comment'));
+                        showToast('error', data.error || 'Failed to post comment');
                     }
                 } catch (error) {
                     console.error('Error posting comment:', error);
-                    alert('Failed to post comment. Please try again.');
+                    showToast('error', 'Failed to post comment. Please try again.');
                 } finally {
                     this.submitting = false;
                 }
@@ -404,14 +491,14 @@
                     if (data.success) {
                         this.commentBody = '';
                         const eventText = event === 'APPROVE' ? 'approved' : 'requested changes for';
-                        alert(`Successfully ${eventText} the pull request!`);
-                        window.location.reload();
+                        showToast('success', `Successfully ${eventText} the pull request!`);
+                        setTimeout(() => window.location.reload(), 1500);
                     } else {
-                        alert('Error: ' + (data.error || 'Failed to post review'));
+                        showToast('error', data.error || 'Failed to post review');
                     }
                 } catch (error) {
                     console.error('Error posting review:', error);
-                    alert('Failed to post review. Please try again.');
+                    showToast('error', 'Failed to post review. Please try again.');
                 } finally {
                     this.submitting = false;
                 }
@@ -440,14 +527,14 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert('✅ Reviewer requested successfully! The page will reload to show the update.');
-                        window.location.reload();
+                        showToast('success', 'Reviewer requested successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
                     } else {
-                        alert('❌ Error: ' + (data.error || 'Failed to request reviewer'));
+                        showToast('error', data.error || 'Failed to request reviewer');
                     }
                 } catch (error) {
                     console.error('Error requesting reviewer:', error);
-                    alert('❌ Failed to request reviewer. Please try again.');
+                    showToast('error', 'Failed to request reviewer. Please try again.');
                 } finally {
                     this.assigning = false;
                 }
@@ -476,14 +563,14 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        alert('✅ Assignee added successfully! The page will reload to show the update.');
-                        window.location.reload();
+                        showToast('success', 'Assignee added successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
                     } else {
-                        alert('❌ Error: ' + (data.error || 'Failed to assign'));
+                        showToast('error', data.error || 'Failed to assign');
                     }
                 } catch (error) {
                     console.error('Error assigning:', error);
-                    alert('❌ Failed to assign. Please try again.');
+                    showToast('error', 'Failed to assign. Please try again.');
                 } finally {
                     this.assigning = false;
                 }
