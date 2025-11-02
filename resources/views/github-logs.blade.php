@@ -374,8 +374,8 @@
     </div>
 
     <script>
-    // Alpine.js data for PR Modal - Initialize BEFORE modal is included
-    document.addEventListener('alpine:init', () => {
+    // Alpine.js data for PR Modal
+    if (window.Alpine) {
         Alpine.data('prModalData', () => ({
             showPrModal: false,
             prLoading: false,
@@ -512,7 +512,7 @@
                 }
             }
         }));
-    });
+    }
 
     // Realtime auto-refresh
     let refreshInterval;
