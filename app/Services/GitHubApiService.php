@@ -1,0 +1,179 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+class GitHubApiService
+{
+    protected string $token;
+    protected string $baseUrl = 'https://api.github.com';
+
+    public function __construct()
+    {
+        $this->token = config('services.github.token');
+    }
+
+    /**
+     * Get Pull Request details
+     */
+    public function getPullRequest(string $owner, string $repo, int $prNumber): ?array
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->accept('application/vnd.github.v3+json')
+                ->get("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}");
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('GitHub API: Failed to fetch PR', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception fetching PR', [
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Get Pull Request files (diff)
+     */
+    public function getPullRequestFiles(string $owner, string $repo, int $prNumber): ?array
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->accept('application/vnd.github.v3+json')
+                ->get("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}/files");
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('GitHub API: Failed to fetch PR files', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception fetching PR files', [
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Get Pull Request comments
+     */
+    public function getPullRequestComments(string $owner, string $repo, int $prNumber): ?array
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->accept('application/vnd.github.v3+json')
+                ->get("{$this->baseUrl}/repos/{$owner}/{$repo}/issues/{$prNumber}/comments");
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception fetching PR comments', [
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Create a comment on a Pull Request
+     */
+    public function createPullRequestComment(string $owner, string $repo, int $prNumber, string $body): ?array
+    {
+        try {
+            $response = Http::withToken($this->token)
+                ->accept('application/vnd.github.v3+json')
+                ->post("{$this->baseUrl}/repos/{$owner}/{$repo}/issues/{$prNumber}/comments", [
+                    'body' => $body,
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('GitHub API: Failed to create comment', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception creating comment', [
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Create a review on a Pull Request
+     */
+    public function createPullRequestReview(
+        string $owner,
+        string $repo,
+        int $prNumber,
+        string $body,
+        string $event = 'COMMENT' // APPROVE, REQUEST_CHANGES, COMMENT
+    ): ?array {
+        try {
+            $response = Http::withToken($this->token)
+                ->accept('application/vnd.github.v3+json')
+                ->post("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}/reviews", [
+                    'body' => $body,
+                    'event' => $event,
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('GitHub API: Failed to create review', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception creating review', [
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Parse repository owner and name from URL
+     */
+    public static function parseRepoUrl(string $url): ?array
+    {
+        // Example: https://github.com/owner/repo
+        if (preg_match('/github\.com\/([^\/]+)\/([^\/]+)/', $url, $matches)) {
+            return [
+                'owner' => $matches[1],
+                'repo' => $matches[2],
+            ];
+        }
+
+        return null;
+    }
+}
+

@@ -53,7 +53,7 @@
         ->pluck('event_type');
 @endphp
 
-<div class="space-y-6">
+<div class="space-y-6" x-data="prModalData" @open-pr-modal.window="openPrModal($event.detail)">
     <!-- Header with Statistics -->
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
         <div class="flex items-center justify-between mb-6">
@@ -628,4 +628,147 @@ if (document.readyState === 'loading') {
     }
 }
 </style>
+
+<!-- Include PR Details Modal -->
+@include('employees.partials.github-pr-modal')
+
+<script>
+// Alpine.js data for PR Modal
+document.addEventListener('alpine:init', () => {
+    Alpine.data('prModalData', () => ({
+        showPrModal: false,
+        prLoading: false,
+        prData: null,
+        prComment: '',
+        submittingComment: false,
+        currentLogId: null,
+        
+        openPrModal(logId) {
+            this.currentLogId = logId;
+            this.showPrModal = true;
+            this.prLoading = true;
+            this.prData = null;
+            this.loadPrDetails(logId);
+        },
+        
+        async loadPrDetails(logId) {
+            try {
+                const response = await fetch(`/github/pr/${logId}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch PR details');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.prData = data;
+                    this.prTab = 'description';
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to load PR details'));
+                    this.showPrModal = false;
+                }
+            } catch (error) {
+                console.error('Error loading PR details:', error);
+                alert('Failed to load PR details. Please try again.');
+                this.showPrModal = false;
+            } finally {
+                this.prLoading = false;
+            }
+        },
+        
+        async submitPrComment() {
+            if (!this.prComment.trim() || this.submittingComment) return;
+            
+            this.submittingComment = true;
+            
+            try {
+                const response = await fetch(`/github/pr/${this.currentLogId}/comment`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        body: this.prComment
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Add the new comment to the list
+                    if (!this.prData.comments) {
+                        this.prData.comments = [];
+                    }
+                    this.prData.comments.push(data.comment);
+                    
+                    // Clear the comment field
+                    this.prComment = '';
+                    
+                    // Show success message
+                    alert('Comment posted successfully!');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to post comment'));
+                }
+            } catch (error) {
+                console.error('Error posting comment:', error);
+                alert('Failed to post comment. Please try again.');
+            } finally {
+                this.submittingComment = false;
+            }
+        },
+        
+        async submitPrReview(event) {
+            if (!this.prComment.trim() || this.submittingComment) return;
+            
+            this.submittingComment = true;
+            
+            try {
+                const response = await fetch(`/github/pr/${this.currentLogId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        body: this.prComment,
+                        event: event
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Clear the comment field
+                    this.prComment = '';
+                    
+                    // Show success message
+                    const eventText = event === 'APPROVE' ? 'approved' : 'requested changes for';
+                    alert(`Successfully ${eventText} the pull request!`);
+                    
+                    // Reload PR details to show updated status
+                    this.loadPrDetails(this.currentLogId);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to post review'));
+                }
+            } catch (error) {
+                console.error('Error posting review:', error);
+                alert('Failed to post review. Please try again.');
+            } finally {
+                this.submittingComment = false;
+            }
+        }
+    }));
+});
+</script>
 

@@ -79,8 +79,8 @@ function notificationsComponent() {
 
         init() {
             this.fetchNotifications();
-            this.startPolling();
             this.requestBrowserNotificationPermission();
+            this.listenForNotifications();
         },
 
         toggleDropdown() {
@@ -185,21 +185,26 @@ function notificationsComponent() {
             }
         },
 
-        startPolling() {
-            // Poll every 10 seconds for new notifications
-            this.polling = setInterval(() => {
-                this.fetchUnreadCount();
-            }, 10000);
-
-            // Stop polling when tab becomes hidden
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    if (this.polling) clearInterval(this.polling);
-                } else {
-                    this.startPolling();
-                    this.fetchUnreadCount();
-                }
-            });
+        listenForNotifications() {
+            // Subscribe to the user's private channel
+            const userId = <?php echo e(auth()->id()); ?>;
+            
+            window.Echo.private(`user.${userId}`)
+                .listen('.notification.new', (event) => {
+                    console.log('New notification received:', event);
+                    
+                    // Add new notification to the list
+                    this.notifications.unshift(event);
+                    this.unreadCount++;
+                    
+                    // Show browser notification
+                    this.showBrowserNotification(event.title, event.message);
+                    
+                    // Update UI if dropdown is open
+                    if (this.open) {
+                        this.fetchNotifications();
+                    }
+                });
         },
 
         requestBrowserNotificationPermission() {

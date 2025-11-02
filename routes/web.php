@@ -10,6 +10,7 @@ use App\Http\Controllers\EmploymentContractController;
 use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\GitHubWebhookController;
+use App\Http\Controllers\GitHubPullRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -30,6 +31,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // GitHub Logs Page
     Route::get('/github-logs', [GitHubWebhookController::class, 'logs'])->name('github.logs');
+    
+    // GitHub Pull Request routes
+    Route::get('/github/pr/{log}', [GitHubPullRequestController::class, 'show'])->name('github.pr.show');
+    Route::post('/github/pr/{log}/comment', [GitHubPullRequestController::class, 'comment'])->name('github.pr.comment');
+    Route::post('/github/pr/{log}/review', [GitHubPullRequestController::class, 'review'])->name('github.pr.review');
 });
 
 // SOP page (authenticated)

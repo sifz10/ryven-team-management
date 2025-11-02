@@ -103,8 +103,8 @@
                                         {{ Str::limit($log->pr_description, 200) }}
                                     </p>
                                 @endif
-                                @if($log->pr_state)
-                                    <div class="mt-2 flex items-center gap-2">
+                                <div class="mt-3 flex items-center gap-3">
+                                    @if($log->pr_state)
                                         @if($log->pr_merged)
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
                                                 🟣 Merged
@@ -118,8 +118,15 @@
                                                 🔴 Closed
                                             </span>
                                         @endif
-                                    </div>
-                                @endif
+                                    @endif
+                                    <button @click="$dispatch('open-pr-modal', {{ $log->id }})" class="inline-flex items-center gap-2 px-4 py-1.5 bg-black text-white rounded-full shadow hover:bg-gray-800 transition-all font-medium text-xs">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        View Details & Comment
+                                    </button>
+                                </div>
                             </div>
                         @elseif(in_array($log->event_type, ['pull_request_review', 'pull_request_review_comment']))
                             <div class="mt-2">
