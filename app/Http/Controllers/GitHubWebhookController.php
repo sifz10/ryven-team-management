@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\GitHubActivityReceived;
 use App\Events\NewNotification as NewNotificationEvent;
 use App\Models\Employee;
 use App\Models\GitHubLog;
@@ -298,6 +299,9 @@ class GitHubWebhookController extends Controller
                     'event_at' => now(),
                 ]);
 
+                // Broadcast real-time event
+                broadcast(new GitHubActivityReceived($log));
+
                 // Create notification
                 $this->createNotification($log);
             }
@@ -340,6 +344,9 @@ class GitHubWebhookController extends Controller
                 'event_at' => now(),
             ]);
 
+            // Broadcast real-time event
+            broadcast(new GitHubActivityReceived($log));
+
             // Create notification
             $this->createNotification($log);
         }
@@ -361,7 +368,7 @@ class GitHubWebhookController extends Controller
         $employee = $this->findEmployeeByEmailOrUsername('', $reviewerUsername);
 
         if ($employee) {
-            GitHubLog::create([
+            $log = GitHubLog::create([
                 'employee_id' => $employee->id,
                 'event_type' => 'pull_request_review',
                 'action' => $action,
@@ -378,6 +385,9 @@ class GitHubWebhookController extends Controller
                 'payload' => $payload,
                 'event_at' => now(),
             ]);
+
+            // Broadcast real-time event
+            broadcast(new GitHubActivityReceived($log));
         }
     }
 
@@ -397,7 +407,7 @@ class GitHubWebhookController extends Controller
         $employee = $this->findEmployeeByEmailOrUsername('', $commenterUsername);
 
         if ($employee) {
-            GitHubLog::create([
+            $log = GitHubLog::create([
                 'employee_id' => $employee->id,
                 'event_type' => 'pull_request_review_comment',
                 'action' => $action,
@@ -412,6 +422,9 @@ class GitHubWebhookController extends Controller
                 'payload' => $payload,
                 'event_at' => now(),
             ]);
+
+            // Broadcast real-time event
+            broadcast(new GitHubActivityReceived($log));
         }
     }
 
@@ -430,7 +443,7 @@ class GitHubWebhookController extends Controller
         $employee = $this->findEmployeeByEmailOrUsername('', $authorUsername);
 
         if ($employee) {
-            GitHubLog::create([
+            $log = GitHubLog::create([
                 'employee_id' => $employee->id,
                 'event_type' => 'issues',
                 'action' => $action,
@@ -446,6 +459,9 @@ class GitHubWebhookController extends Controller
                 'payload' => $payload,
                 'event_at' => now(),
             ]);
+
+            // Broadcast real-time event
+            broadcast(new GitHubActivityReceived($log));
         }
     }
 
@@ -465,7 +481,7 @@ class GitHubWebhookController extends Controller
         $employee = $this->findEmployeeByEmailOrUsername('', $commenterUsername);
 
         if ($employee) {
-            GitHubLog::create([
+            $log = GitHubLog::create([
                 'employee_id' => $employee->id,
                 'event_type' => 'issue_comment',
                 'action' => $action,
@@ -480,6 +496,9 @@ class GitHubWebhookController extends Controller
                 'payload' => $payload,
                 'event_at' => now(),
             ]);
+
+            // Broadcast real-time event
+            broadcast(new GitHubActivityReceived($log));
         }
     }
 
@@ -498,7 +517,7 @@ class GitHubWebhookController extends Controller
         $employee = $this->findEmployeeByEmailOrUsername('', $senderUsername);
 
         if ($employee) {
-            GitHubLog::create([
+            $log = GitHubLog::create([
                 'employee_id' => $employee->id,
                 'event_type' => $eventType,
                 'action' => $refType,
@@ -512,6 +531,9 @@ class GitHubWebhookController extends Controller
                 'payload' => $payload,
                 'event_at' => now(),
             ]);
+
+            // Broadcast real-time event
+            broadcast(new GitHubActivityReceived($log));
         }
     }
 

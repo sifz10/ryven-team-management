@@ -28,7 +28,7 @@
                         </span>
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                        View and filter all GitHub webhook activities • Auto-refreshes every 30s
+                        View and filter all GitHub webhook activities • Real-time updates via Reverb
                     </p>
                 </div>
             </div>
@@ -238,7 +238,7 @@
                 </div>
 
                 <?php if($logs->count() > 0): ?>
-                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700" data-logs-container>
                         <?php $__currentLoopData = $logs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <?php
                                 $eventColors = [
@@ -531,51 +531,142 @@
         }));
     }
 
-    // Realtime auto-refresh
-    let refreshInterval;
-    const REFRESH_INTERVAL = 30000; // 30 seconds
-
-    function startAutoRefresh() {
-        refreshInterval = setInterval(() => {
-            // Only refresh if no filters are active (to avoid messing with user's filtered view)
-            const urlParams = new URLSearchParams(window.location.search);
-            if (!urlParams.has('start_date') && !urlParams.has('end_date') && 
-                !urlParams.has('event_type') && !urlParams.has('repository') && 
-                !urlParams.has('employee_id')) {
-                
-                console.log('Auto-refreshing GitHub logs...');
-                location.reload();
-            }
-        }, REFRESH_INTERVAL);
+    // Real-time updates using Laravel Echo & Reverb
+    if (window.Echo) {
+        console.log('GitHub Logs: Listening for real-time updates via Reverb...');
         
-        console.log('GitHub Logs: Auto-refresh enabled (every 30 seconds)');
-    }
-
-    function stopAutoRefresh() {
-        if (refreshInterval) {
-            clearInterval(refreshInterval);
-            console.log('GitHub Logs: Auto-refresh disabled');
-        }
-    }
-
-    // Start auto-refresh when page loads
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startAutoRefresh);
+        window.Echo.channel('github-activities')
+            .listen('.activity.received', (event) => {
+                console.log('New GitHub activity received:', event);
+                
+                // Only auto-update if no filters are active
+                const urlParams = new URLSearchParams(window.location.search);
+                if (!urlParams.has('start_date') && !urlParams.has('end_date') && 
+                    !urlParams.has('event_type') && !urlParams.has('repository') && 
+                    !urlParams.has('employee_id')) {
+                    
+                    // Add the new activity to the top of the list
+                    prependNewActivity(event.log);
+                }
+            });
     } else {
-        startAutoRefresh();
+        console.error('Laravel Echo not loaded. Real-time updates unavailable.');
     }
 
-    // Stop auto-refresh when leaving page
-    window.addEventListener('beforeunload', stopAutoRefresh);
+    function prependNewActivity(log) {
+        const container = document.querySelector('[data-logs-container]');
+        if (!container) return;
+        
+        // Create the new activity card HTML
+        const activityCard = createActivityCard(log);
+        
+        // Insert at the top with animation
+        container.insertAdjacentHTML('afterbegin', activityCard);
+        
+        // Add fade-in animation
+        const newCard = container.firstElementChild;
+        newCard.style.opacity = '0';
+        newCard.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            newCard.style.transition = 'all 0.5s ease-out';
+            newCard.style.opacity = '1';
+            newCard.style.transform = 'translateY(0)';
+        }, 10);
+    }
 
-    // Stop/start auto-refresh based on tab visibility
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            stopAutoRefresh();
-        } else {
-            startAutoRefresh();
-        }
-    });
+    function createActivityCard(log) {
+        const eventColors = {
+            'push': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+            'pull_request': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+            'pull_request_review': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+            'issues': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+            'create': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+            'delete': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+        };
+        const colorClass = eventColors[log.event_type] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600';
+        
+        const eventDate = new Date(log.event_at);
+        const formattedDate = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        
+        return `
+            <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                ${log.author_avatar_url ? 
+                                    `<img src="${log.author_avatar_url}" alt="${log.author_username}" class="w-7 h-7 rounded-full">` :
+                                    `<div class="w-7 h-7 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                                        <span class="text-[10px] font-medium text-gray-600 dark:text-gray-300">${log.author_username.substring(0, 2).toUpperCase()}</span>
+                                    </div>`
+                                }
+                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    ${log.employee.first_name} ${log.employee.last_name}
+                                </span>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${colorClass} border">
+                                ${log.event_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                ${log.action ? `<span class="ml-1 opacity-75">• ${log.action}</span>` : ''}
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">${formattedDate}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <a href="${log.repository_url}" target="_blank" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 truncate">
+                                ${log.repository_name}
+                            </a>
+                            ${log.branch ? `
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-mono">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    ${log.branch}
+                                </span>
+                            ` : ''}
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            ${log.event_type === 'push' ? 
+                                `<span class="font-medium text-gray-900 dark:text-gray-100">${log.commits_count} commit${log.commits_count !== 1 ? 's' : ''}</span>
+                                ${log.commit_message ? `<span class="text-xs">• ${log.commit_message.substring(0, 80)}</span>` : ''}` :
+                            log.event_type === 'pull_request' ?
+                                `<span class="font-medium text-gray-900 dark:text-gray-100">#${log.pr_number}</span> ${log.pr_title}` :
+                                log.commit_message ? log.commit_message.substring(0, 80) : ''
+                            }
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        ${log.event_type === 'pull_request' ?
+                            `<button onclick="window.Alpine.store('pr').open(${log.id})" class="inline-flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all text-xs font-medium shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                Review
+                            </button>` :
+                        (log.commit_url || log.pr_url) ?
+                            `<a href="${log.commit_url || log.pr_url}" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                View
+                            </a>` : ''
+                        }
+                        ${log.employee.id ?
+                            `<a href="/employees/${log.employee.id}?tab=github" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-xs font-medium">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Profile
+                            </a>` : ''
+                        }
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     </script>
 
     <!-- Include PR Details Modal -->
