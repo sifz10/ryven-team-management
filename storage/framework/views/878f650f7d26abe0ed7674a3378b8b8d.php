@@ -541,11 +541,7 @@
             bindTo: bindTo,
             
             init() {
-                // Watch for changes in the parent component's variable
-                this.$watch('selectedValue', (value) => {
-                    // Update the parent component's bound variable
-                    this.$root[this.bindTo] = value;
-                });
+                // Nothing needed here, we'll update parent in selectOption
             },
             
             toggleDropdown() {
@@ -570,6 +566,17 @@
                 this.open = false;
                 this.search = '';
                 this.filteredOptions = this.options;
+                
+                // Find parent component and update its bound variable
+                let parent = this.$el.parentElement;
+                while (parent) {
+                    if (parent.__x && parent.__x.$data && this.bindTo in parent.__x.$data) {
+                        parent.__x.$data[this.bindTo] = option.value;
+                        console.log('Updated', this.bindTo, 'to', option.value);
+                        break;
+                    }
+                    parent = parent.parentElement;
+                }
             }
         }
     }
