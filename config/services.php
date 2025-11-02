@@ -39,4 +39,8 @@ return [
         'token' => env('GITHUB_API_TOKEN'),
     ],
 
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
 ];

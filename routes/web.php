@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/github/pr/{log}/labels/{label}', [GitHubPullRequestController::class, 'removeLabel'])->name('github.pr.removeLabel');
     Route::post('/github/pr/{log}/merge', [GitHubPullRequestController::class, 'merge'])->name('github.pr.merge');
     Route::post('/github/pr/{log}/close', [GitHubPullRequestController::class, 'close'])->name('github.pr.close');
+    Route::post('/github/pr/{log}/ai-review', [GitHubPullRequestController::class, 'generateAIReview'])->name('github.pr.aiReview');
 });
 
 // SOP page (authenticated)

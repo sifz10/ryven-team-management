@@ -32,29 +32,29 @@
                     </span>
                     
                     <!-- Merge Pull Request Button -->
-                    <button @click="mergePullRequest()" :disabled="prActionProcessing" 
+                    <button onclick="window.mergePR(this)" 
                             class="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg x-show="!prActionProcessing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 merge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <svg x-show="prActionProcessing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <svg class="hidden w-4 h-4 animate-spin merge-spinner" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span x-text="prActionProcessing ? 'Merging...' : 'Merge Pull Request'"></span>
+                        <span class="merge-text">Merge Pull Request</span>
                     </button>
                     
                     <!-- Close Pull Request Button -->
-                    <button @click="closePullRequest()" :disabled="prActionProcessing" 
+                    <button onclick="window.closePR(this)" 
                             class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg x-show="!prActionProcessing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <svg x-show="prActionProcessing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <svg class="hidden w-4 h-4 animate-spin close-spinner" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span x-text="prActionProcessing ? 'Closing...' : 'Close Pull Request'"></span>
+                        <span class="close-text">Close Pull Request</span>
                     </button>
                 @else
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
@@ -480,7 +480,32 @@
                             </div>
                             @if(isset($file['patch']))
                                 <div class="p-4 overflow-x-auto">
-                                    <pre class="text-xs font-mono text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 p-3 rounded-md">{{ $file['patch'] }}</pre>
+                                    <pre class="text-xs font-mono bg-white dark:bg-gray-950 p-3 rounded-md border border-gray-200 dark:border-gray-700"><?php
+                                        // Split patch into lines and add color coding
+                                        $lines = explode("\n", $file['patch']);
+                                        foreach ($lines as $line) {
+                                            if (empty($line)) {
+                                                echo "\n";
+                                                continue;
+                                            }
+                                            
+                                            $firstChar = substr($line, 0, 1);
+                                            
+                                            if ($firstChar === '+') {
+                                                // Addition line - green background
+                                                echo '<span class="block bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 -mx-2">' . htmlspecialchars($line) . '</span>' . "\n";
+                                            } elseif ($firstChar === '-') {
+                                                // Deletion line - red background
+                                                echo '<span class="block bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-2 -mx-2">' . htmlspecialchars($line) . '</span>' . "\n";
+                                            } elseif ($firstChar === '@') {
+                                                // Hunk header - blue/cyan
+                                                echo '<span class="block bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2 -mx-2 font-semibold">' . htmlspecialchars($line) . '</span>' . "\n";
+                                            } else {
+                                                // Context line - normal color
+                                                echo '<span class="block text-gray-700 dark:text-gray-300 px-2 -mx-2">' . htmlspecialchars($line) . '</span>' . "\n";
+                                            }
+                                        }
+                                    ?></pre>
                                 </div>
                             @else
                                 <div class="p-4 text-sm text-gray-500 dark:text-gray-400">No diff available</div>
@@ -491,6 +516,77 @@
 
                 <!-- Comments Tab -->
                 <div x-show="activeTab === 'comments'" class="p-6 space-y-6">
+                    <!-- AI Code Review Button -->
+                    <div class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
+                                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900 dark:text-white">AI Code Review</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Get AI-powered insights on code quality, best practices, and potential improvements</p>
+                            </div>
+                        </div>
+                        <button @click="generateAIReview()" :disabled="aiReviewGenerating" 
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+                            <svg x-show="!aiReviewGenerating" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            <svg x-show="aiReviewGenerating" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="aiReviewGenerating ? 'Analyzing...' : 'Generate AI Review'"></span>
+                        </button>
+                    </div>
+
+                    <!-- AI Generated Review (if exists) -->
+                    <div x-show="aiReviewContent" x-transition class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/10 dark:to-blue-900/10 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-6 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">AI-Generated Code Review</h4>
+                            </div>
+                            <button @click="aiReviewContent = ''" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="prose prose-sm max-w-none dark:prose-invert">
+                            <div x-html="aiReviewContent" class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap"></div>
+                        </div>
+                        
+                        <div class="flex gap-2 pt-4 border-t border-purple-200 dark:border-purple-800">
+                            <button @click="postAIReview()" :disabled="submitting"
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                                Post to GitHub
+                            </button>
+                            <button @click="copyAIReview()"
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-medium text-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                Copy
+                            </button>
+                            <button @click="aiReviewContent = ''"
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-medium text-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                Discard
+                            </button>
+                        </div>
+                    </div>
+                    
                     <!-- Existing Comments -->
                     @foreach($comments as $comment)
                         <div class="flex items-start gap-3 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -544,6 +640,128 @@
     </div>
 
     <script>
+    // Global PR Action Functions (accessible from header buttons)
+    window.mergePR = async function(button) {
+        if (button.disabled) return;
+        
+        if (!confirm('Are you sure you want to merge this pull request?')) {
+            return;
+        }
+        
+        button.disabled = true;
+        const icon = button.querySelector('.merge-icon');
+        const spinner = button.querySelector('.merge-spinner');
+        const text = button.querySelector('.merge-text');
+        
+        icon.classList.add('hidden');
+        spinner.classList.remove('hidden');
+        text.textContent = 'Merging...';
+        
+        try {
+            const response = await fetch('{{ route('github.pr.merge', $log) }}', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    merge_method: 'merge'
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                showToast('error', errorData.error || `Server error: ${response.status}`);
+                button.disabled = false;
+                icon.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                text.textContent = 'Merge Pull Request';
+                return;
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('success', 'Pull request merged successfully! Reloading...');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast('error', data.error || 'Failed to merge pull request');
+                button.disabled = false;
+                icon.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                text.textContent = 'Merge Pull Request';
+            }
+        } catch (error) {
+            console.error('Exception merging PR:', error);
+            showToast('error', 'Network error: Failed to merge pull request. Please try again.');
+            button.disabled = false;
+            icon.classList.remove('hidden');
+            spinner.classList.add('hidden');
+            text.textContent = 'Merge Pull Request';
+        }
+    };
+    
+    window.closePR = async function(button) {
+        if (button.disabled) return;
+        
+        if (!confirm('Are you sure you want to close this pull request?')) {
+            return;
+        }
+        
+        button.disabled = true;
+        const icon = button.querySelector('.close-icon');
+        const spinner = button.querySelector('.close-spinner');
+        const text = button.querySelector('.close-text');
+        
+        icon.classList.add('hidden');
+        spinner.classList.remove('hidden');
+        text.textContent = 'Closing...';
+        
+        try {
+            const response = await fetch('{{ route('github.pr.close', $log) }}', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                showToast('error', errorData.error || `Server error: ${response.status}`);
+                button.disabled = false;
+                icon.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                text.textContent = 'Close Pull Request';
+                return;
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('success', 'Pull request closed successfully! Reloading...');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast('error', data.error || 'Failed to close pull request');
+                button.disabled = false;
+                icon.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                text.textContent = 'Close Pull Request';
+            }
+        } catch (error) {
+            console.error('Exception closing PR:', error);
+            showToast('error', 'Network error: Failed to close pull request. Please try again.');
+            button.disabled = false;
+            icon.classList.remove('hidden');
+            spinner.classList.add('hidden');
+            text.textContent = 'Close Pull Request';
+        }
+    };
+
     // Searchable Dropdown Component
     function searchableDropdown(options, bindTo) {
         return {
@@ -675,7 +893,8 @@
             assigning: false,
             selectedLabel: '',
             labelManaging: false,
-            prActionProcessing: false,
+            aiReviewGenerating: false,
+            aiReviewContent: '',
 
             init() {
                 console.log('PR Details page initialized');
@@ -1017,75 +1236,14 @@
                 }
             },
 
-            async mergePullRequest() {
-                if (this.prActionProcessing) {
-                    console.log('PR action already in progress');
-                    return;
-                }
+            async generateAIReview() {
+                if (this.aiReviewGenerating) return;
 
-                if (!confirm('Are you sure you want to merge this pull request?')) {
-                    return;
-                }
-
-                this.prActionProcessing = true;
-                console.log('Merging pull request...');
+                this.aiReviewGenerating = true;
+                console.log('Generating AI code review...');
 
                 try {
-                    const response = await fetch('{{ route('github.pr.merge', $log) }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            merge_method: 'merge'
-                        })
-                    });
-
-                    console.log('Response status:', response.status);
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        console.error('Error response:', errorData);
-                        showToast('error', errorData.error || `Server error: ${response.status}`);
-                        this.prActionProcessing = false;
-                        return;
-                    }
-
-                    const data = await response.json();
-                    console.log('Success response:', data);
-
-                    if (data.success) {
-                        showToast('success', 'Pull request merged successfully! Reloading...');
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showToast('error', data.error || 'Failed to merge pull request');
-                        this.prActionProcessing = false;
-                    }
-                } catch (error) {
-                    console.error('Exception merging PR:', error);
-                    showToast('error', 'Network error: Failed to merge pull request. Please try again.');
-                    this.prActionProcessing = false;
-                }
-            },
-
-            async closePullRequest() {
-                if (this.prActionProcessing) {
-                    console.log('PR action already in progress');
-                    return;
-                }
-
-                if (!confirm('Are you sure you want to close this pull request?')) {
-                    return;
-                }
-
-                this.prActionProcessing = true;
-                console.log('Closing pull request...');
-
-                try {
-                    const response = await fetch('{{ route('github.pr.close', $log) }}', {
+                    const response = await fetch('{{ route('github.pr.aiReview', $log) }}', {
                         method: 'POST',
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
@@ -1101,25 +1259,73 @@
                         const errorData = await response.json().catch(() => ({}));
                         console.error('Error response:', errorData);
                         showToast('error', errorData.error || `Server error: ${response.status}`);
-                        this.prActionProcessing = false;
+                        this.aiReviewGenerating = false;
                         return;
                     }
 
                     const data = await response.json();
-                    console.log('Success response:', data);
+                    console.log('AI Review generated successfully');
 
-                    if (data.success) {
-                        showToast('success', 'Pull request closed successfully! Reloading...');
-                        setTimeout(() => window.location.reload(), 1500);
+                    if (data.success && data.review) {
+                        this.aiReviewContent = data.review;
+                        showToast('success', 'AI code review generated successfully!');
                     } else {
-                        showToast('error', data.error || 'Failed to close pull request');
-                        this.prActionProcessing = false;
+                        showToast('error', data.error || 'Failed to generate AI review');
                     }
                 } catch (error) {
-                    console.error('Exception closing PR:', error);
-                    showToast('error', 'Network error: Failed to close pull request. Please try again.');
-                    this.prActionProcessing = false;
+                    console.error('Exception generating AI review:', error);
+                    showToast('error', 'Network error: Failed to generate AI review. Please try again.');
+                } finally {
+                    this.aiReviewGenerating = false;
                 }
+            },
+
+            async postAIReview() {
+                if (!this.aiReviewContent || this.submitting) return;
+
+                this.submitting = true;
+
+                try {
+                    const response = await fetch('{{ route('github.pr.comment', $log) }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            body: this.aiReviewContent
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showToast('success', 'AI review posted successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('error', data.error || 'Failed to post review');
+                        this.submitting = false;
+                    }
+                } catch (error) {
+                    console.error('Exception posting AI review:', error);
+                    showToast('error', 'Failed to post review. Please try again.');
+                    this.submitting = false;
+                }
+            },
+
+            copyAIReview() {
+                if (!this.aiReviewContent) return;
+
+                const textContent = this.aiReviewContent.replace(/<[^>]*>/g, '');
+                
+                navigator.clipboard.writeText(textContent).then(() => {
+                    showToast('success', 'AI review copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    showToast('error', 'Failed to copy to clipboard');
+                });
             }
         }
     }
