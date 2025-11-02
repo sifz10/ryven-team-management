@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/github/pr/{log}/details', [GitHubPullRequestController::class, 'details'])->name('github.pr.details');
     Route::post('/github/pr/{log}/comment', [GitHubPullRequestController::class, 'comment'])->name('github.pr.comment');
     Route::post('/github/pr/{log}/review', [GitHubPullRequestController::class, 'review'])->name('github.pr.review');
+    Route::post('/github/pr/{log}/assign', [GitHubPullRequestController::class, 'assign'])->name('github.pr.assign');
 });
 
 // SOP page (authenticated)

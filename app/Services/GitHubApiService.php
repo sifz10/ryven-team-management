@@ -172,6 +172,64 @@ class GitHubApiService
     }
 
     /**
+     * Assign reviewers to a Pull Request
+     */
+    public function assignReviewers(string $owner, string $repo, int $prNumber, array $reviewers): ?array
+    {
+        try {
+            $response = $this->http()
+                ->post("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}/requested_reviewers", [
+                    'reviewers' => $reviewers,
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('GitHub API: Failed to assign reviewers', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception assigning reviewers', [
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Assign users to a Pull Request
+     */
+    public function assignUsers(string $owner, string $repo, int $prNumber, array $assignees): ?array
+    {
+        try {
+            $response = $this->http()
+                ->post("{$this->baseUrl}/repos/{$owner}/{$repo}/issues/{$prNumber}/assignees", [
+                    'assignees' => $assignees,
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error('GitHub API: Failed to assign users', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception assigning users', [
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
      * Parse repository owner and name from URL
      */
     public static function parseRepoUrl(string $url): ?array

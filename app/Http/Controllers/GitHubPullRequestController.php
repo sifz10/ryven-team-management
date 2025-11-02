@@ -92,12 +92,19 @@ class GitHubPullRequestController extends Controller
         // Fetch PR comments
         $prComments = $this->github->getPullRequestComments($repo['owner'], $repo['repo'], (int) $log->pr_number);
 
+        // Get employees with GitHub usernames for assignment
+        $employees = \App\Models\Employee::whereNotNull('github_username')
+            ->where('github_username', '!=', '')
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name', 'github_username']);
+
         return view('github.pr-details', [
             'log' => $log,
             'pr' => $prDetails,
             'files' => $prFiles ?? [],
             'comments' => $prComments ?? [],
             'repo' => $repo,
+            'employees' => $employees,
         ]);
     }
 
@@ -206,6 +213,71 @@ class GitHubPullRequestController extends Controller
             'success' => true,
             'review' => $review,
             'message' => 'Review posted successfully',
+        ]);
+    }
+
+    /**
+     * Assign a Pull Request to a user
+     */
+    public function assign(Request $request, GitHubLog $log)
+    {
+        // Only allow for pull request events
+        if ($log->event_type !== 'pull_request') {
+            return response()->json([
+                'error' => 'This is not a pull request event',
+            ], 400);
+        }
+
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'github_username' => ['required', 'string'],
+            'type' => ['required', 'in:assignee,reviewer'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Invalid assignment data',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Parse repository URL
+        $repo = GitHubApiService::parseRepoUrl($log->repository_url);
+        if (!$repo) {
+            return response()->json([
+                'error' => 'Invalid repository URL',
+            ], 400);
+        }
+
+        $githubUsername = $request->input('github_username');
+        $type = $request->input('type');
+
+        // Assign to GitHub
+        if ($type === 'reviewer') {
+            $result = $this->github->assignReviewers(
+                $repo['owner'],
+                $repo['repo'],
+                (int) $log->pr_number,
+                [$githubUsername]
+            );
+        } else {
+            $result = $this->github->assignUsers(
+                $repo['owner'],
+                $repo['repo'],
+                (int) $log->pr_number,
+                [$githubUsername]
+            );
+        }
+
+        if (!$result) {
+            return response()->json([
+                'error' => 'Failed to assign on GitHub',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => ucfirst($type) . ' assigned successfully',
         ]);
     }
 }
