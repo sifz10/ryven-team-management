@@ -16,13 +16,28 @@ class GitHubApiService
     }
 
     /**
+     * Create HTTP client instance with proper configuration
+     */
+    protected function http()
+    {
+        $client = Http::withToken($this->token)
+            ->accept('application/vnd.github.v3+json');
+        
+        // Disable SSL verification in local environment (Windows development)
+        if (app()->environment('local')) {
+            $client = $client->withoutVerifying();
+        }
+        
+        return $client;
+    }
+
+    /**
      * Get Pull Request details
      */
     public function getPullRequest(string $owner, string $repo, int $prNumber): ?array
     {
         try {
-            $response = Http::withToken($this->token)
-                ->accept('application/vnd.github.v3+json')
+            $response = $this->http()
                 ->get("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}");
 
             if ($response->successful()) {
@@ -49,8 +64,7 @@ class GitHubApiService
     public function getPullRequestFiles(string $owner, string $repo, int $prNumber): ?array
     {
         try {
-            $response = Http::withToken($this->token)
-                ->accept('application/vnd.github.v3+json')
+            $response = $this->http()
                 ->get("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}/files");
 
             if ($response->successful()) {
@@ -77,8 +91,7 @@ class GitHubApiService
     public function getPullRequestComments(string $owner, string $repo, int $prNumber): ?array
     {
         try {
-            $response = Http::withToken($this->token)
-                ->accept('application/vnd.github.v3+json')
+            $response = $this->http()
                 ->get("{$this->baseUrl}/repos/{$owner}/{$repo}/issues/{$prNumber}/comments");
 
             if ($response->successful()) {
@@ -100,8 +113,7 @@ class GitHubApiService
     public function createPullRequestComment(string $owner, string $repo, int $prNumber, string $body): ?array
     {
         try {
-            $response = Http::withToken($this->token)
-                ->accept('application/vnd.github.v3+json')
+            $response = $this->http()
                 ->post("{$this->baseUrl}/repos/{$owner}/{$repo}/issues/{$prNumber}/comments", [
                     'body' => $body,
                 ]);
@@ -135,8 +147,7 @@ class GitHubApiService
         string $event = 'COMMENT' // APPROVE, REQUEST_CHANGES, COMMENT
     ): ?array {
         try {
-            $response = Http::withToken($this->token)
-                ->accept('application/vnd.github.v3+json')
+            $response = $this->http()
                 ->post("{$this->baseUrl}/repos/{$owner}/{$repo}/pulls/{$prNumber}/reviews", [
                     'body' => $body,
                     'event' => $event,
