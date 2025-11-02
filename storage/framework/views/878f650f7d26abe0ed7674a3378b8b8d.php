@@ -97,7 +97,7 @@
         </div>
     </div>
 
-    <div class="py-12" x-data="prDetailsPage()" x-init="init()">
+    <div class="py-12" x-data="prDetailsPage()" x-init="init()" @dropdown-selected.window="handleDropdownSelection($event.detail)">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
             <!-- PR Header Info -->
@@ -541,7 +541,7 @@
             bindTo: bindTo,
             
             init() {
-                // Nothing needed here, we'll update parent in selectOption
+                // Nothing needed here
             },
             
             toggleDropdown() {
@@ -567,16 +567,14 @@
                 this.search = '';
                 this.filteredOptions = this.options;
                 
-                // Find parent component and update its bound variable
-                let parent = this.$el.parentElement;
-                while (parent) {
-                    if (parent.__x && parent.__x.$data && this.bindTo in parent.__x.$data) {
-                        parent.__x.$data[this.bindTo] = option.value;
-                        console.log('Updated', this.bindTo, 'to', option.value);
-                        break;
-                    }
-                    parent = parent.parentElement;
-                }
+                // Dispatch event to parent component
+                this.$dispatch('dropdown-selected', {
+                    bindTo: this.bindTo,
+                    value: option.value,
+                    label: option.label
+                });
+                
+                console.log('Dispatched dropdown-selected event:', this.bindTo, '=', option.value);
             }
         }
     }
@@ -643,6 +641,14 @@
 
             init() {
                 console.log('PR Details page initialized');
+            },
+
+            handleDropdownSelection(detail) {
+                console.log('Received dropdown selection:', detail);
+                if (detail.bindTo && detail.value) {
+                    this[detail.bindTo] = detail.value;
+                    console.log('Updated', detail.bindTo, '=', detail.value);
+                }
             },
             
             async submitComment() {
