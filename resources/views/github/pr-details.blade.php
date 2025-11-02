@@ -253,6 +253,73 @@
                 </div>
             </div>
 
+            <!-- Label Management Section -->
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    Manage Labels
+                </h3>
+
+                <div class="space-y-4">
+                    <!-- Add Label -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Add Label to PR
+                        </label>
+                        <div class="flex gap-2">
+                            <select x-model="selectedLabel" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent">
+                                <option value="">Select a label...</option>
+                                @foreach($repoLabels as $label)
+                                    <option value="<?php echo e($label['name']); ?>">
+                                        <?php echo e($label['name']); ?>
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button @click="addLabel()" :disabled="!selectedLabel || labelManaging" 
+                                    class="inline-flex items-center gap-2 px-5 py-2 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+                                <svg x-show="!labelManaging" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                <svg x-show="labelManaging" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="labelManaging ? 'Adding...' : 'Add Label'"></span>
+                            </button>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Add a label to categorize this PR</p>
+                    </div>
+
+                    <!-- Current Labels -->
+                    @if(!empty($pr['labels']) && count($pr['labels']) > 0)
+                        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Current Labels</h4>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($pr['labels'] as $label)
+                                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border transition-all group"
+                                          style="background-color: #<?php echo e($label['color']); ?>33; color: #<?php echo e($label['color']); ?>; border-color: #<?php echo e($label['color']); ?>;">
+                                        <?php echo e($label['name']); ?>
+                                        <button @click="removeLabel('<?php echo e($label['name']); ?>')" 
+                                                :disabled="labelManaging"
+                                                class="ml-1 hover:bg-black/10 rounded-full p-0.5 transition-colors disabled:opacity-50">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">No labels yet. Add one to get started!</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Tabs -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
                 <div class="border-b border-gray-200 dark:border-gray-700">
@@ -414,6 +481,8 @@
             selectedReviewer: '',
             selectedAssignee: '',
             assigning: false,
+            selectedLabel: '',
+            labelManaging: false,
 
             init() {
                 console.log('PR Details page initialized');
@@ -566,6 +635,79 @@
                     showToast('error', 'Failed to assign. Please try again.');
                 } finally {
                     this.assigning = false;
+                }
+            },
+
+            async addLabel() {
+                if (!this.selectedLabel || this.labelManaging) return;
+                
+                this.labelManaging = true;
+                console.log('Adding label:', this.selectedLabel);
+                
+                try {
+                    const response = await fetch('{{ route('github.pr.addLabel', $log) }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            label: this.selectedLabel
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Response:', data);
+                    
+                    if (data.success) {
+                        showToast('success', 'Label added successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('error', data.error || 'Failed to add label');
+                    }
+                } catch (error) {
+                    console.error('Exception adding label:', error);
+                    showToast('error', 'Failed to add label. Please try again.');
+                } finally {
+                    this.labelManaging = false;
+                }
+            },
+
+            async removeLabel(labelName) {
+                if (this.labelManaging) return;
+                
+                this.labelManaging = true;
+                console.log('Removing label:', labelName);
+                
+                try {
+                    const url = '{{ route('github.pr.removeLabel', ['log' => $log, 'label' => '__LABEL__']) }}'.replace('__LABEL__', encodeURIComponent(labelName));
+                    
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Response:', data);
+                    
+                    if (data.success) {
+                        showToast('success', 'Label removed successfully! Reloading...');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('error', data.error || 'Failed to remove label');
+                    }
+                } catch (error) {
+                    console.error('Exception removing label:', error);
+                    showToast('error', 'Failed to remove label. Please try again.');
+                } finally {
+                    this.labelManaging = false;
                 }
             }
         }

@@ -236,6 +236,90 @@ class GitHubApiService
     }
 
     /**
+     * Get repository labels
+     */
+    public function getRepositoryLabels(string $owner, string $repo): ?array
+    {
+        try {
+            $response = $this->http()
+                ->get("{$this->baseUrl}/repos/{$owner}/{$repo}/labels");
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception fetching labels', [
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Add labels to a Pull Request
+     */
+    public function addLabels(string $owner, string $repo, int $prNumber, array $labels): array
+    {
+        try {
+            $response = $this->http()
+                ->post("{$this->baseUrl}/repos/{$owner}/{$repo}/issues/{$prNumber}/labels", [
+                    'labels' => $labels,
+                ]);
+
+            if ($response->successful()) {
+                return ['success' => true, 'data' => $response->json()];
+            }
+
+            $errorBody = $response->json();
+            $errorMessage = $errorBody['message'] ?? 'Failed to add labels';
+
+            Log::error('GitHub API: Failed to add labels', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return ['success' => false, 'error' => $errorMessage];
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception adding labels', [
+                'message' => $e->getMessage(),
+            ]);
+            return ['success' => false, 'error' => 'An unexpected error occurred'];
+        }
+    }
+
+    /**
+     * Remove a label from a Pull Request
+     */
+    public function removeLabel(string $owner, string $repo, int $prNumber, string $label): array
+    {
+        try {
+            $response = $this->http()
+                ->delete("{$this->baseUrl}/repos/{$owner}/{$repo}/issues/{$prNumber}/labels/{$label}");
+
+            if ($response->successful()) {
+                return ['success' => true];
+            }
+
+            $errorBody = $response->json();
+            $errorMessage = $errorBody['message'] ?? 'Failed to remove label';
+
+            Log::error('GitHub API: Failed to remove label', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return ['success' => false, 'error' => $errorMessage];
+        } catch (\Exception $e) {
+            Log::error('GitHub API: Exception removing label', [
+                'message' => $e->getMessage(),
+            ]);
+            return ['success' => false, 'error' => 'An unexpected error occurred'];
+        }
+    }
+
+    /**
      * Parse repository owner and name from URL
      */
     public static function parseRepoUrl(string $url): ?array

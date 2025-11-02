@@ -98,6 +98,9 @@ class GitHubPullRequestController extends Controller
             ->orderBy('first_name')
             ->get(['id', 'first_name', 'last_name', 'github_username']);
 
+        // Get repository labels
+        $repoLabels = $this->github->getRepositoryLabels($repo['owner'], $repo['repo']) ?? [];
+
         return view('github.pr-details', [
             'log' => $log,
             'pr' => $prDetails,
@@ -105,6 +108,7 @@ class GitHubPullRequestController extends Controller
             'comments' => $prComments ?? [],
             'repo' => $repo,
             'employees' => $employees,
+            'repoLabels' => $repoLabels,
         ]);
     }
 
@@ -279,6 +283,102 @@ class GitHubPullRequestController extends Controller
         return response()->json([
             'success' => true,
             'message' => ucfirst($type) . ' assigned successfully',
+        ]);
+    }
+
+    /**
+     * Add a label to a Pull Request
+     */
+    public function addLabel(Request $request, GitHubLog $log)
+    {
+        // Only allow for pull request events
+        if ($log->event_type !== 'pull_request') {
+            return response()->json([
+                'error' => 'This is not a pull request event',
+            ], 400);
+        }
+
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'label' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Label is required',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Parse repository URL
+        $repo = GitHubApiService::parseRepoUrl($log->repository_url);
+        if (!$repo) {
+            return response()->json([
+                'error' => 'Invalid repository URL',
+            ], 400);
+        }
+
+        $label = $request->input('label');
+
+        // Add label to GitHub
+        $result = $this->github->addLabels(
+            $repo['owner'],
+            $repo['repo'],
+            (int) $log->pr_number,
+            [$label]
+        );
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $result['error'],
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Label added successfully',
+        ]);
+    }
+
+    /**
+     * Remove a label from a Pull Request
+     */
+    public function removeLabel(Request $request, GitHubLog $log, string $label)
+    {
+        // Only allow for pull request events
+        if ($log->event_type !== 'pull_request') {
+            return response()->json([
+                'error' => 'This is not a pull request event',
+            ], 400);
+        }
+
+        // Parse repository URL
+        $repo = GitHubApiService::parseRepoUrl($log->repository_url);
+        if (!$repo) {
+            return response()->json([
+                'error' => 'Invalid repository URL',
+            ], 400);
+        }
+
+        // Remove label from GitHub
+        $result = $this->github->removeLabel(
+            $repo['owner'],
+            $repo['repo'],
+            (int) $log->pr_number,
+            $label
+        );
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => $result['error'],
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Label removed successfully',
         ]);
     }
 }
