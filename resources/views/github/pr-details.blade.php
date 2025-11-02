@@ -601,21 +601,21 @@
 
     // Global toast function
     window.showToast = function(type, message, duration = 5000) {
-        // Dispatch event to Alpine component
-        window.dispatchEvent(new CustomEvent('show-toast', {
-            detail: { type, message, duration }
-        }));
+        console.log('showToast called:', type, message);
+        
+        // Try to find the toast element
+        const toastEl = document.querySelector('[x-data*="toastNotification"]');
+        console.log('Toast element found:', !!toastEl);
+        
+        if (toastEl && toastEl.__x) {
+            console.log('Calling toast showToast method');
+            toastEl.__x.$data.showToast(type, message, duration);
+        } else {
+            console.error('Toast component not found or not initialized');
+            // Fallback to alert
+            alert(`${type.toUpperCase()}: ${message}`);
+        }
     };
-
-    // Listen for toast events (initialize immediately after DOM load)
-    document.addEventListener('DOMContentLoaded', () => {
-        window.addEventListener('show-toast', (event) => {
-            const toastEl = document.querySelector('[x-data*="toastNotification"]');
-            if (toastEl && toastEl.__x) {
-                toastEl.__x.$data.showToast(event.detail.type, event.detail.message, event.detail.duration);
-            }
-        });
-    });
 
     function prDetailsPage() {
         return {
