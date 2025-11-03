@@ -143,7 +143,7 @@
                                     </div>
                                     <div>
                                         <div class="text-sm font-medium text-gray-900 dark:text-white"><?php echo e($user->name); ?></div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400"><?php echo e($user->email); ?></div>
+                                        
                                         <div class="text-xs">
                                             <span class="px-2 py-0.5 rounded <?php echo e($user->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200'); ?>">
                                                 <?php echo e(ucfirst($user->role)); ?>

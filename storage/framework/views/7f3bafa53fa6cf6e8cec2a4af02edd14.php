@@ -328,7 +328,7 @@
                                                         <span class="text-blue-600 dark:text-blue-400">(You)</span>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate"><?php echo e($member->email); ?></div>
+                                                <!-- <div class="text-xs text-gray-500 dark:text-gray-400 truncate"><?php echo e($member->email); ?></div> -->
                                                 <div class="text-xs mt-1">
                                                     <span class="px-2 py-0.5 rounded-full <?php echo e($member->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200'); ?>">
                                                         <?php echo e($member->role === 'internal' ? '👔 Employee' : '👤 Client'); ?>
