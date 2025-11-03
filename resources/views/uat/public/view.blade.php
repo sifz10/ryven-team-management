@@ -319,7 +319,7 @@
                                                         <span class="text-blue-600 dark:text-blue-400">(You)</span>
                                                     @endif
                                                 </div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $member->email }}</div>
+                                                {{-- <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $member->email }}</div> --}}
                                                 <div class="text-xs mt-1">
                                                     <span class="px-2 py-0.5 rounded-full {{ $member->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200' }}">
                                                         {{ $member->role === 'internal' ? '👔 Employee' : '👤 Client' }}
@@ -338,7 +338,9 @@
                         x-data="{ 
                             activeFeedback: null,
                             showCreateForm: false,
-                            expandedCase: null
+                            expandedCase: null,
+                            deleteTestCaseId: null,
+                            deleteFormAction: ''
                         }">
                         <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                             <div class="flex items-center justify-between">
@@ -877,6 +879,20 @@
                                                     </div>
                                                 @endif
                                             </div>
+
+                                            <!-- Delete Button (Employees Only) -->
+                                            @if($uatUser->isInternal())
+                                                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                                                    <button type="button"
+                                                        @click="deleteTestCaseId = {{ $testCase->id }}; deleteFormAction = '{{ route('uat.test-cases.destroy', [$project, $testCase]) }}'"
+                                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-full transition-all">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                        Delete Test Case
+                                                    </button>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
@@ -891,6 +907,70 @@
                                     <p class="text-gray-500 dark:text-gray-400">Test cases will appear here once they are added by the team.</p>
                                 </div>
                             @endif
+                        </div>
+
+                        <!-- Delete Confirmation Modal -->
+                        <div x-show="deleteTestCaseId !== null" 
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100"
+                            x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100"
+                            x-transition:leave-end="opacity-0"
+                            class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                            @click.self="deleteTestCaseId = null"
+                            style="display: none;">
+                            <div x-show="deleteTestCaseId !== null"
+                                x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 scale-90"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-200"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-90"
+                                class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+                                @click.stop>
+                                <!-- Modal Header -->
+                                <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-xl font-bold text-white">Delete Test Case</h3>
+                                            <p class="text-red-100 text-sm mt-0.5">This action cannot be undone</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal Body -->
+                                <div class="px-6 py-5">
+                                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                        Are you sure you want to delete this test case? All associated feedback and data will be permanently removed.
+                                    </p>
+                                </div>
+
+                                <!-- Modal Footer -->
+                                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 flex justify-end gap-3">
+                                    <button type="button" 
+                                        @click="deleteTestCaseId = null"
+                                        class="px-5 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-full font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-all">
+                                        Cancel
+                                    </button>
+                                    <form :action="deleteFormAction" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Delete Test Case
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @endif
