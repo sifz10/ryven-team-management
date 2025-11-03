@@ -11,6 +11,8 @@ use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\GitHubWebhookController;
 use App\Http\Controllers\GitHubPullRequestController;
+use App\Http\Controllers\UatProjectController;
+use App\Http\Controllers\UatPublicController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,6 +22,15 @@ Route::get('/', function () {
 // Public checklist routes (no authentication required)
 Route::get('/checklist/{token}', [ChecklistController::class, 'publicView'])->name('checklist.public.view');
 Route::get('/checklist/{token}/item/{item}/toggle', [ChecklistController::class, 'publicToggleItem'])->name('checklist.public.toggle');
+
+// Public UAT routes (no authentication required)
+Route::get('/uat/public/{token}', [UatPublicController::class, 'view'])->name('uat.public.view');
+Route::get('/uat/public/{token}/updates', [UatPublicController::class, 'getUpdates'])->name('uat.public.updates');
+Route::post('/uat/public/{token}/authenticate', [UatPublicController::class, 'authenticate'])->name('uat.public.authenticate');
+Route::post('/uat/public/{token}/users', [UatPublicController::class, 'addUser'])->name('uat.public.users.add');
+Route::post('/uat/public/{token}/test-cases', [UatPublicController::class, 'storeTestCase'])->name('uat.public.test-cases.store');
+Route::post('/uat/public/{token}/test-cases/{testCase}/feedback', [UatPublicController::class, 'submitFeedback'])->name('uat.public.feedback');
+Route::post('/uat/public/{token}/test-cases/{testCase}/status', [UatPublicController::class, 'updateStatus'])->name('uat.public.status');
 
 // GitHub Webhook (no authentication required)
 Route::post('/webhook/github', [GitHubWebhookController::class, 'handle'])->name('webhook.github');
@@ -125,6 +136,14 @@ Route::middleware('auth')->group(function () {
     Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
     Route::get('invoices/{invoice}/preview', [InvoiceController::class, 'previewPdf'])->name('invoices.preview');
     Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
+
+    // UAT routes
+    Route::resource('uat', UatProjectController::class)->parameters(['uat' => 'project']);
+    Route::post('uat/{project}/test-cases', [UatProjectController::class, 'storeTestCase'])->name('uat.test-cases.store');
+    Route::put('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'updateTestCase'])->name('uat.test-cases.update');
+    Route::delete('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'destroyTestCase'])->name('uat.test-cases.destroy');
+    Route::post('uat/{project}/users', [UatProjectController::class, 'addUser'])->name('uat.users.add');
+    Route::delete('uat/{project}/users/{user}', [UatProjectController::class, 'removeUser'])->name('uat.users.remove');
 });
 
 require __DIR__.'/auth.php';

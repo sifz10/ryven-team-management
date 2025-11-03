@@ -5,8 +5,11 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+                        <div class="w-10 h-10 bg-black dark:bg-white rounded-full flex items-center justify-center">
+                            <span class="text-white dark:text-black font-bold text-lg">R</span>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">Ryven</span>
                     </a>
                 </div>
 
@@ -17,6 +20,9 @@
                     </x-nav-link>
                     <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.*')">
                         {{ __('Employees') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('uat.index')" :active="request()->routeIs('uat.*')">
+                        {{ __('UAT') }}
                     </x-nav-link>
                     <x-nav-link :href="route('github.logs')" :active="request()->routeIs('github.logs')">
                         {{ __('GitHub Logs') }}
@@ -95,6 +101,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.*')">
                 {{ __('Employees') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('uat.index')" :active="request()->routeIs('uat.*')">
+                {{ __('UAT') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('github.logs')" :active="request()->routeIs('github.logs')">
                 {{ __('GitHub Logs') }}
