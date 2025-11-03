@@ -6,10 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-                        <div class="w-10 h-10 bg-black dark:bg-white rounded-full flex items-center justify-center">
-                            <span class="text-white dark:text-black font-bold text-lg">R</span>
-                        </div>
-                        <span class="text-xl font-bold text-gray-900 dark:text-white">Ryven</span>
+                        <img src="{{ asset('black-logo.png') }}" alt="Ryven Logo" class="h-10 w-auto dark:invert">
                     </a>
                 </div>
 

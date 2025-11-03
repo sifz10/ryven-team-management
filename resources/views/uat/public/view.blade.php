@@ -63,9 +63,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-black dark:bg-white rounded-full flex items-center justify-center shadow-lg">
-                            <span class="text-white dark:text-black font-bold text-xl">R</span>
-                        </div>
+                        <img src="{{ asset('black-logo.png') }}" alt="Ryven Logo" class="h-12 w-auto dark:invert">
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $project->name }}</h1>
                             <div class="flex items-center gap-2 mt-1">
