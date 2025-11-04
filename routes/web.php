@@ -13,6 +13,7 @@ use App\Http\Controllers\GitHubWebhookController;
 use App\Http\Controllers\GitHubPullRequestController;
 use App\Http\Controllers\UatProjectController;
 use App\Http\Controllers\UatPublicController;
+use App\Http\Controllers\PersonalNoteController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -144,6 +145,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'destroyTestCase'])->name('uat.test-cases.destroy');
     Route::post('uat/{project}/users', [UatProjectController::class, 'addUser'])->name('uat.users.add');
     Route::delete('uat/{project}/users/{user}', [UatProjectController::class, 'removeUser'])->name('uat.users.remove');
+
+    // Personal Notes routes
+    Route::get('notes/emails/search', [PersonalNoteController::class, 'searchEmails'])->name('notes.emails.search');
+    Route::resource('notes', PersonalNoteController::class);
 });
 
 require __DIR__.'/auth.php';

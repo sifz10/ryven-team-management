@@ -53,4 +53,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+
+    /**
+     * Get the user's personal notes
+     */
+    public function personalNotes()
+    {
+        return $this->hasMany(PersonalNote::class);
+    }
+
+    /**
+     * Get the user's saved emails
+     */
+    public function savedEmails()
+    {
+        return $this->hasMany(SavedEmail::class);
+    }
 }
