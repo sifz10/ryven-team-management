@@ -15,6 +15,8 @@ use App\Http\Controllers\UatProjectController;
 use App\Http\Controllers\UatPublicController;
 use App\Http\Controllers\PersonalNoteController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', function () {
     return redirect()->route('login');
