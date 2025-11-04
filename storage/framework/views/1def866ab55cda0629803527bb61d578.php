@@ -41,51 +41,60 @@
 
         <!-- Type Badge -->
         <span class="badge 
-            @if($note->type == 'website_link') badge-link
-            @elseif($note->type == 'password') badge-password
-            @elseif($note->type == 'backup_code') badge-backup
-            @elseif($note->type == 'text') badge-text
-            @else badge-file
-            @endif">
-            @if($note->type == 'website_link') 🔗 Website Link
-            @elseif($note->type == 'password') 🔐 Password
-            @elseif($note->type == 'backup_code') 🔑 Backup Code
-            @elseif($note->type == 'text') 📝 Text Note
-            @else 📎 File
-            @endif
+            <?php if($note->type == 'website_link'): ?> badge-link
+            <?php elseif($note->type == 'password'): ?> badge-password
+            <?php elseif($note->type == 'backup_code'): ?> badge-backup
+            <?php elseif($note->type == 'text'): ?> badge-text
+            <?php else: ?> badge-file
+            <?php endif; ?>">
+            <?php if($note->type == 'website_link'): ?> 🔗 Website Link
+            <?php elseif($note->type == 'password'): ?> 🔐 Password
+            <?php elseif($note->type == 'backup_code'): ?> 🔑 Backup Code
+            <?php elseif($note->type == 'text'): ?> 📝 Text Note
+            <?php else: ?> 📎 File
+            <?php endif; ?>
         </span>
 
         <!-- Title -->
-        <div class="note-title">{{ $note->title }}</div>
+        <div class="note-title"><?php echo e($note->title); ?></div>
 
         <!-- URL -->
-        @if($note->url)
+        <?php if($note->url): ?>
             <div class="url-box">
                 <strong style="display: block; margin-bottom: 8px; color: #1e40af;">🔗 Website URL:</strong>
-                <a href="{{ $note->url }}" target="_blank">{{ $note->url }}</a>
+                <a href="<?php echo e($note->url); ?>" target="_blank"><?php echo e($note->url); ?></a>
             </div>
-        @endif
+        <?php endif; ?>
 
         <!-- File -->
-        @if($note->file_path)
+        <?php if($note->file_path): ?>
             <div class="file-box">
                 <strong style="display: block; margin-bottom: 8px; color: #6b21a8;">📎 Attached File:</strong>
-                <a href="{{ url(Storage::url($note->file_path)) }}" target="_blank">Click to view file</a>
+                <a href="<?php echo e(url(Storage::url($note->file_path))); ?>" target="_blank">Click to view file</a>
             </div>
-        @endif
+        <?php endif; ?>
 
         <!-- Content -->
-        @if($note->content)
+        <?php if($note->content): ?>
             <div class="note-content">
                 <strong style="display: block; margin-bottom: 8px; color: #374151;">Content:</strong>
-                {{ $note->content }}
+                <?php echo e($note->content); ?>
+
             </div>
-        @endif
+        <?php endif; ?>
+
+        <!-- View Button -->
+        <div style="text-align: center;">
+            <a href="<?php echo e(url('/notes/' . $note->id)); ?>" class="button">
+                View Full Note
+            </a>
+        </div>
 
         <!-- Footer -->
         <div class="footer">
             <p style="margin: 5px 0;">
-                <strong>Reminder Time:</strong> {{ $note->reminder_time->format('M d, Y h:i A') }}
+                <strong>Reminder Time:</strong> <?php echo e($note->reminder_time->format('M d, Y h:i A')); ?>
+
             </p>
             <p style="margin: 5px 0; font-size: 12px;">
                 This is an automated reminder from your personal notes system.
@@ -94,3 +103,4 @@
     </div>
 </body>
 </html>
+<?php /**PATH F:\Project\salary\resources\views/emails/note-reminder.blade.php ENDPATH**/ ?>
