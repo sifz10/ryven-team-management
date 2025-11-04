@@ -73,6 +73,50 @@ Route::middleware('auth')->group(function () {
         Artisan::call($request->command);
         return 'Executed artisan command boss!';
     });
+    
+    Route::get('/fix-cache', function () {
+        $output = [];
+        
+        // Ensure directories exist
+        $dirs = [
+            storage_path('framework/views'),
+            storage_path('framework/cache'),
+            storage_path('framework/cache/data'),
+            storage_path('framework/sessions'),
+        ];
+        
+        foreach ($dirs as $dir) {
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+                $output[] = "Created directory: $dir";
+            } else {
+                $output[] = "Directory exists: $dir";
+            }
+        }
+        
+        // Clear caches
+        Artisan::call('config:clear');
+        $output[] = 'Config cleared';
+        
+        Artisan::call('cache:clear');
+        $output[] = 'Cache cleared';
+        
+        Artisan::call('view:clear');
+        $output[] = 'View cache cleared';
+        
+        Artisan::call('route:clear');
+        $output[] = 'Route cache cleared';
+        
+        // Recache for production
+        Artisan::call('config:cache');
+        $output[] = 'Config cached';
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'All caches fixed!',
+            'details' => $output
+        ]);
+    });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
