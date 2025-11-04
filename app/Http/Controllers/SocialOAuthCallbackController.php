@@ -42,26 +42,42 @@ class SocialOAuthCallbackController extends Controller
 
             $tokenData = $response->json();
             
-            // Get user profile
+            // Get user profile using v2/userinfo endpoint (OpenID Connect)
             $profileResponse = Http::withToken($tokenData['access_token'])
-                ->get('https://api.linkedin.com/v2/me');
+                ->get('https://api.linkedin.com/v2/userinfo');
 
             if ($profileResponse->failed()) {
-                throw new \Exception('Failed to get user profile');
+                $errorBody = $profileResponse->body();
+                Log::error('LinkedIn profile fetch failed', [
+                    'status' => $profileResponse->status(),
+                    'body' => $errorBody,
+                    'token_data' => array_keys($tokenData)
+                ]);
+                throw new \Exception('Failed to get user profile: ' . $errorBody);
             }
 
             $profile = $profileResponse->json();
+
+            // Extract user information
+            $userId = $profile['sub'] ?? $profile['id'] ?? null;
+            $userName = $profile['name'] ?? 
+                       ($profile['given_name'] ?? '') . ' ' . ($profile['family_name'] ?? '') ??
+                       $profile['email'] ?? 'LinkedIn User';
+
+            if (!$userId) {
+                throw new \Exception('Could not extract user ID from profile');
+            }
 
             // Store or update account
             Auth::user()->socialAccounts()->updateOrCreate(
                 [
                     'platform' => 'linkedin',
-                    'platform_user_id' => $profile['id'],
+                    'platform_user_id' => $userId,
                 ],
                 [
-                    'platform_username' => $profile['localizedFirstName'] . ' ' . $profile['localizedLastName'],
+                    'platform_username' => trim($userName),
                     'access_token' => $tokenData['access_token'],
-                    'token_expires_at' => now()->addSeconds($tokenData['expires_in']),
+                    'token_expires_at' => now()->addSeconds($tokenData['expires_in'] ?? 5184000),
                     'platform_data' => $profile,
                     'is_active' => true,
                 ]

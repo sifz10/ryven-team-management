@@ -179,7 +179,7 @@ class SocialMediaPublishingService
     private function testLinkedInConnection(SocialAccount $account): bool
     {
         $response = Http::withToken($account->access_token)
-            ->get('https://api.linkedin.com/v2/me');
+            ->get('https://api.linkedin.com/v2/userinfo');
         
         return $response->successful();
     }
