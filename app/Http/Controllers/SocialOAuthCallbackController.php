@@ -42,30 +42,63 @@ class SocialOAuthCallbackController extends Controller
 
             $tokenData = $response->json();
             
-            // Get user profile using v2/userinfo endpoint (OpenID Connect)
+            Log::info('LinkedIn token received', [
+                'has_access_token' => isset($tokenData['access_token']),
+                'expires_in' => $tokenData['expires_in'] ?? 'not set',
+                'token_type' => $tokenData['token_type'] ?? 'not set'
+            ]);
+            
+            // Try to get user profile - LinkedIn may require different endpoints
+            // Try userinfo first (OpenID Connect)
             $profileResponse = Http::withToken($tokenData['access_token'])
                 ->get('https://api.linkedin.com/v2/userinfo');
 
             if ($profileResponse->failed()) {
-                $errorBody = $profileResponse->body();
-                Log::error('LinkedIn profile fetch failed', [
+                Log::error('LinkedIn userinfo failed, trying v2/me', [
                     'status' => $profileResponse->status(),
-                    'body' => $errorBody,
-                    'token_data' => array_keys($tokenData)
+                    'body' => $profileResponse->body(),
                 ]);
-                throw new \Exception('Failed to get user profile: ' . $errorBody);
+                
+                // Fallback to v2/me endpoint
+                $profileResponse = Http::withToken($tokenData['access_token'])
+                    ->get('https://api.linkedin.com/v2/me');
+                
+                if ($profileResponse->failed()) {
+                    $errorBody = $profileResponse->body();
+                    Log::error('LinkedIn v2/me also failed', [
+                        'status' => $profileResponse->status(),
+                        'body' => $errorBody,
+                    ]);
+                    throw new \Exception('Failed to get user profile from both endpoints. Status: ' . $profileResponse->status() . '. Error: ' . $errorBody);
+                }
             }
 
             $profile = $profileResponse->json();
+            
+            Log::info('LinkedIn profile received', [
+                'profile_keys' => array_keys($profile),
+                'profile_data' => $profile
+            ]);
 
-            // Extract user information
+            // Extract user information - handle both formats
             $userId = $profile['sub'] ?? $profile['id'] ?? null;
-            $userName = $profile['name'] ?? 
-                       ($profile['given_name'] ?? '') . ' ' . ($profile['family_name'] ?? '') ??
-                       $profile['email'] ?? 'LinkedIn User';
+            
+            // Handle different name formats
+            if (isset($profile['name'])) {
+                $userName = $profile['name'];
+            } elseif (isset($profile['localizedFirstName']) && isset($profile['localizedLastName'])) {
+                $userName = $profile['localizedFirstName'] . ' ' . $profile['localizedLastName'];
+            } elseif (isset($profile['given_name']) && isset($profile['family_name'])) {
+                $userName = $profile['given_name'] . ' ' . $profile['family_name'];
+            } elseif (isset($profile['email'])) {
+                $userName = $profile['email'];
+            } else {
+                $userName = 'LinkedIn User';
+            }
 
             if (!$userId) {
-                throw new \Exception('Could not extract user ID from profile');
+                Log::error('No user ID found in profile', ['profile' => $profile]);
+                throw new \Exception('Could not extract user ID from profile. Available fields: ' . implode(', ', array_keys($profile)));
             }
 
             // Store or update account

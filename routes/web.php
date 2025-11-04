@@ -162,6 +162,15 @@ Route::middleware('auth')->group(function () {
     Route::get('social/callback/linkedin', [App\Http\Controllers\SocialOAuthCallbackController::class, 'linkedin'])->name('social.callback.linkedin');
     Route::get('social/callback/facebook', [App\Http\Controllers\SocialOAuthCallbackController::class, 'facebook'])->name('social.callback.facebook');
     Route::get('social/callback/twitter', [App\Http\Controllers\SocialOAuthCallbackController::class, 'twitter'])->name('social.callback.twitter');
+    Route::get('social/debug/linkedin', function() {
+        return response()->json([
+            'config' => [
+                'client_id' => config('services.linkedin.client_id'),
+                'redirect' => config('services.linkedin.redirect'),
+                'has_secret' => !empty(config('services.linkedin.client_secret'))
+            ]
+        ]);
+    })->name('social.debug.linkedin');
     Route::post('social/accounts/{socialAccount}/test', [App\Http\Controllers\SocialAccountController::class, 'testConnection'])->name('social.accounts.test');
     Route::resource('social/accounts', App\Http\Controllers\SocialAccountController::class)->names('social.accounts');
     
