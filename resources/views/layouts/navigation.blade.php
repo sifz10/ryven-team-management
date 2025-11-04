@@ -65,6 +65,11 @@
                                     {{ request()->routeIs('contracts.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
                                     📄 Contracts
                                 </a>
+                                <a href="{{ route('social.calendar') }}" 
+                                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition
+                                    {{ request()->routeIs('social.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                    📅 Content Calendar
+                                </a>
                             </div>
                         </div>
                     </div>

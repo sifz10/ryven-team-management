@@ -149,6 +149,27 @@ Route::middleware('auth')->group(function () {
     // Personal Notes routes
     Route::get('notes/emails/search', [PersonalNoteController::class, 'searchEmails'])->name('notes.emails.search');
     Route::resource('notes', PersonalNoteController::class);
+
+    // Content Calendar & Social Media routes
+    Route::get('social/calendar', [App\Http\Controllers\ContentCalendarController::class, 'index'])->name('social.calendar');
+    Route::get('social/calendar/posts', [App\Http\Controllers\ContentCalendarController::class, 'getPostsForDate'])->name('social.calendar.posts');
+    Route::get('social/calendar/month-data', [App\Http\Controllers\ContentCalendarController::class, 'getMonthData'])->name('social.calendar.month-data');
+    
+    // Social Accounts routes
+    Route::get('social/accounts/connect/linkedin', [App\Http\Controllers\SocialAccountController::class, 'connectLinkedIn'])->name('social.connect.linkedin');
+    Route::get('social/accounts/connect/facebook', [App\Http\Controllers\SocialAccountController::class, 'connectFacebook'])->name('social.connect.facebook');
+    Route::get('social/accounts/connect/twitter', [App\Http\Controllers\SocialAccountController::class, 'connectTwitter'])->name('social.connect.twitter');
+    Route::get('social/callback/linkedin', [App\Http\Controllers\SocialOAuthCallbackController::class, 'linkedin'])->name('social.callback.linkedin');
+    Route::get('social/callback/facebook', [App\Http\Controllers\SocialOAuthCallbackController::class, 'facebook'])->name('social.callback.facebook');
+    Route::get('social/callback/twitter', [App\Http\Controllers\SocialOAuthCallbackController::class, 'twitter'])->name('social.callback.twitter');
+    Route::post('social/accounts/{socialAccount}/test', [App\Http\Controllers\SocialAccountController::class, 'testConnection'])->name('social.accounts.test');
+    Route::resource('social/accounts', App\Http\Controllers\SocialAccountController::class)->names('social.accounts');
+    
+    // Social Posts routes
+    Route::post('social/posts/{socialPost}/generate', [App\Http\Controllers\SocialPostController::class, 'generate'])->name('social.posts.generate');
+    Route::post('social/posts/{socialPost}/select-generation', [App\Http\Controllers\SocialPostController::class, 'selectGeneration'])->name('social.posts.select-generation');
+    Route::post('social/posts/{socialPost}/publish', [App\Http\Controllers\SocialPostController::class, 'publish'])->name('social.posts.publish');
+    Route::resource('social/posts', App\Http\Controllers\SocialPostController::class)->names('social.posts');
 });
 
 require __DIR__.'/auth.php';

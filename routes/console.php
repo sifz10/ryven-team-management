@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Schedule note reminders to check every minute
 Schedule::command('notes:send-reminders')->everyMinute();
+
+// Process scheduled social media posts every minute
+Schedule::command('social:process-scheduled')->everyMinute();

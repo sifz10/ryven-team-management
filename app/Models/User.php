@@ -69,4 +69,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(SavedEmail::class);
     }
+
+    /**
+     * Get the user's social media accounts
+     */
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    /**
+     * Get the user's social media posts
+     */
+    public function socialPosts()
+    {
+        return $this->hasMany(SocialPost::class);
+    }
 }
