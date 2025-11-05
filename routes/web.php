@@ -226,7 +226,7 @@ Route::middleware('auth')->group(function () {
     Route::post('social/posts/{socialPost}/generate', [App\Http\Controllers\SocialPostController::class, 'generate'])->name('social.posts.generate');
     Route::post('social/posts/{socialPost}/select-generation', [App\Http\Controllers\SocialPostController::class, 'selectGeneration'])->name('social.posts.select-generation');
     Route::post('social/posts/{socialPost}/publish', [App\Http\Controllers\SocialPostController::class, 'publish'])->name('social.posts.publish');
-    Route::resource('social/posts', App\Http\Controllers\SocialPostController::class)->names('social.posts');
+    Route::resource('social/posts', App\Http\Controllers\SocialPostController::class)->parameters(['posts' => 'socialPost'])->names('social.posts');
 });
 
 require __DIR__.'/auth.php';
