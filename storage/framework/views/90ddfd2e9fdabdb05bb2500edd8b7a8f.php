@@ -122,7 +122,7 @@
             <!-- Project Info -->
             <?php if($project->description): ?>
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <p class="text-gray-700 dark:text-gray-300"><?php echo e($project->description); ?></p>
+                    <p class="text-gray-700 dark:text-gray-300"><?php echo $project->description; ?></p>
                 </div>
             <?php endif; ?>
 
