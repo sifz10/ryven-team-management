@@ -1,41 +1,56 @@
-<x-app-layout>
-    <x-slot name="header">
+<?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
+<?php $component = App\View\Components\AppLayout::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('app-layout'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\App\View\Components\AppLayout::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+     <?php $__env->slot('header', null, []); ?> 
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="{{ route('uat.index') }}" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                <a href="<?php echo e(route('uat.index')); ?>" class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                 </a>
                 <div>
                     <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        {{ $project->name }}
+                        <?php echo e($project->name); ?>
+
                     </h2>
                     <div class="flex items-center gap-2 mt-1">
                         <span class="px-2 py-0.5 text-xs font-medium rounded-full
-                            {{ $project->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}
-                            {{ $project->status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : '' }}
-                            {{ $project->status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
+                            <?php echo e($project->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''); ?>
+
+                            <?php echo e($project->status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : ''); ?>
+
+                            <?php echo e($project->status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''); ?>
+
                         ">
-                            {{ ucfirst($project->status) }}
+                            <?php echo e(ucfirst($project->status)); ?>
+
                         </span>
-                        @if($project->deadline)
+                        <?php if($project->deadline): ?>
                             <span class="text-xs text-gray-500 dark:text-gray-400">
-                                Due: {{ $project->deadline->format('M d, Y') }}
+                                Due: <?php echo e($project->deadline->format('M d, Y')); ?>
+
                             </span>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
             <div class="flex items-center gap-2" x-data="{ showDeleteConfirm: false }">
-                <button onclick="copyUrl('{{ $project->public_url }}')" 
+                <button onclick="copyUrl('<?php echo e($project->public_url); ?>')" 
                     class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                     </svg>
                     Copy UAT Link
                 </button>
-                <a href="{{ route('uat.edit', $project) }}" 
+                <a href="<?php echo e(route('uat.edit', $project)); ?>" 
                     class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -76,16 +91,16 @@
                                 <div class="flex-1">
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Delete UAT Project</h3>
                                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                        Are you sure you want to delete <strong>"{{ $project->name }}"</strong>? This will permanently delete all test cases, feedback, and user data. This action cannot be undone.
+                                        Are you sure you want to delete <strong>"<?php echo e($project->name); ?>"</strong>? This will permanently delete all test cases, feedback, and user data. This action cannot be undone.
                                     </p>
                                     <div class="flex gap-3 justify-end">
                                         <button @click="showDeleteConfirm = false" type="button"
                                             class="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all">
                                             Cancel
                                         </button>
-                                        <form action="{{ route('uat.destroy', $project) }}" method="POST" class="inline">
-                                            @csrf
-                                            @method('DELETE')
+                                        <form action="<?php echo e(route('uat.destroy', $project)); ?>" method="POST" class="inline">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('DELETE'); ?>
                                             <button type="submit"
                                                 class="px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all">
                                                 Delete Project
@@ -99,44 +114,46 @@
                 </div>
             </div>
         </div>
-    </x-slot>
+     <?php $__env->endSlot(); ?>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
             <!-- Project Info -->
-            @if($project->description)
+            <?php if($project->description): ?>
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <p class="text-gray-700 dark:text-gray-300">{{ $project->description }}</p>
+                    <p class="text-gray-700 dark:text-gray-300"><?php echo e($project->description); ?></p>
                 </div>
-            @endif
+            <?php endif; ?>
 
             <!-- Users Section -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Users ({{ $project->users->count() }})</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Users (<?php echo e($project->users->count()); ?>)</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($project->users as $user)
+                        <?php $__currentLoopData = $project->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full {{ $user->role === 'internal' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-200 dark:bg-gray-600' }} flex items-center justify-center">
-                                        <span class="text-sm font-medium {{ $user->role === 'internal' ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300' }}">
-                                            {{ strtoupper(substr($user->name, 0, 2)) }}
+                                    <div class="w-10 h-10 rounded-full <?php echo e($user->role === 'internal' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-200 dark:bg-gray-600'); ?> flex items-center justify-center">
+                                        <span class="text-sm font-medium <?php echo e($user->role === 'internal' ? 'text-blue-800 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'); ?>">
+                                            <?php echo e(strtoupper(substr($user->name, 0, 2))); ?>
+
                                         </span>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->name }}</div>
-                                        {{-- <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->email }}</div> --}}
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white"><?php echo e($user->name); ?></div>
+                                        
                                         <div class="text-xs">
-                                            <span class="px-2 py-0.5 rounded {{ $user->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200' }}">
-                                                {{ ucfirst($user->role) }}
+                                            <span class="px-2 py-0.5 rounded <?php echo e($user->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200'); ?>">
+                                                <?php echo e(ucfirst($user->role)); ?>
+
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
             </div>
@@ -145,7 +162,7 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg" x-data="{ showCreateForm: false }">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Test Cases ({{ $project->testCases->count() }})</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Test Cases (<?php echo e($project->testCases->count()); ?>)</h3>
                         <button @click="showCreateForm = !showCreateForm" 
                             class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full shadow-lg hover:bg-gray-800 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-all">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +189,7 @@
                                 </div>
                             </div>
                             
-                            <form action="{{ route('uat.test-cases.store', $project) }}" method="POST" 
+                            <form action="<?php echo e(route('uat.test-cases.store', $project)); ?>" method="POST" 
                                 x-data="{ 
                                     steps: [{ text: '' }],
                                     addStep() { this.steps.push({ text: '' }); },
@@ -236,7 +253,7 @@
                                     $event.target.querySelector('[name=expected_result]').value = expectedResultEditor.root.innerHTML;
                                 " 
                                 class="p-6 space-y-6">
-                                @csrf
+                                <?php echo csrf_field(); ?>
 
                                 <!-- Title & Priority Row -->
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -308,165 +325,181 @@
                     </div>
 
                     <!-- Test Cases List -->
-                    @if($project->testCases->count() > 0)
+                    <?php if($project->testCases->count() > 0): ?>
                         <div class="space-y-4">
-                            @foreach($project->testCases as $index => $testCase)
+                            <?php $__currentLoopData = $project->testCases; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $testCase): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <div class="relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all">
                                     <!-- Header -->
                                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                                         <div class="flex items-start gap-4">
                                             <div class="flex-shrink-0 w-10 h-10 rounded-full bg-black dark:bg-white flex items-center justify-center">
-                                                <span class="text-sm font-bold text-white dark:text-black">#{{ $index + 1 }}</span>
+                                                <span class="text-sm font-bold text-white dark:text-black">#<?php echo e($index + 1); ?></span>
                                             </div>
                                             <div class="flex-1">
                                                 <div class="flex items-center gap-3 flex-wrap mb-1">
-                                                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ $testCase->title }}</h4>
+                                                    <h4 class="text-lg font-bold text-gray-900 dark:text-white"><?php echo e($testCase->title); ?></h4>
                                                     <span class="px-3 py-1 text-xs font-bold rounded-full
-                                                        {{ $testCase->priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
-                                                        {{ $testCase->priority === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : '' }}
-                                                        {{ $testCase->priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : '' }}
-                                                        {{ $testCase->priority === 'low' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '' }}
+                                                        <?php echo e($testCase->priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''); ?>
+
+                                                        <?php echo e($testCase->priority === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : ''); ?>
+
+                                                        <?php echo e($testCase->priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : ''); ?>
+
+                                                        <?php echo e($testCase->priority === 'low' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : ''); ?>
+
                                                     ">
-                                                        {{ ucfirst($testCase->priority) }}
+                                                        <?php echo e(ucfirst($testCase->priority)); ?>
+
                                                     </span>
-                                                    @php
+                                                    <?php
                                                         $clientFeedbackCount = $testCase->feedbacks->where('user.role', 'external')->count();
-                                                    @endphp
-                                                    @if($clientFeedbackCount > 0)
+                                                    ?>
+                                                    <?php if($clientFeedbackCount > 0): ?>
                                                         <span class="px-3 py-1 text-xs font-bold rounded-full bg-blue-600 text-white">
-                                                            💬 {{ $clientFeedbackCount }} Client {{ $clientFeedbackCount === 1 ? 'Reply' : 'Replies' }}
+                                                            💬 <?php echo e($clientFeedbackCount); ?> Client <?php echo e($clientFeedbackCount === 1 ? 'Reply' : 'Replies'); ?>
+
                                                         </span>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
-                                                @if($testCase->description)
-                                                    <p class="text-sm text-gray-600 dark:text-gray-400">{!! $testCase->description !!}</p>
-                                                @endif
+                                                <?php if($testCase->description): ?>
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400"><?php echo $testCase->description; ?></p>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Content -->
                                     <div class="p-6 space-y-5">
-                                        @if($testCase->description)
+                                        <?php if($testCase->description): ?>
                                             <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                 <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                                                    {!! $testCase->description !!}
+                                                    <?php echo $testCase->description; ?>
+
                                                 </div>
                                             </div>
-                                        @endif
+                                        <?php endif; ?>
 
-                                        @if($testCase->steps)
+                                        <?php if($testCase->steps): ?>
                                             <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                 <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wide">Steps to Test</h5>
                                                 <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                                                    {!! $testCase->steps !!}
+                                                    <?php echo $testCase->steps; ?>
+
                                                 </div>
                                             </div>
-                                        @endif
+                                        <?php endif; ?>
 
-                                        @if($testCase->expected_result)
+                                        <?php if($testCase->expected_result): ?>
                                             <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                 <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-2 uppercase tracking-wide">Expected Result</h5>
                                                 <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                                                    {!! $testCase->expected_result !!}
+                                                    <?php echo $testCase->expected_result; ?>
+
                                                 </div>
                                             </div>
-                                        @endif
+                                        <?php endif; ?>
 
                                         <!-- Feedback Summary -->
-                                        @if($testCase->feedbacks->count() > 0)
+                                        <?php if($testCase->feedbacks->count() > 0): ?>
                                             <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                 <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wide">Feedback Summary</h5>
                                                 
                                                 <!-- Status Badges -->
                                                 <div class="flex flex-wrap gap-2 mb-4">
-                                                    @php
+                                                    <?php
                                                         $feedbackCounts = $testCase->feedbacks->groupBy('status')->map->count();
-                                                    @endphp
-                                                    @if($feedbackCounts->get('passed', 0) > 0)
+                                                    ?>
+                                                    <?php if($feedbackCounts->get('passed', 0) > 0): ?>
                                                         <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                            ✅ {{ $feedbackCounts->get('passed') }} Passed
+                                                            ✅ <?php echo e($feedbackCounts->get('passed')); ?> Passed
                                                         </span>
-                                                    @endif
-                                                    @if($feedbackCounts->get('failed', 0) > 0)
+                                                    <?php endif; ?>
+                                                    <?php if($feedbackCounts->get('failed', 0) > 0): ?>
                                                         <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                                            ❌ {{ $feedbackCounts->get('failed') }} Failed
+                                                            ❌ <?php echo e($feedbackCounts->get('failed')); ?> Failed
                                                         </span>
-                                                    @endif
-                                                    @if($feedbackCounts->get('blocked', 0) > 0)
+                                                    <?php endif; ?>
+                                                    <?php if($feedbackCounts->get('blocked', 0) > 0): ?>
                                                         <span class="px-3 py-1 text-xs font-bold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                                                            🚫 {{ $feedbackCounts->get('blocked') }} Blocked
+                                                            🚫 <?php echo e($feedbackCounts->get('blocked')); ?> Blocked
                                                         </span>
-                                                    @endif
-                                                    @if($feedbackCounts->get('pending', 0) > 0)
+                                                    <?php endif; ?>
+                                                    <?php if($feedbackCounts->get('pending', 0) > 0): ?>
                                                         <span class="px-3 py-1 text-xs font-bold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                                                            ⏳ {{ $feedbackCounts->get('pending') }} Pending
+                                                            ⏳ <?php echo e($feedbackCounts->get('pending')); ?> Pending
                                                         </span>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
 
                                                 <!-- Detailed Feedback -->
                                                 <div class="space-y-3">
-                                                    @forelse($testCase->feedbacks as $feedback)
-                                                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 {{ $feedback->user->role === 'external' ? 'border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700' }}">
+                                                    <?php $__empty_1 = true; $__currentLoopData = $testCase->feedbacks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feedback): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 <?php echo e($feedback->user->role === 'external' ? 'border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700'); ?>">
                                                             <div class="flex items-start justify-between mb-2">
                                                                 <div class="flex items-center gap-2">
-                                                                    <div class="w-8 h-8 rounded-full {{ $feedback->user->role === 'internal' ? 'bg-black dark:bg-white' : 'bg-blue-600 dark:bg-blue-500' }} flex items-center justify-center">
+                                                                    <div class="w-8 h-8 rounded-full <?php echo e($feedback->user->role === 'internal' ? 'bg-black dark:bg-white' : 'bg-blue-600 dark:bg-blue-500'); ?> flex items-center justify-center">
                                                                         <span class="text-xs font-bold text-white dark:text-black">
-                                                                            {{ strtoupper(substr($feedback->user->name, 0, 2)) }}
+                                                                            <?php echo e(strtoupper(substr($feedback->user->name, 0, 2))); ?>
+
                                                                         </span>
                                                                     </div>
                                                                     <div>
                                                                         <div class="flex items-center gap-2">
-                                                                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ $feedback->user->name }}</span>
-                                                                            <span class="px-2 py-0.5 text-xs font-bold rounded-full {{ $feedback->user->role === 'internal' ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-blue-600 text-white' }}">
-                                                                                {{ $feedback->user->role === 'internal' ? '👔 Employee' : '👤 Client' }}
+                                                                            <span class="font-bold text-gray-900 dark:text-white text-sm"><?php echo e($feedback->user->name); ?></span>
+                                                                            <span class="px-2 py-0.5 text-xs font-bold rounded-full <?php echo e($feedback->user->role === 'internal' ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-blue-600 text-white'); ?>">
+                                                                                <?php echo e($feedback->user->role === 'internal' ? '👔 Employee' : '👤 Client'); ?>
+
                                                                             </span>
                                                                         </div>
-                                                                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ $feedback->created_at->diffForHumans() }}</span>
+                                                                        <span class="text-xs text-gray-500 dark:text-gray-400"><?php echo e($feedback->created_at->diffForHumans()); ?></span>
                                                                     </div>
                                                                 </div>
                                                                 <span class="px-3 py-1 text-xs font-bold rounded-full
-                                                                    {{ $feedback->status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}
-                                                                    {{ $feedback->status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
-                                                                    {{ $feedback->status === 'blocked' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : '' }}
-                                                                    {{ $feedback->status === 'pending' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '' }}
+                                                                    <?php echo e($feedback->status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''); ?>
+
+                                                                    <?php echo e($feedback->status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''); ?>
+
+                                                                    <?php echo e($feedback->status === 'blocked' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : ''); ?>
+
+                                                                    <?php echo e($feedback->status === 'pending' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : ''); ?>
+
                                                                 ">
-                                                                    {{ ucfirst($feedback->status) }}
+                                                                    <?php echo e(ucfirst($feedback->status)); ?>
+
                                                                 </span>
                                                             </div>
-                                                            @if($feedback->comment)
+                                                            <?php if($feedback->comment): ?>
                                                                 <div class="pl-10 mt-2">
-                                                                    <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{{ $feedback->comment }}</p>
+                                                                    <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed"><?php echo e($feedback->comment); ?></p>
                                                                 </div>
-                                                            @else
+                                                            <?php else: ?>
                                                                 <div class="pl-10 mt-2">
-                                                                    <p class="text-xs italic text-gray-500 dark:text-gray-400">Status updated to: {{ ucfirst($feedback->status) }}</p>
+                                                                    <p class="text-xs italic text-gray-500 dark:text-gray-400">Status updated to: <?php echo e(ucfirst($feedback->status)); ?></p>
                                                                 </div>
-                                                            @endif
-                                                            @if($feedback->attachment_path)
-                                                                <a href="{{ Storage::url($feedback->attachment_path) }}" target="_blank" 
+                                                            <?php endif; ?>
+                                                            <?php if($feedback->attachment_path): ?>
+                                                                <a href="<?php echo e(Storage::url($feedback->attachment_path)); ?>" target="_blank" 
                                                                     class="inline-flex items-center gap-2 mt-3 ml-10 px-3 py-1.5 text-xs font-medium bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-all">
                                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                                                                     </svg>
                                                                     View Attachment
                                                                 </a>
-                                                            @endif
+                                                            <?php endif; ?>
                                                         </div>
-                                                    @empty
+                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                                         <div class="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
                                                             No feedback yet
                                                         </div>
-                                                    @endforelse
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
-                                        @endif
+                                        <?php endif; ?>
                                     </div>
 
                                     <!-- Footer: Edit & Delete Buttons -->
                                     <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                                        <a href="{{ route('uat.test-cases.edit', [$project, $testCase]) }}"
+                                        <a href="<?php echo e(route('uat.test-cases.edit', [$project, $testCase])); ?>"
                                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-all">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -474,10 +507,10 @@
                                             Edit
                                         </a>
                                         
-                                        <form action="{{ route('uat.test-cases.destroy', [$project, $testCase]) }}" method="POST" 
+                                        <form action="<?php echo e(route('uat.test-cases.destroy', [$project, $testCase])); ?>" method="POST" 
                                             onsubmit="return confirm('Are you sure you want to delete this test case?')">
-                                            @csrf
-                                            @method('DELETE')
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('DELETE'); ?>
                                             <button type="submit" 
                                                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-full transition-all">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -488,9 +521,9 @@
                                         </form>
                                     </div>
                                 </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
-                    @else
+                    <?php else: ?>
                         <div class="text-center py-12">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -498,13 +531,13 @@
                             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No test cases</h3>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a test case.</p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
-    @push('scripts')
+    <?php $__env->startPush('scripts'); ?>
     <script>
         function copyUrl(url) {
             navigator.clipboard.writeText(url).then(() => {
@@ -512,6 +545,16 @@
             });
         }
     </script>
-    @endpush
-</x-app-layout>
+    <?php $__env->stopPush(); ?>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $attributes = $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $component = $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
 
+<?php /**PATH F:\Project\salary\resources\views/uat/show.blade.php ENDPATH**/ ?>

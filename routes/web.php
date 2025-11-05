@@ -32,6 +32,7 @@ Route::get('/uat/public/{token}/updates', [UatPublicController::class, 'getUpdat
 Route::post('/uat/public/{token}/authenticate', [UatPublicController::class, 'authenticate'])->name('uat.public.authenticate');
 Route::post('/uat/public/{token}/users', [UatPublicController::class, 'addUser'])->name('uat.public.users.add');
 Route::post('/uat/public/{token}/test-cases', [UatPublicController::class, 'storeTestCase'])->name('uat.public.test-cases.store');
+Route::delete('/uat/public/{token}/test-cases/{testCase}', [UatPublicController::class, 'destroyTestCase'])->name('uat.public.test-cases.destroy');
 Route::post('/uat/public/{token}/test-cases/{testCase}/feedback', [UatPublicController::class, 'submitFeedback'])->name('uat.public.feedback');
 Route::post('/uat/public/{token}/test-cases/{testCase}/status', [UatPublicController::class, 'updateStatus'])->name('uat.public.status');
 
@@ -187,6 +188,7 @@ Route::middleware('auth')->group(function () {
     // UAT routes
     Route::resource('uat', UatProjectController::class)->parameters(['uat' => 'project']);
     Route::post('uat/{project}/test-cases', [UatProjectController::class, 'storeTestCase'])->name('uat.test-cases.store');
+    Route::get('uat/{project}/test-cases/{testCase}/edit', [UatProjectController::class, 'editTestCase'])->name('uat.test-cases.edit');
     Route::put('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'updateTestCase'])->name('uat.test-cases.update');
     Route::delete('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'destroyTestCase'])->name('uat.test-cases.destroy');
     Route::post('uat/{project}/users', [UatProjectController::class, 'addUser'])->name('uat.users.add');

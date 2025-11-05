@@ -381,16 +381,79 @@
                                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Fill in the details below to create a comprehensive test case</p>
                                         </div>
                                         
-                                        <form action="{{ route('uat.public.test-cases.store', $project->unique_token) }}" method="POST" 
-                                            x-data="{ 
-                                                steps: [{ text: '' }],
-                                                addStep() { this.steps.push({ text: '' }); },
-                                                removeStep(index) { if (this.steps.length > 1) this.steps.splice(index, 1); }
-                                            }" 
-                                            class="p-6 space-y-6">
-                                            @csrf
+                        <form action="{{ route('uat.public.test-cases.store', $project->unique_token) }}" method="POST" 
+                            x-data="{ 
+                                steps: [{ text: '' }],
+                                addStep() { this.steps.push({ text: '' }); },
+                                removeStep(index) { if (this.steps.length > 1) this.steps.splice(index, 1); },
+                                descriptionEditor: null,
+                                stepsEditor: null,
+                                expectedResultEditor: null,
+                                initEditors() {
+                                    setTimeout(() => {
+                                        if (this.$refs.descriptionEditor && !this.descriptionEditor) {
+                                            this.descriptionEditor = new Quill(this.$refs.descriptionEditor, {
+                                                theme: 'snow',
+                                                placeholder: 'Brief description of what this test case covers...',
+                                                modules: {
+                                                    toolbar: [
+                                                        ['bold', 'italic', 'underline', 'strike'],
+                                                        ['blockquote', 'code-block'],
+                                                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                                        [{ 'header': [1, 2, 3, false] }],
+                                                        ['link'],
+                                                        ['clean']
+                                                    ]
+                                                }
+                                            });
+                                        }
 
-                                            <!-- Title & Priority Row -->
+                                        if (this.$refs.stepsEditor && !this.stepsEditor) {
+                                            this.stepsEditor = new Quill(this.$refs.stepsEditor, {
+                                                theme: 'snow',
+                                                placeholder: 'Enter testing steps...',
+                                                modules: {
+                                                    toolbar: [
+                                                        ['bold', 'italic', 'underline'],
+                                                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                                        ['link', 'code-block'],
+                                                        ['clean']
+                                                    ]
+                                                }
+                                            });
+                                        }
+
+                                        if (this.$refs.expectedResultEditor && !this.expectedResultEditor) {
+                                            this.expectedResultEditor = new Quill(this.$refs.expectedResultEditor, {
+                                                theme: 'snow',
+                                                placeholder: 'What should happen when the test is performed correctly...',
+                                                modules: {
+                                                    toolbar: [
+                                                        ['bold', 'italic', 'underline'],
+                                                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                                        ['link', 'code-block'],
+                                                        ['clean']
+                                                    ]
+                                                }
+                                            });
+                                        }
+                                    }, 100);
+                                }
+                            }" 
+                            x-init="initEditors()"
+                            @submit="
+                                if (descriptionEditor) {
+                                    $event.target.querySelector('input[name=description]').value = descriptionEditor.root.innerHTML;
+                                }
+                                if (stepsEditor) {
+                                    $event.target.querySelector('input[name=steps]').value = stepsEditor.root.innerHTML;
+                                }
+                                if (expectedResultEditor) {
+                                    $event.target.querySelector('input[name=expected_result]').value = expectedResultEditor.root.innerHTML;
+                                }
+                            "
+                            class="p-6 space-y-6">
+                            @csrf                                            <!-- Title & Priority Row -->
                                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                                 <div class="lg:col-span-2">
                                                     <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
@@ -434,55 +497,22 @@
                                                         Description
                                                     </span>
                                                 </label>
-                                                <textarea name="description" rows="2" 
-                                                    placeholder="Brief description of what this test case covers..."
-                                                    class="block w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all"></textarea>
+                                                <div x-ref="descriptionEditor" class="bg-white dark:bg-gray-700"></div>
+                                                <input type="hidden" name="description">
                                             </div>
 
                                             <!-- Steps to Test -->
                                             <div>
-                                                <div class="flex items-center justify-between mb-3">
-                                                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300">
-                                                        <span class="flex items-center gap-2">
-                                                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                                                            </svg>
-                                                            Testing Steps
-                                                        </span>
-                                                    </label>
-                                                    <button type="button" @click="addStep()" 
-                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-full shadow-md hover:shadow-lg transition-all">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                                                    <span class="flex items-center gap-2">
+                                                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                                                         </svg>
-                                                        Add Step
-                                                    </button>
-                                                </div>
-                                                
-                                                <div class="space-y-3">
-                                                    <template x-for="(step, index) in steps" :key="index">
-                                                        <div class="flex items-start gap-3 group">
-                                                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-800 dark:text-blue-200 font-bold text-sm mt-2">
-                                                                <span x-text="index + 1"></span>
-                                                            </div>
-                                                            <div class="flex-1">
-                                                                <input type="text" :name="'step_' + (index + 1)" 
-                                                                    x-model="step.text"
-                                                                    :placeholder="'Step ' + (index + 1) + ': Enter action...'"
-                                                                    class="block w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all">
-                                                            </div>
-                                                            <button type="button" @click="removeStep(index)" 
-                                                                x-show="steps.length > 1"
-                                                                class="flex-shrink-0 w-8 h-8 mt-2 rounded-lg bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                                
-                                                <input type="hidden" name="steps" x-bind:value="steps.map((s, i) => (i + 1) + '. ' + s.text).filter(s => s.length > 3).join('\n')">
+                                                        Testing Steps
+                                                    </span>
+                                                </label>
+                                                <div x-ref="stepsEditor" class="bg-white dark:bg-gray-700"></div>
+                                                <input type="hidden" name="steps">
                                             </div>
 
                                             <!-- Expected Result -->
@@ -495,9 +525,8 @@
                                                         Expected Result
                                                     </span>
                                                 </label>
-                                                <textarea name="expected_result" rows="3" 
-                                                    placeholder="What should happen when the test is performed correctly..."
-                                                    class="block w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 transition-all"></textarea>
+                                                <div x-ref="expectedResultEditor" class="bg-white dark:bg-gray-700"></div>
+                                                <input type="hidden" name="expected_result">
                                             </div>
 
                                             <!-- Action Buttons -->
@@ -554,7 +583,9 @@
                                                             </span>
                                                         </div>
                                                         @if($testCase->description)
-                                                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ $testCase->description }}</p>
+                                                            <div class="text-sm text-gray-600 dark:text-gray-400 mb-3 prose prose-sm dark:prose-invert max-w-none">
+                                                                {!! $testCase->description !!}
+                                                            </div>
                                                         @endif
                                                     </div>
 
@@ -588,30 +619,20 @@
 
                                                 <div x-show="expandedCase === {{ $testCase->id }}" x-collapse class="space-y-4 mb-4">
                                                     @if($testCase->steps)
-                                                        @php
-                                                            $stepsList = array_filter(explode("\n", $testCase->steps));
-                                                        @endphp
                                                         <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                             <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wide">Steps to Test</h5>
-                                                            <ol class="space-y-3">
-                                                                @foreach($stepsList as $stepIndex => $step)
-                                                                    <li class="flex gap-3">
-                                                                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-black dark:bg-white flex items-center justify-center text-xs font-bold text-white dark:text-black">
-                                                                            {{ $stepIndex + 1 }}
-                                                                        </span>
-                                                                        <span class="flex-1 text-gray-700 dark:text-gray-300 leading-relaxed pt-0.5">
-                                                                            {{ trim(preg_replace('/^\d+\.\s*/', '', $step)) }}
-                                                                        </span>
-                                                                    </li>
-                                                                @endforeach
-                                                            </ol>
+                                                            <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
+                                                                {!! $testCase->steps !!}
+                                                            </div>
                                                         </div>
                                                     @endif
 
                                                     @if($testCase->expected_result)
                                                         <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                             <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-2 uppercase tracking-wide">Expected Result</h5>
-                                                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ $testCase->expected_result }}</p>
+                                                            <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                                {!! $testCase->expected_result !!}
+                                                            </div>
                                                         </div>
                                                     @endif
                                                 </div>
@@ -884,7 +905,7 @@
                                             @if($uatUser->isInternal())
                                                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
                                                     <button type="button"
-                                                        @click="deleteTestCaseId = {{ $testCase->id }}; deleteFormAction = '{{ route('uat.test-cases.destroy', [$project, $testCase]) }}'"
+                                                        @click="deleteTestCaseId = {{ $testCase->id }}; deleteFormAction = '{{ route('uat.public.test-cases.destroy', [$project->unique_token, $testCase]) }}'"
                                                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-full transition-all">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>

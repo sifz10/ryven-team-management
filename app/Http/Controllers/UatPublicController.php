@@ -252,5 +252,32 @@ class UatPublicController extends Controller
 
         return back()->with('status', 'User invited successfully! An invitation email has been sent to ' . $newUser->email);
     }
+
+    public function destroyTestCase(Request $request, $token, UatTestCase $testCase)
+    {
+        $project = UatProject::where('unique_token', $token)->firstOrFail();
+        
+        // Check if user is authenticated
+        if (!$request->session()->has('uat_user_email_' . $project->id)) {
+            return back()->with('error', 'Please authenticate first.');
+        }
+
+        $email = $request->session()->get('uat_user_email_' . $project->id);
+        $uatUser = $project->users()->where('email', $email)->firstOrFail();
+
+        // Only internal users can delete test cases
+        if ($uatUser->role !== 'internal') {
+            return back()->with('error', 'You do not have permission to delete test cases.');
+        }
+
+        // Verify the test case belongs to this project
+        if ($testCase->uat_project_id !== $project->id) {
+            return back()->with('error', 'Test case not found in this project.');
+        }
+
+        $testCase->delete();
+        
+        return back()->with('status', 'Test case deleted successfully!');
+    }
 }
 

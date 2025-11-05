@@ -175,6 +175,16 @@ class UatProjectController extends Controller
             ->with('status', 'Test case created successfully!');
     }
 
+    public function editTestCase(UatProject $project, UatTestCase $testCase)
+    {
+        // Ensure the test case belongs to the project
+        if ($testCase->uat_project_id !== $project->id) {
+            abort(404);
+        }
+
+        return view('uat.edit-test-case', compact('project', 'testCase'));
+    }
+
     public function updateTestCase(Request $request, UatProject $project, UatTestCase $testCase)
     {
         $validated = $request->validate([
