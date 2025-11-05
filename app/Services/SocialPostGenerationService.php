@@ -93,6 +93,10 @@ class SocialPostGenerationService
         }
         
         $prompt .= "\nGenerate an engaging post following this structure:\n";
+        $prompt .= "Please do not use any bold or italics or other formatting also use line breaks for readability and consistency.\n\n";
+        $prompt .= "Do not use image links.\n\n";
+        $prompt .= "Do not use emojis.\n\n";
+        $prompt .= "Use voice tone more casual and conversational.\n\n";
         $prompt .= "1. Hook: Attention-grabbing opening line\n";
         $prompt .= "2. Problem: Identify the pain point or challenge\n";
         $prompt .= "3. Value: Provide actionable insights or solution\n";
