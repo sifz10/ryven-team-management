@@ -43,7 +43,7 @@
                 <!-- Project Description -->
                 <div style="margin: 0 0 30px 0; padding: 20px; background-color: #f9fafb; border-radius: 8px;">
                     <h3 style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px; font-weight: 600;">Project Overview</h3>
-                    <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">{{ $project->description }}</p>
+                    <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">{!! $project->description !!}</p>
                 </div>
             @endif
 

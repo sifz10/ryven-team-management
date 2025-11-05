@@ -6,7 +6,9 @@ use App\Models\ChecklistTemplate;
 use App\Models\ChecklistTemplateItem;
 use App\Models\DailyChecklist;
 use App\Models\DailyChecklistItem;
+use App\Models\DailyWorkSubmission;
 use App\Models\Employee;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -249,12 +251,59 @@ class ChecklistController extends Controller
     public function publicView($token)
     {
         $checklist = DailyChecklist::where('email_token', $token)
-            ->with(['template', 'items', 'employee'])
+            ->with(['template', 'items', 'employee', 'workSubmissions.project'])
             ->firstOrFail();
 
         // Check if link has expired (12 hours after email was sent)
         $isExpired = $checklist->email_sent_at && $checklist->email_sent_at->copy()->addHours(12)->isPast();
 
-        return view('checklist.public', compact('checklist', 'isExpired'));
+        // Get active projects for dropdown
+        $availableProjects = Project::where('status', 'active')->orderBy('name')->get();
+
+        return view('checklist.public', compact('checklist', 'isExpired', 'availableProjects'));
+    }
+
+    // Store work submission from public checklist
+    public function storeWorkSubmission(Request $request, $token)
+    {
+        $checklist = DailyChecklist::where('email_token', $token)->firstOrFail();
+
+        // Check if link has expired
+        if ($checklist->email_sent_at && $checklist->email_sent_at->copy()->addHours(12)->isPast()) {
+            return redirect()->route('checklist.public.view', ['token' => $token])
+                ->with('error', 'This checklist link has expired. Links are valid for 12 hours after sending.');
+        }
+
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'work_description' => 'required|string|max:1000',
+        ]);
+
+        $checklist->workSubmissions()->create([
+            'employee_id' => $checklist->employee_id,
+            'project_id' => $validated['project_id'],
+            'work_description' => $validated['work_description'],
+        ]);
+
+        return redirect()->route('checklist.public.view', ['token' => $token])
+            ->with('status', 'Work submitted successfully!');
+    }
+
+    // Delete work submission from public checklist
+    public function deleteWorkSubmission($token, $submissionId)
+    {
+        $checklist = DailyChecklist::where('email_token', $token)->firstOrFail();
+
+        // Check if link has expired
+        if ($checklist->email_sent_at && $checklist->email_sent_at->copy()->addHours(12)->isPast()) {
+            return redirect()->route('checklist.public.view', ['token' => $token])
+                ->with('error', 'This checklist link has expired. Links are valid for 12 hours after sending.');
+        }
+
+        $submission = $checklist->workSubmissions()->findOrFail($submissionId);
+        $submission->delete();
+
+        return redirect()->route('checklist.public.view', ['token' => $token])
+            ->with('status', 'Work entry deleted successfully!');
     }
 }

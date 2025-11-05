@@ -11,6 +11,7 @@ use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\GitHubWebhookController;
 use App\Http\Controllers\GitHubPullRequestController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\UatProjectController;
 use App\Http\Controllers\UatPublicController;
 use App\Http\Controllers\PersonalNoteController;
@@ -25,6 +26,8 @@ Route::get('/', function () {
 // Public checklist routes (no authentication required)
 Route::get('/checklist/{token}', [ChecklistController::class, 'publicView'])->name('checklist.public.view');
 Route::get('/checklist/{token}/item/{item}/toggle', [ChecklistController::class, 'publicToggleItem'])->name('checklist.public.toggle');
+Route::post('/checklist/{token}/work', [ChecklistController::class, 'storeWorkSubmission'])->name('checklist.public.work.store');
+Route::delete('/checklist/{token}/work/{submission}', [ChecklistController::class, 'deleteWorkSubmission'])->name('checklist.public.work.delete');
 
 // Public UAT routes (no authentication required)
 Route::get('/uat/public/{token}', [UatPublicController::class, 'view'])->name('uat.public.view');
@@ -60,6 +63,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/github/pr/{log}/merge', [GitHubPullRequestController::class, 'merge'])->name('github.pr.merge');
     Route::post('/github/pr/{log}/close', [GitHubPullRequestController::class, 'close'])->name('github.pr.close');
     Route::post('/github/pr/{log}/ai-review', [GitHubPullRequestController::class, 'generateAIReview'])->name('github.pr.aiReview');
+    
+    // Project Management routes
+    Route::resource('projects', ProjectController::class);
 });
 
 // SOP page (authenticated)

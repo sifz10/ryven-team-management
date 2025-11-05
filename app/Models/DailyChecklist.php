@@ -36,6 +36,11 @@ class DailyChecklist extends Model
         return $this->hasMany(DailyChecklistItem::class);
     }
 
+    public function workSubmissions(): HasMany
+    {
+        return $this->hasMany(DailyWorkSubmission::class);
+    }
+
     public function getCompletionPercentageAttribute(): float
     {
         $total = $this->items()->count();

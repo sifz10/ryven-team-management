@@ -53,7 +53,7 @@
                                             
                                             <?php if($project->description): ?>
                                                 <p class="text-gray-600 dark:text-gray-400 mb-3">
-                                                    <?php echo e(Str::limit($project->description, 150)); ?>
+                                                    <?php echo Str::limit($project->description, 150); ?>
 
                                                 </p>
                                             <?php endif; ?>

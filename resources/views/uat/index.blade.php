@@ -38,7 +38,7 @@
                                             
                                             @if($project->description)
                                                 <p class="text-gray-600 dark:text-gray-400 mb-3">
-                                                    {{ Str::limit($project->description, 150) }}
+                                                    {!! Str::limit($project->description, 150) !!}
                                                 </p>
                                             @endif
 

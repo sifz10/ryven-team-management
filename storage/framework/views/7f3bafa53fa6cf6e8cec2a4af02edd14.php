@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>{{ $project->name }} - UAT</title>
-        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+        <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+        <title><?php echo e($project->name); ?> - UAT</title>
+        <link rel="icon" type="image/png" href="<?php echo e(asset('favicon.png')); ?>">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     </head>
     <body class="font-sans antialiased bg-gray-50 dark:bg-gray-900" x-data="{ 
         theme: localStorage.theme || 'light',
@@ -22,7 +22,7 @@
         },
         async fetchUpdates() {
             try {
-                const response = await fetch('{{ route('uat.public.updates', $project->unique_token) }}');
+                const response = await fetch('<?php echo e(route('uat.public.updates', $project->unique_token)); ?>');
                 if (response.ok) {
                     this.updateData = await response.json();
                     this.lastUpdate = new Date().toLocaleTimeString();
@@ -53,9 +53,9 @@
         }
     }" x-init="
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        @if($uatUser)
+        <?php if($uatUser): ?>
             fetchUpdates().then(() => startPolling());
-        @endif
+        <?php endif; ?>
     " @beforeunload.window="stopPolling()">
         
         <!-- Modern Header with Glassmorphism -->
@@ -63,18 +63,22 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center gap-4">
-                        <img src="{{ asset('black-logo.png') }}" alt="Ryven Logo" class="h-12 w-auto dark:invert">
+                        <img src="<?php echo e(asset('black-logo.png')); ?>" alt="Ryven Logo" class="h-12 w-auto dark:invert">
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $project->name }}</h1>
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><?php echo e($project->name); ?></h1>
                             <div class="flex items-center gap-2 mt-1">
                                 <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full
-                                    {{ $project->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}
-                                    {{ $project->status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : '' }}
-                                    {{ $project->status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
+                                    <?php echo e($project->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''); ?>
+
+                                    <?php echo e($project->status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : ''); ?>
+
+                                    <?php echo e($project->status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''); ?>
+
                                 ">
-                                    {{ ucfirst($project->status) }}
+                                    <?php echo e(ucfirst($project->status)); ?>
+
                                 </span>
-                                @if($uatUser)
+                                <?php if($uatUser): ?>
                                     <span class="flex items-center gap-1.5 px-2.5 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-semibold rounded-full">
                                         <span class="relative flex h-2 w-2">
                                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -82,15 +86,16 @@
                                         </span>
                                         Live
                                     </span>
-                                @endif
-                                @if($project->deadline)
+                                <?php endif; ?>
+                                <?php if($project->deadline): ?>
                                     <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                         </svg>
-                                        Due {{ $project->deadline->format('M d, Y') }}
+                                        Due <?php echo e($project->deadline->format('M d, Y')); ?>
+
                                     </span>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -107,23 +112,25 @@
                             </svg>
                         </button>
 
-                        @if($uatUser)
+                        <?php if($uatUser): ?>
                             <div class="flex items-center gap-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                                <div class="w-10 h-10 rounded-full {{ $uatUser->role === 'internal' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-gray-500 to-gray-600' }} flex items-center justify-center shadow-lg">
+                                <div class="w-10 h-10 rounded-full <?php echo e($uatUser->role === 'internal' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-gray-500 to-gray-600'); ?> flex items-center justify-center shadow-lg">
                                     <span class="text-sm font-bold text-white">
-                                        {{ strtoupper(substr($uatUser->name, 0, 2)) }}
+                                        <?php echo e(strtoupper(substr($uatUser->name, 0, 2))); ?>
+
                                     </span>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $uatUser->name }}</div>
+                                    <div class="text-sm font-semibold text-gray-900 dark:text-white"><?php echo e($uatUser->name); ?></div>
                                     <div class="text-xs">
-                                        <span class="px-2 py-0.5 rounded-full {{ $uatUser->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200' }}">
-                                            {{ $uatUser->role === 'internal' ? '👔 Employee' : '👤 Client' }}
+                                        <span class="px-2 py-0.5 rounded-full <?php echo e($uatUser->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200'); ?>">
+                                            <?php echo e($uatUser->role === 'internal' ? '👔 Employee' : '👤 Client'); ?>
+
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -134,7 +141,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 <!-- Toast Notifications -->
-                @if (session('status'))
+                <?php if(session('status')): ?>
                     <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" 
                         class="mb-6 p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-lg flex items-center gap-3 animate-slide-in">
                         <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -142,16 +149,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                         </div>
-                        <div class="flex-1">{{ session('status') }}</div>
+                        <div class="flex-1"><?php echo e(session('status')); ?></div>
                         <button @click="show = false" class="p-1 hover:bg-white/20 rounded-lg transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                @if (session('error'))
+                <?php if(session('error')): ?>
                     <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
                         class="mb-6 p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-lg flex items-center gap-3 animate-slide-in">
                         <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -159,17 +166,17 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </div>
-                        <div class="flex-1">{{ session('error') }}</div>
+                        <div class="flex-1"><?php echo e(session('error')); ?></div>
                         <button @click="show = false" class="p-1 hover:bg-white/20 rounded-lg transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
                     </div>
-                @endif
+                <?php endif; ?>
 
                 <!-- Authentication Card -->
-                @if(!$uatUser)
+                <?php if(!$uatUser): ?>
                     <div class="min-h-[70vh] flex items-center justify-center">
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-gray-200 dark:border-gray-700">
                             <div class="text-center mb-8">
@@ -182,8 +189,8 @@
                                 <p class="text-gray-600 dark:text-gray-400">Please enter your registered email to access this UAT project</p>
                             </div>
 
-                            <form action="{{ route('uat.public.authenticate', $project->unique_token) }}" method="POST" class="space-y-4">
-                                @csrf
+                            <form action="<?php echo e(route('uat.public.authenticate', $project->unique_token)); ?>" method="POST" class="space-y-4">
+                                <?php echo csrf_field(); ?>
                                 <div>
                                     <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Email Address
@@ -202,9 +209,9 @@
                             </form>
                         </div>
                     </div>
-                @else
+                <?php else: ?>
                     <!-- Project Description -->
-                    @if($project->description)
+                    <?php if($project->description): ?>
                         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
                             <div class="flex items-start gap-3">
                                 <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -214,14 +221,14 @@
                                 </div>
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Project Overview</h3>
-                                    <p class="text-gray-600 dark:text-gray-300">{!! $project->description !!}</p>
+                                    <p class="text-gray-600 dark:text-gray-300"><?php echo $project->description; ?></p>
                                 </div>
                             </div>
                         </div>
-                    @endif
+                    <?php endif; ?>
 
                     <!-- Invite Users Section (Internal Only) -->
-                    @if($uatUser->isInternal())
+                    <?php if($uatUser->isInternal()): ?>
                         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6" 
                             x-data="{ showInviteForm: false }">
                             <div class="p-6">
@@ -234,7 +241,7 @@
                                         </div>
                                         <div>
                                             <h3 class="text-xl font-bold text-gray-900 dark:text-white">Team Members</h3>
-                                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $project->users->count() }} members • Invite more people</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400"><?php echo e($project->users->count()); ?> members • Invite more people</p>
                                         </div>
                                     </div>
                                     <button @click="showInviteForm = !showInviteForm" 
@@ -248,8 +255,8 @@
 
                                 <!-- Invite User Form -->
                                 <div x-show="showInviteForm" x-collapse class="mt-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-dashed border-blue-300 dark:border-blue-600">
-                                    <form action="{{ route('uat.public.users.add', $project->unique_token) }}" method="POST" class="space-y-4">
-                                        @csrf
+                                    <form action="<?php echo e(route('uat.public.users.add', $project->unique_token)); ?>" method="POST" class="space-y-4">
+                                        <?php echo csrf_field(); ?>
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -305,33 +312,36 @@
 
                                 <!-- Current Team Members -->
                                 <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    @foreach($project->users as $member)
-                                        <div class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg {{ $member->id === $uatUser->id ? 'ring-2 ring-blue-500 dark:ring-blue-400' : '' }}">
-                                            <div class="w-12 h-12 rounded-full {{ $member->role === 'internal' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-gray-500 to-gray-600' }} flex items-center justify-center shadow-md">
+                                    <?php $__currentLoopData = $project->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $member): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <div class="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg <?php echo e($member->id === $uatUser->id ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''); ?>">
+                                            <div class="w-12 h-12 rounded-full <?php echo e($member->role === 'internal' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-gray-500 to-gray-600'); ?> flex items-center justify-center shadow-md">
                                                 <span class="text-sm font-bold text-white">
-                                                    {{ strtoupper(substr($member->name, 0, 2)) }}
+                                                    <?php echo e(strtoupper(substr($member->name, 0, 2))); ?>
+
                                                 </span>
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                                    {{ $member->name }}
-                                                    @if($member->id === $uatUser->id)
+                                                    <?php echo e($member->name); ?>
+
+                                                    <?php if($member->id === $uatUser->id): ?>
                                                         <span class="text-blue-600 dark:text-blue-400">(You)</span>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
-                                                {{-- <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $member->email }}</div> --}}
+                                                
                                                 <div class="text-xs mt-1">
-                                                    <span class="px-2 py-0.5 rounded-full {{ $member->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200' }}">
-                                                        {{ $member->role === 'internal' ? '👔 Employee' : '👤 Client' }}
+                                                    <span class="px-2 py-0.5 rounded-full <?php echo e($member->role === 'internal' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200'); ?>">
+                                                        <?php echo e($member->role === 'internal' ? '👔 Employee' : '👤 Client'); ?>
+
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
                             </div>
                         </div>
-                    @endif
+                    <?php endif; ?>
 
                     <!-- Test Cases Section -->
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700" 
@@ -352,11 +362,11 @@
                                     </div>
                                     <div>
                                         <h3 class="text-xl font-bold text-gray-900 dark:text-white">Test Cases</h3>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $project->testCases->count() }} test cases available</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400"><?php echo e($project->testCases->count()); ?> test cases available</p>
                                     </div>
                                 </div>
 
-                                @if($uatUser->isInternal())
+                                <?php if($uatUser->isInternal()): ?>
                                     <button @click="showCreateForm = !showCreateForm" 
                                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-900/50 dark:focus:ring-white/50 transition-all transform">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,11 +374,11 @@
                                         </svg>
                                         <span x-text="showCreateForm ? 'Cancel' : 'Add Test Case'"></span>
                                     </button>
-                                @endif
+                                <?php endif; ?>
                             </div>
 
                             <!-- Create Test Case Form (Internal Users Only) -->
-                            @if($uatUser->isInternal())
+                            <?php if($uatUser->isInternal()): ?>
                                 <div x-show="showCreateForm" x-collapse class="mt-6">
                                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border-2 border-blue-200 dark:border-gray-600 overflow-hidden shadow-lg">
                                         <div class="bg-white dark:bg-gray-800 border-b border-blue-200 dark:border-gray-700 px-6 py-4">
@@ -381,7 +391,7 @@
                                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Fill in the details below to create a comprehensive test case</p>
                                         </div>
                                         
-                        <form action="{{ route('uat.public.test-cases.store', $project->unique_token) }}" method="POST" 
+                        <form action="<?php echo e(route('uat.public.test-cases.store', $project->unique_token)); ?>" method="POST" 
                             x-data="{ 
                                 steps: [{ text: '' }],
                                 addStep() { this.steps.push({ text: '' }); },
@@ -453,7 +463,7 @@
                                 }
                             "
                             class="p-6 space-y-6">
-                            @csrf                                            <!-- Title & Priority Row -->
+                            <?php echo csrf_field(); ?>                                            <!-- Title & Priority Row -->
                                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                                 <div class="lg:col-span-2">
                                                     <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
@@ -546,21 +556,21 @@
                                         </form>
                                     </div>
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
 
                         <!-- Test Cases List -->
                         <div class="divide-y divide-gray-200 dark:divide-gray-700">
-                            @if($project->testCases->count() > 0)
-                                @foreach($project->testCases as $index => $testCase)
-                                    @php
+                            <?php if($project->testCases->count() > 0): ?>
+                                <?php $__currentLoopData = $project->testCases; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $testCase): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <?php
                                         $userFeedback = $testCase->feedbacks->where('uat_user_id', $uatUser->id)->first();
-                                    @endphp
+                                    ?>
                                     <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                         <div class="flex items-start gap-4">
                                             <!-- Test Case Number Badge -->
                                             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center flex-shrink-0 shadow-lg">
-                                                <span class="text-lg font-bold text-white dark:text-gray-900">#{{ $index + 1 }}</span>
+                                                <span class="text-lg font-bold text-white dark:text-gray-900">#<?php echo e($index + 1); ?></span>
                                             </div>
 
                                             <div class="flex-1 min-w-0">
@@ -568,77 +578,98 @@
                                                 <div class="flex items-start justify-between gap-4 mb-3">
                                                     <div class="flex-1">
                                                         <div class="flex items-center gap-2 flex-wrap mb-2">
-                                                            <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ $testCase->title }}</h4>
+                                                            <h4 class="text-lg font-bold text-gray-900 dark:text-white"><?php echo e($testCase->title); ?></h4>
                                                             <span class="px-2.5 py-1 text-xs font-bold rounded-lg
-                                                                {{ $testCase->priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
-                                                                {{ $testCase->priority === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : '' }}
-                                                                {{ $testCase->priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : '' }}
-                                                                {{ $testCase->priority === 'low' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}
+                                                                <?php echo e($testCase->priority === 'critical' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''); ?>
+
+                                                                <?php echo e($testCase->priority === 'high' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : ''); ?>
+
+                                                                <?php echo e($testCase->priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : ''); ?>
+
+                                                                <?php echo e($testCase->priority === 'low' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''); ?>
+
                                                             ">
-                                                                {{ $testCase->priority === 'critical' ? '🔴' : '' }}
-                                                                {{ $testCase->priority === 'high' ? '🟠' : '' }}
-                                                                {{ $testCase->priority === 'medium' ? '🟡' : '' }}
-                                                                {{ $testCase->priority === 'low' ? '🟢' : '' }}
-                                                                {{ ucfirst($testCase->priority) }}
+                                                                <?php echo e($testCase->priority === 'critical' ? '🔴' : ''); ?>
+
+                                                                <?php echo e($testCase->priority === 'high' ? '🟠' : ''); ?>
+
+                                                                <?php echo e($testCase->priority === 'medium' ? '🟡' : ''); ?>
+
+                                                                <?php echo e($testCase->priority === 'low' ? '🟢' : ''); ?>
+
+                                                                <?php echo e(ucfirst($testCase->priority)); ?>
+
                                                             </span>
                                                         </div>
-                                                        @if($testCase->description)
+                                                        <?php if($testCase->description): ?>
                                                             <div class="text-sm text-gray-600 dark:text-gray-400 mb-3 prose prose-sm dark:prose-invert max-w-none">
-                                                                {!! $testCase->description !!}
+                                                                <?php echo $testCase->description; ?>
+
                                                             </div>
-                                                        @endif
+                                                        <?php endif; ?>
                                                     </div>
 
-                                                    @if($userFeedback)
+                                                    <?php if($userFeedback): ?>
                                                         <div class="flex-shrink-0">
                                                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold rounded-full shadow-sm
-                                                                {{ $userFeedback->status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}
-                                                                {{ $userFeedback->status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
-                                                                {{ $userFeedback->status === 'blocked' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : '' }}
-                                                                {{ $userFeedback->status === 'pending' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '' }}
+                                                                <?php echo e($userFeedback->status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''); ?>
+
+                                                                <?php echo e($userFeedback->status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''); ?>
+
+                                                                <?php echo e($userFeedback->status === 'blocked' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : ''); ?>
+
+                                                                <?php echo e($userFeedback->status === 'pending' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : ''); ?>
+
                                                             ">
-                                                                {{ $userFeedback->status === 'passed' ? '✅' : '' }}
-                                                                {{ $userFeedback->status === 'failed' ? '❌' : '' }}
-                                                                {{ $userFeedback->status === 'blocked' ? '🚫' : '' }}
-                                                                {{ $userFeedback->status === 'pending' ? '⏳' : '' }}
-                                                                {{ ucfirst($userFeedback->status) }}
+                                                                <?php echo e($userFeedback->status === 'passed' ? '✅' : ''); ?>
+
+                                                                <?php echo e($userFeedback->status === 'failed' ? '❌' : ''); ?>
+
+                                                                <?php echo e($userFeedback->status === 'blocked' ? '🚫' : ''); ?>
+
+                                                                <?php echo e($userFeedback->status === 'pending' ? '⏳' : ''); ?>
+
+                                                                <?php echo e(ucfirst($userFeedback->status)); ?>
+
                                                             </span>
                                                         </div>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
 
                                                 <!-- Expandable Details -->
-                                                <button @click="expandedCase = expandedCase === {{ $testCase->id }} ? null : {{ $testCase->id }}" 
+                                                <button @click="expandedCase = expandedCase === <?php echo e($testCase->id); ?> ? null : <?php echo e($testCase->id); ?>" 
                                                     type="button"
                                                     class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white mb-3 transition-colors">
-                                                    <svg class="w-4 h-4 transition-transform" :class="expandedCase === {{ $testCase->id }} ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="w-4 h-4 transition-transform" :class="expandedCase === <?php echo e($testCase->id); ?> ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                                     </svg>
-                                                    <span x-text="expandedCase === {{ $testCase->id }} ? 'Hide Details' : 'Show Details'"></span>
+                                                    <span x-text="expandedCase === <?php echo e($testCase->id); ?> ? 'Hide Details' : 'Show Details'"></span>
                                                 </button>
 
-                                                <div x-show="expandedCase === {{ $testCase->id }}" x-collapse class="space-y-4 mb-4">
-                                                    @if($testCase->steps)
+                                                <div x-show="expandedCase === <?php echo e($testCase->id); ?>" x-collapse class="space-y-4 mb-4">
+                                                    <?php if($testCase->steps): ?>
                                                         <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                             <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wide">Steps to Test</h5>
                                                             <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
-                                                                {!! $testCase->steps !!}
+                                                                <?php echo $testCase->steps; ?>
+
                                                             </div>
                                                         </div>
-                                                    @endif
+                                                    <?php endif; ?>
 
-                                                    @if($testCase->expected_result)
+                                                    <?php if($testCase->expected_result): ?>
                                                         <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                             <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-2 uppercase tracking-wide">Expected Result</h5>
                                                             <div class="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed">
-                                                                {!! $testCase->expected_result !!}
+                                                                <?php echo $testCase->expected_result; ?>
+
                                                             </div>
                                                         </div>
-                                                    @endif
+                                                    <?php endif; ?>
                                                 </div>
 
                                                 <!-- All Feedback (For Employees) -->
-                                                @if($uatUser->isInternal() && $testCase->feedbacks->count() > 0)
+                                                <?php if($uatUser->isInternal() && $testCase->feedbacks->count() > 0): ?>
                                                     <div class="mb-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
                                                         <div class="flex items-center gap-2 mb-4">
                                                             <div class="w-8 h-8 rounded-lg bg-black dark:bg-white flex items-center justify-center">
@@ -651,89 +682,96 @@
                                                         
                                                         <!-- Status Summary -->
                                                         <div class="flex flex-wrap gap-2 mb-4">
-                                                            @php
+                                                            <?php
                                                                 $feedbackCounts = $testCase->feedbacks->groupBy('status')->map->count();
-                                                            @endphp
-                                                            @if($feedbackCounts->get('passed', 0) > 0)
+                                                            ?>
+                                                            <?php if($feedbackCounts->get('passed', 0) > 0): ?>
                                                                 <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                                    ✅ {{ $feedbackCounts->get('passed') }} Passed
+                                                                    ✅ <?php echo e($feedbackCounts->get('passed')); ?> Passed
                                                                 </span>
-                                                            @endif
-                                                            @if($feedbackCounts->get('failed', 0) > 0)
+                                                            <?php endif; ?>
+                                                            <?php if($feedbackCounts->get('failed', 0) > 0): ?>
                                                                 <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                                                    ❌ {{ $feedbackCounts->get('failed') }} Failed
+                                                                    ❌ <?php echo e($feedbackCounts->get('failed')); ?> Failed
                                                                 </span>
-                                                            @endif
-                                                            @if($feedbackCounts->get('blocked', 0) > 0)
+                                                            <?php endif; ?>
+                                                            <?php if($feedbackCounts->get('blocked', 0) > 0): ?>
                                                                 <span class="px-3 py-1 text-xs font-bold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                                                                    🚫 {{ $feedbackCounts->get('blocked') }} Blocked
+                                                                    🚫 <?php echo e($feedbackCounts->get('blocked')); ?> Blocked
                                                                 </span>
-                                                            @endif
-                                                            @if($feedbackCounts->get('pending', 0) > 0)
+                                                            <?php endif; ?>
+                                                            <?php if($feedbackCounts->get('pending', 0) > 0): ?>
                                                                 <span class="px-3 py-1 text-xs font-bold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                                                                    ⏳ {{ $feedbackCounts->get('pending') }} Pending
+                                                                    ⏳ <?php echo e($feedbackCounts->get('pending')); ?> Pending
                                                                 </span>
-                                                            @endif
+                                                            <?php endif; ?>
                                                         </div>
 
                                                         <!-- Individual Feedback Items -->
                                                         <div class="space-y-3">
-                                                            @foreach($testCase->feedbacks as $feedback)
-                                                                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 {{ $feedback->user->role === 'external' ? 'border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700' }}">
+                                                            <?php $__currentLoopData = $testCase->feedbacks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feedback): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                                <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border-2 <?php echo e($feedback->user->role === 'external' ? 'border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700'); ?>">
                                                                     <div class="flex items-start justify-between mb-2">
                                                                         <div class="flex items-center gap-2">
-                                                                            <div class="w-8 h-8 rounded-full {{ $feedback->user->role === 'internal' ? 'bg-black dark:bg-white' : 'bg-blue-600 dark:bg-blue-500' }} flex items-center justify-center">
+                                                                            <div class="w-8 h-8 rounded-full <?php echo e($feedback->user->role === 'internal' ? 'bg-black dark:bg-white' : 'bg-blue-600 dark:bg-blue-500'); ?> flex items-center justify-center">
                                                                                 <span class="text-xs font-bold text-white dark:text-black">
-                                                                                    {{ strtoupper(substr($feedback->user->name, 0, 2)) }}
+                                                                                    <?php echo e(strtoupper(substr($feedback->user->name, 0, 2))); ?>
+
                                                                                 </span>
                                                                             </div>
                                                                             <div>
                                                                                 <div class="flex items-center gap-2">
-                                                                                    <span class="font-bold text-gray-900 dark:text-white text-sm">{{ $feedback->user->name }}</span>
-                                                                                    <span class="px-2 py-0.5 text-xs font-bold rounded-full {{ $feedback->user->role === 'internal' ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-blue-600 text-white' }}">
-                                                                                        {{ $feedback->user->role === 'internal' ? '👔 Employee' : '👤 Client' }}
+                                                                                    <span class="font-bold text-gray-900 dark:text-white text-sm"><?php echo e($feedback->user->name); ?></span>
+                                                                                    <span class="px-2 py-0.5 text-xs font-bold rounded-full <?php echo e($feedback->user->role === 'internal' ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-blue-600 text-white'); ?>">
+                                                                                        <?php echo e($feedback->user->role === 'internal' ? '👔 Employee' : '👤 Client'); ?>
+
                                                                                     </span>
-                                                                                    @if($feedback->user->id === $uatUser->id)
+                                                                                    <?php if($feedback->user->id === $uatUser->id): ?>
                                                                                         <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                                                                                             You
                                                                                         </span>
-                                                                                    @endif
+                                                                                    <?php endif; ?>
                                                                                 </div>
-                                                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $feedback->created_at->diffForHumans() }}</span>
+                                                                                <span class="text-xs text-gray-500 dark:text-gray-400"><?php echo e($feedback->created_at->diffForHumans()); ?></span>
                                                                             </div>
                                                                         </div>
                                                                         <span class="px-3 py-1 text-xs font-bold rounded-full
-                                                                            {{ $feedback->status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}
-                                                                            {{ $feedback->status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
-                                                                            {{ $feedback->status === 'blocked' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : '' }}
-                                                                            {{ $feedback->status === 'pending' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '' }}
+                                                                            <?php echo e($feedback->status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''); ?>
+
+                                                                            <?php echo e($feedback->status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''); ?>
+
+                                                                            <?php echo e($feedback->status === 'blocked' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : ''); ?>
+
+                                                                            <?php echo e($feedback->status === 'pending' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : ''); ?>
+
                                                                         ">
-                                                                            {{ ucfirst($feedback->status) }}
+                                                                            <?php echo e(ucfirst($feedback->status)); ?>
+
                                                                         </span>
                                                                     </div>
-                                                                    @if($feedback->comment)
+                                                                    <?php if($feedback->comment): ?>
                                                                         <div class="pl-10 mt-2">
-                                                                            <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{{ $feedback->comment }}</p>
+                                                                            <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed"><?php echo e($feedback->comment); ?></p>
                                                                         </div>
-                                                                    @else
+                                                                    <?php else: ?>
                                                                         <div class="pl-10 mt-2">
-                                                                            <p class="text-xs italic text-gray-500 dark:text-gray-400">Status updated to: {{ ucfirst($feedback->status) }}</p>
+                                                                            <p class="text-xs italic text-gray-500 dark:text-gray-400">Status updated to: <?php echo e(ucfirst($feedback->status)); ?></p>
                                                                         </div>
-                                                                    @endif
-                                                                    @if($feedback->attachment_path)
-                                                                        <a href="{{ Storage::url($feedback->attachment_path) }}" target="_blank" 
+                                                                    <?php endif; ?>
+                                                                    <?php if($feedback->attachment_path): ?>
+                                                                        <a href="<?php echo e(Storage::url($feedback->attachment_path)); ?>" target="_blank" 
                                                                             class="inline-flex items-center gap-2 mt-3 ml-10 px-3 py-1.5 text-xs font-medium bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-all">
                                                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                                                                             </svg>
                                                                             View Attachment
                                                                         </a>
-                                                                    @endif
+                                                                    <?php endif; ?>
                                                                 </div>
-                                                            @endforeach
+                                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                         </div>
                                                     </div>
-                                                @elseif(!$uatUser->isInternal() && $userFeedback && $userFeedback->comment)
+                                                <?php elseif(!$uatUser->isInternal() && $userFeedback && $userFeedback->comment): ?>
                                                     <!-- Your Previous Feedback (For Clients) -->
                                                     <div class="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                                                         <div class="flex items-start gap-3">
@@ -744,26 +782,26 @@
                                                             </div>
                                                             <div class="flex-1">
                                                                 <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-1">Your Feedback:</h5>
-                                                                <p class="text-sm text-gray-700 dark:text-gray-300">{{ $userFeedback->comment }}</p>
-                                                                @if($userFeedback->attachment_path)
-                                                                    <a href="{{ Storage::url($userFeedback->attachment_path) }}" target="_blank" 
+                                                                <p class="text-sm text-gray-700 dark:text-gray-300"><?php echo e($userFeedback->comment); ?></p>
+                                                                <?php if($userFeedback->attachment_path): ?>
+                                                                    <a href="<?php echo e(Storage::url($userFeedback->attachment_path)); ?>" target="_blank" 
                                                                         class="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline">
                                                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                                                                         </svg>
                                                                         View Attachment
                                                                     </a>
-                                                                @endif
+                                                                <?php endif; ?>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                @endif
+                                                <?php endif; ?>
 
                                                 <!-- Quick Status Buttons -->
                                                 <div class="flex flex-wrap gap-2 mb-3">
                                                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300 self-center">Quick Status:</span>
-                                                    <form action="{{ route('uat.public.status', [$project->unique_token, $testCase]) }}" method="POST" class="inline" title="Test completed successfully with expected results">
-                                                        @csrf
+                                                    <form action="<?php echo e(route('uat.public.status', [$project->unique_token, $testCase])); ?>" method="POST" class="inline" title="Test completed successfully with expected results">
+                                                        <?php echo csrf_field(); ?>
                                                         <input type="hidden" name="status" value="passed">
                                                         <button type="submit" 
                                                             class="inline-flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-full transition-all"
@@ -774,8 +812,8 @@
                                                             Passed
                                                         </button>
                                                     </form>
-                                                    <form action="{{ route('uat.public.status', [$project->unique_token, $testCase]) }}" method="POST" class="inline">
-                                                        @csrf
+                                                    <form action="<?php echo e(route('uat.public.status', [$project->unique_token, $testCase])); ?>" method="POST" class="inline">
+                                                        <?php echo csrf_field(); ?>
                                                         <input type="hidden" name="status" value="failed">
                                                         <button type="submit" 
                                                             class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full transition-all"
@@ -786,8 +824,8 @@
                                                             Failed
                                                         </button>
                                                     </form>
-                                                    <form action="{{ route('uat.public.status', [$project->unique_token, $testCase]) }}" method="POST" class="inline">
-                                                        @csrf
+                                                    <form action="<?php echo e(route('uat.public.status', [$project->unique_token, $testCase])); ?>" method="POST" class="inline">
+                                                        <?php echo csrf_field(); ?>
                                                         <input type="hidden" name="status" value="blocked">
                                                         <button type="submit" 
                                                             class="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-full transition-all"
@@ -801,33 +839,33 @@
                                                 </div>
 
                                                 <!-- Detailed Feedback Toggle -->
-                                                <button @click="activeFeedback = activeFeedback === {{ $testCase->id }} ? null : {{ $testCase->id }}" type="button"
+                                                <button @click="activeFeedback = activeFeedback === <?php echo e($testCase->id); ?> ? null : <?php echo e($testCase->id); ?>" type="button"
                                                     class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
                                                     </svg>
-                                                    <span x-text="activeFeedback === {{ $testCase->id }} ? 'Hide Feedback Form' : '{{ $userFeedback && $userFeedback->comment ? 'Update' : 'Add' }} Detailed Feedback'"></span>
+                                                    <span x-text="activeFeedback === <?php echo e($testCase->id); ?> ? 'Hide Feedback Form' : '<?php echo e($userFeedback && $userFeedback->comment ? 'Update' : 'Add'); ?> Detailed Feedback'"></span>
                                                 </button>
 
                                                 <!-- Detailed Feedback Form -->
-                                                <div x-show="activeFeedback === {{ $testCase->id }}" x-collapse class="mt-4 p-5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-600">
-                                                    <form action="{{ route('uat.public.feedback', [$project->unique_token, $testCase]) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                                                        @csrf
+                                                <div x-show="activeFeedback === <?php echo e($testCase->id); ?>" x-collapse class="mt-4 p-5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-600">
+                                                    <form action="<?php echo e(route('uat.public.feedback', [$project->unique_token, $testCase])); ?>" method="POST" enctype="multipart/form-data" class="space-y-4">
+                                                        <?php echo csrf_field(); ?>
                                                         <div>
                                                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</label>
                                                             <select name="status" required
                                                                 class="block w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-gray-900 dark:focus:border-white focus:ring-2 focus:ring-gray-900 dark:focus:ring-white transition-all">
-                                                                <option value="pending" {{ $userFeedback && $userFeedback->status === 'pending' ? 'selected' : '' }}>⏳ Pending</option>
-                                                                <option value="passed" {{ $userFeedback && $userFeedback->status === 'passed' ? 'selected' : '' }}>✅ Passed</option>
-                                                                <option value="failed" {{ $userFeedback && $userFeedback->status === 'failed' ? 'selected' : '' }}>❌ Failed</option>
-                                                                <option value="blocked" {{ $userFeedback && $userFeedback->status === 'blocked' ? 'selected' : '' }}>🚫 Blocked</option>
+                                                                <option value="pending" <?php echo e($userFeedback && $userFeedback->status === 'pending' ? 'selected' : ''); ?>>⏳ Pending</option>
+                                                                <option value="passed" <?php echo e($userFeedback && $userFeedback->status === 'passed' ? 'selected' : ''); ?>>✅ Passed</option>
+                                                                <option value="failed" <?php echo e($userFeedback && $userFeedback->status === 'failed' ? 'selected' : ''); ?>>❌ Failed</option>
+                                                                <option value="blocked" <?php echo e($userFeedback && $userFeedback->status === 'blocked' ? 'selected' : ''); ?>>🚫 Blocked</option>
                                                             </select>
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Comment</label>
                                                             <textarea name="comment" rows="4"
                                                                 class="block w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-gray-900 dark:focus:border-white focus:ring-2 focus:ring-gray-900 dark:focus:ring-white transition-all"
-                                                                placeholder="Share your feedback, issues found, or suggestions...">{{ $userFeedback ? $userFeedback->comment : '' }}</textarea>
+                                                                placeholder="Share your feedback, issues found, or suggestions..."><?php echo e($userFeedback ? $userFeedback->comment : ''); ?></textarea>
                                                         </div>
                                                         <div>
                                                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -864,7 +902,7 @@
                                                 </div>
 
                                                 <!-- Other Users Feedback (Internal Only) -->
-                                                @if($uatUser->isInternal() && $testCase->feedbacks->count() > 1)
+                                                <?php if($uatUser->isInternal() && $testCase->feedbacks->count() > 1): ?>
                                                     <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                                                         <h5 class="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -873,39 +911,44 @@
                                                             Team Feedback:
                                                         </h5>
                                                         <div class="space-y-2">
-                                                            @foreach($testCase->feedbacks->where('uat_user_id', '!=', $uatUser->id) as $feedback)
+                                                            <?php $__currentLoopData = $testCase->feedbacks->where('uat_user_id', '!=', $uatUser->id); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feedback): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                                 <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                                                     <div class="flex items-center justify-between mb-2">
                                                                         <div class="flex items-center gap-2">
                                                                             <div class="w-7 h-7 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
-                                                                                <span class="text-xs font-bold text-white">{{ strtoupper(substr($feedback->user->name, 0, 2)) }}</span>
+                                                                                <span class="text-xs font-bold text-white"><?php echo e(strtoupper(substr($feedback->user->name, 0, 2))); ?></span>
                                                                             </div>
-                                                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ $feedback->user->name }}</span>
+                                                                            <span class="text-sm font-semibold text-gray-900 dark:text-white"><?php echo e($feedback->user->name); ?></span>
                                                                         </div>
                                                                         <span class="px-2 py-0.5 text-xs font-bold rounded
-                                                                            {{ $feedback->status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : '' }}
-                                                                            {{ $feedback->status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : '' }}
-                                                                            {{ $feedback->status === 'blocked' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : '' }}
-                                                                            {{ $feedback->status === 'pending' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '' }}
+                                                                            <?php echo e($feedback->status === 'passed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''); ?>
+
+                                                                            <?php echo e($feedback->status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''); ?>
+
+                                                                            <?php echo e($feedback->status === 'blocked' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : ''); ?>
+
+                                                                            <?php echo e($feedback->status === 'pending' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : ''); ?>
+
                                                                         ">
-                                                                            {{ ucfirst($feedback->status) }}
+                                                                            <?php echo e(ucfirst($feedback->status)); ?>
+
                                                                         </span>
                                                                     </div>
-                                                                    @if($feedback->comment)
-                                                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ $feedback->comment }}</p>
-                                                                    @endif
+                                                                    <?php if($feedback->comment): ?>
+                                                                        <p class="text-sm text-gray-600 dark:text-gray-400"><?php echo e($feedback->comment); ?></p>
+                                                                    <?php endif; ?>
                                                                 </div>
-                                                            @endforeach
+                                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                         </div>
                                                     </div>
-                                                @endif
+                                                <?php endif; ?>
                                             </div>
 
                                             <!-- Delete Button (Employees Only) -->
-                                            @if($uatUser->isInternal())
+                                            <?php if($uatUser->isInternal()): ?>
                                                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
                                                     <button type="button"
-                                                        @click="deleteTestCaseId = {{ $testCase->id }}; deleteFormAction = '{{ route('uat.public.test-cases.destroy', [$project->unique_token, $testCase]) }}'"
+                                                        @click="deleteTestCaseId = <?php echo e($testCase->id); ?>; deleteFormAction = '<?php echo e(route('uat.public.test-cases.destroy', [$project->unique_token, $testCase])); ?>'"
                                                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-full transition-all">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -913,11 +956,11 @@
                                                         Delete Test Case
                                                     </button>
                                                 </div>
-                                            @endif
+                                            <?php endif; ?>
                                         </div>
                                     </div>
-                                @endforeach
-                            @else
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <?php else: ?>
                                 <div class="p-12 text-center">
                                     <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                         <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -927,7 +970,7 @@
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No test cases available</h3>
                                     <p class="text-gray-500 dark:text-gray-400">Test cases will appear here once they are added by the team.</p>
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
 
                         <!-- Delete Confirmation Modal -->
@@ -980,8 +1023,8 @@
                                         Cancel
                                     </button>
                                     <form :action="deleteFormAction" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('DELETE'); ?>
                                         <button type="submit"
                                             class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -994,7 +1037,7 @@
                             </div>
                         </div>
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
         </main>
 
@@ -1003,7 +1046,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div class="flex items-center justify-between">
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        © {{ date('Y') }} {{ $project->name }} - UAT System
+                        © <?php echo e(date('Y')); ?> <?php echo e($project->name); ?> - UAT System
                     </p>
                     <div class="flex items-center gap-2">
                         <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -1030,3 +1073,4 @@
         </style>
     </body>
 </html>
+<?php /**PATH F:\Project\salary\resources\views/uat/public/view.blade.php ENDPATH**/ ?>
