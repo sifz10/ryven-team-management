@@ -3,18 +3,26 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Welcome Section -->
-            <div class="bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-700">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-xl border border-gray-200 dark:border-gray-700">
                 <div class="p-6">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                         <div>
-                            <h2 class="text-2xl font-bold text-white">
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
                                 Welcome back, {{ $employee->first_name }}! 👋
                             </h2>
-                            <p class="text-gray-400 mt-1">{{ $employee->position }} • {{ $employee->department }}</p>
+                            <p class="text-gray-600 dark:text-gray-400 mt-1">{{ $employee->position }} • {{ $employee->department }}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-sm text-gray-400">Employee Since</p>
-                            <p class="text-white font-medium">{{ $employee->hired_at->format('M d, Y') }}</p>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="text-right mr-4">
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Employee Since</p>
+                                <p class="text-gray-900 dark:text-white font-medium">{{ $employee->hired_at->format('M d, Y') }}</p>
+                            </div>
+                            <x-black-button href="{{ route('employee.profile.edit') }}" class="inline-flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                View Profile
+                            </x-black-button>
                         </div>
                     </div>
                 </div>
@@ -23,11 +31,11 @@
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Total Payments -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-400 text-sm">Total Payments</p>
-                            <p class="text-2xl font-bold text-white mt-1">{{ $stats['total_payments'] }}</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">Total Payments</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['total_payments'] }}</p>
                         </div>
                         <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,15 +43,15 @@
                             </svg>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-500 mt-2">{{ $stats['this_month_payments'] }} this month</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">{{ $stats['this_month_payments'] }} this month</p>
                 </div>
 
                 <!-- Attendance -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-400 text-sm">Attendance</p>
-                            <p class="text-2xl font-bold text-white mt-1">{{ $stats['attendance_percentage'] }}%</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">Attendance</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['attendance_percentage'] }}%</p>
                         </div>
                         <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,15 +59,15 @@
                             </svg>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-500 mt-2">Current month</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Current month</p>
                 </div>
 
                 <!-- GitHub Activities -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-400 text-sm">GitHub Activities</p>
-                            <p class="text-2xl font-bold text-white mt-1">{{ $stats['github_activities'] }}</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">GitHub Activities</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['github_activities'] }}</p>
                         </div>
                         <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
@@ -67,15 +75,15 @@
                             </svg>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-500 mt-2">Total contributions</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Total contributions</p>
                 </div>
 
                 <!-- Active Goals -->
-                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-gray-400 text-sm">Active Goals</p>
-                            <p class="text-2xl font-bold text-white mt-1">{{ $stats['active_goals'] }}</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">Active Goals</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['active_goals'] }}</p>
                         </div>
                         <div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,15 +91,15 @@
                             </svg>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-500 mt-2">In progress</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">In progress</p>
                 </div>
             </div>
 
             <!-- Today's Checklist -->
             @if($todayChecklist)
-            <div class="bg-gray-800 rounded-lg border border-gray-700">
-                <div class="p-6 border-b border-gray-700">
-                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                         </svg>
@@ -101,19 +109,19 @@
                 <div class="p-6">
                     <div class="space-y-3">
                         @forelse($todayChecklist->items as $item)
-                        <div class="flex items-center gap-3 p-3 bg-gray-900/50 rounded-lg">
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                             <input
                                 type="checkbox"
                                 {{ $item->is_completed ? 'checked' : '' }}
-                                class="w-5 h-5 rounded border-gray-600 text-blue-500 focus:ring-blue-500"
+                                class="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-blue-500 focus:ring-blue-500"
                                 disabled
                             >
-                            <span class="text-gray-300 {{ $item->is_completed ? 'line-through text-gray-500' : '' }}">
+                            <span class="text-gray-700 dark:text-gray-300 {{ $item->is_completed ? 'line-through text-gray-400 dark:text-gray-500' : '' }}">
                                 {{ $item->item }}
                             </span>
                         </div>
                         @empty
-                        <p class="text-gray-400 text-center py-4">No checklist items for today</p>
+                        <p class="text-gray-600 dark:text-gray-400 text-center py-4">No checklist items for today</p>
                         @endforelse
                     </div>
                 </div>
@@ -123,50 +131,50 @@
             <!-- Recent Activity Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Recent Payments -->
-                <div class="bg-gray-800 rounded-lg border border-gray-700">
-                    <div class="p-6 border-b border-gray-700">
-                        <h3 class="text-xl font-bold text-white">Recent Payments</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Recent Payments</h3>
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
                             @forelse($employee->payments->take(5) as $payment)
-                            <div class="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                                 <div>
-                                    <p class="text-white font-medium">{{ $payment->currency }} {{ number_format($payment->amount, 2) }}</p>
-                                    <p class="text-sm text-gray-400">{{ $payment->paid_at->format('M d, Y') }}</p>
+                                    <p class="text-gray-900 dark:text-white font-medium">{{ $payment->currency }} {{ number_format($payment->amount, 2) }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ $payment->paid_at->format('M d, Y') }}</p>
                                 </div>
                                 <span class="px-3 py-1 text-xs font-medium bg-green-500/10 text-green-500 rounded-full">
                                     {{ $payment->activity_type }}
                                 </span>
                             </div>
                             @empty
-                            <p class="text-gray-400 text-center py-8">No payment records yet</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-center py-8">No payment records yet</p>
                             @endforelse
                         </div>
                     </div>
                 </div>
 
                 <!-- Recent GitHub Activity -->
-                <div class="bg-gray-800 rounded-lg border border-gray-700">
-                    <div class="p-6 border-b border-gray-700">
-                        <h3 class="text-xl font-bold text-white">Recent GitHub Activity</h3>
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Recent GitHub Activity</h3>
                     </div>
                     <div class="p-6">
                         <div class="space-y-4">
                             @forelse($employee->githubLogs->take(5) as $log)
-                            <div class="flex items-start gap-3 p-3 bg-gray-900/50 rounded-lg">
+                            <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                                 <div class="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
                                     <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
                                     </svg>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm text-white truncate">{{ $log->event_type }}</p>
-                                    <p class="text-xs text-gray-400">{{ $log->event_at->diffForHumans() }}</p>
+                                    <p class="text-sm text-gray-900 dark:text-white truncate">{{ $log->event_type }}</p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">{{ $log->event_at->diffForHumans() }}</p>
                                 </div>
                             </div>
                             @empty
-                            <p class="text-gray-400 text-center py-8">No GitHub activity yet</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-center py-8">No GitHub activity yet</p>
                             @endforelse
                         </div>
                     </div>

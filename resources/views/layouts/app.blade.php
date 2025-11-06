@@ -56,7 +56,8 @@
             </div>
         </div>
 
-        <!-- Floating AI Chat Button -->
+        <!-- Floating AI Chat Button (Hidden for employees) -->
+        @if(Auth::guard('web')->check())
         <div x-data="aiChatButton()"
              x-init="init()"
              class="fixed bottom-6 right-6 z-50">
@@ -158,6 +159,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="fixed bottom-6 left-6 z-40" x-data>
             @if (session('status'))

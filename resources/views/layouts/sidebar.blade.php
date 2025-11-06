@@ -91,7 +91,6 @@
 
         @if(Auth::guard('web')->check())
             <!-- Admin Only: Employees -->
-            @if(auth()->user()->hasPermission('view-employees'))
             <a href="{{ route('employees.index') }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                       {{ request()->routeIs('employees.*')
@@ -103,10 +102,8 @@
                 </svg>
                 <span x-show="!sidebarCollapsed" class="font-medium">Employees</span>
             </a>
-            @endif
 
             <!-- Admin Only: Attendance -->
-            @if(auth()->user()->hasPermission('view-attendance'))
             <a href="{{ route('attendance.index') }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                       {{ request()->routeIs('attendance.*')
@@ -118,10 +115,8 @@
                 </svg>
                 <span x-show="!sidebarCollapsed" class="font-medium">Attendance</span>
             </a>
-            @endif
 
             <!-- Admin Only: Projects -->
-            @if(auth()->user()->hasPermission('view-projects'))
             <a href="{{ route('projects.index') }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                       {{ request()->routeIs('projects.*')
@@ -133,10 +128,8 @@
                 </svg>
                 <span x-show="!sidebarCollapsed" class="font-medium">Projects</span>
         </a>
-        @endif
 
         <!-- UAT -->
-        @if(auth()->user()->hasPermission('view-uat-projects'))
         <a href="{{ route('uat.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('uat.*')
@@ -148,10 +141,8 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">UAT Testing</span>
         </a>
-        @endif
 
         <!-- GitHub Logs -->
-        @if(auth()->user()->hasPermission('view-github-logs'))
         <a href="{{ route('github.logs') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('github.logs')
@@ -163,9 +154,8 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">GitHub Logs</span>
         </a>
-        @endif
 
-        <!-- AI Assistant -->
+        <!-- AI Assistant (Hidden for employees) -->
         <a href="{{ route('ai-agent.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('ai-agent.*')
@@ -185,7 +175,6 @@
         </div>
 
         <!-- Roles & Permissions -->
-        @if(auth()->user()->hasPermission('view-roles'))
         <a href="{{ route('roles.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('roles.*')
@@ -197,10 +186,8 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Roles & Permissions</span>
         </a>
-        @endif
 
         <!-- Invoices -->
-        @if(auth()->user()->hasPermission('view-invoices'))
         <a href="{{ route('invoices.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('invoices.*')
@@ -212,10 +199,8 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Invoices</span>
         </a>
-        @endif
 
         <!-- Contracts -->
-        @if(auth()->user()->hasPermission('view-contracts'))
         <a href="{{ route('contracts.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('contracts.*')
@@ -227,10 +212,8 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Contracts</span>
         </a>
-        @endif
 
         <!-- Personal Notes -->
-        @if(auth()->user()->hasPermission('view-notes'))
         <a href="{{ route('notes.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('notes.*')
@@ -242,7 +225,6 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Personal Notes</span>
         </a>
-        @endif
 
         <!-- Email Inbox -->
         <a href="{{ route('email.inbox.index') }}"
@@ -293,7 +275,6 @@
         </div>
 
         <!-- Review Cycles -->
-        @if(auth()->user()->hasPermission('view-review-cycles'))
         <a href="{{ route('review-cycles.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('review-cycles.*')
@@ -305,10 +286,8 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Review Cycles</span>
         </a>
-        @endif
 
         <!-- Performance Reviews -->
-        @if(auth()->user()->hasPermission('view-reviews'))
         <a href="{{ route('reviews.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('reviews.*')
@@ -320,10 +299,8 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Performance Reviews</span>
         </a>
-        @endif
 
         <!-- Goals & OKRs -->
-        @if(auth()->user()->hasPermission('view-goals'))
         <a href="{{ route('goals.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('goals.*')
@@ -335,10 +312,8 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Goals & OKRs</span>
         </a>
-        @endif
 
             <!-- Skills -->
-            @if(auth()->user()->hasPermission('view-skills'))
             <a href="{{ route('skills.index') }}"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                       {{ request()->routeIs('skills.*')
@@ -348,7 +323,10 @@
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                 </svg>
-                <span x-show="!sidebarCollapsed" class="font-medium">Skills</span>
+                                <span x-show="!sidebarCollapsed" class="font-medium">Skills</span>
+            </a>
+
+    </nav>
             </a>
             @endif
         @endif

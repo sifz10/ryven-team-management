@@ -95,22 +95,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the roles assigned to the user.
-     */
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class, 'employee_role', 'employee_id', 'role_id');
-    }
-
-    /**
-     * Get all permissions for the user through roles.
-     */
-    public function permissions()
-    {
-        return $this->roles->flatMap->permissions->unique('id');
-    }
-
-    /**
      * Check if user has a specific permission.
      * Users in the admin portal have all permissions by default.
      */

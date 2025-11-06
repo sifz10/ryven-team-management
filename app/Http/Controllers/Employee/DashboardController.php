@@ -63,7 +63,19 @@ class DashboardController extends Controller
     {
         $currentMonth = now();
         $totalDays = $currentMonth->daysInMonth;
-        $workingDays = $totalDays - ($currentMonth->weekendsInMonth() * 2); // Exclude weekends
+
+        // Calculate weekends in current month
+        $weekendDays = 0;
+        $startOfMonth = $currentMonth->copy()->startOfMonth();
+        $endOfMonth = $currentMonth->copy()->endOfMonth();
+
+        for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
+            if ($date->isWeekend()) {
+                $weekendDays++;
+            }
+        }
+
+        $workingDays = $totalDays - $weekendDays;
 
         $presentDays = $employee->attendances()
             ->whereYear('date', $currentMonth->year)
