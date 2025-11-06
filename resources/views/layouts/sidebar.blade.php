@@ -1,5 +1,5 @@
 <!-- Sidebar Overlay for Mobile -->
-<div x-show="sidebarOpen" 
+<div x-show="sidebarOpen"
      @click="sidebarOpen = false"
      x-cloak
      x-transition:enter="transition-opacity ease-linear duration-300"
@@ -12,7 +12,7 @@
 </div>
 
 <!-- Sidebar -->
-<aside 
+<aside
     class="fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg"
     :class="{
         'w-64': !sidebarCollapsed,
@@ -20,25 +20,25 @@
         '-translate-x-full lg:translate-x-0': !sidebarOpen,
         'translate-x-0': sidebarOpen
     }">
-    
+
     <!-- Logo Section -->
     <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
         <!-- Logo -->
         <a href="{{ route('dashboard') }}" class="flex items-center justify-center overflow-hidden">
-            <img x-show="!sidebarCollapsed" 
+            <img x-show="!sidebarCollapsed"
                  x-cloak
-                 src="{{ asset('black-logo.png') }}" 
-                 alt="Logo" 
+                 src="{{ asset('black-logo.png') }}"
+                 alt="Logo"
                  class="h-10 w-auto dark:invert transition-opacity duration-200">
-            <img x-show="sidebarCollapsed" 
+            <img x-show="sidebarCollapsed"
                  x-cloak
-                 src="{{ asset('favicon.png') }}" 
-                 alt="Logo" 
+                 src="{{ asset('favicon.png') }}"
+                 alt="Logo"
                  class="h-10 w-10 flex-shrink-0 transition-opacity duration-200">
         </a>
-        
+
         <!-- Close Button (Mobile Only) -->
-        <button @click="sidebarOpen = false" 
+        <button @click="sidebarOpen = false"
                 class="lg:hidden p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -49,10 +49,10 @@
     <!-- Navigation Links -->
     <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         <!-- Dashboard -->
-        <a href="{{ route('dashboard') }}" 
+        <a href="{{ route('dashboard') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('dashboard') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('dashboard')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Dashboard' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,10 +62,10 @@
         </a>
 
         <!-- Employees -->
-        <a href="{{ route('employees.index') }}" 
+        <a href="{{ route('employees.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('employees.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('employees.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Employees' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,10 +75,10 @@
         </a>
 
         <!-- Attendance -->
-        <a href="{{ route('attendance.index') }}" 
+        <a href="{{ route('attendance.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('attendance.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('attendance.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Attendance' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,10 +88,10 @@
         </a>
 
         <!-- Projects -->
-        <a href="{{ route('projects.index') }}" 
+        <a href="{{ route('projects.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('projects.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('projects.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Projects' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,10 +101,10 @@
         </a>
 
         <!-- UAT -->
-        <a href="{{ route('uat.index') }}" 
+        <a href="{{ route('uat.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('uat.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('uat.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'UAT Testing' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,16 +114,29 @@
         </a>
 
         <!-- GitHub Logs -->
-        <a href="{{ route('github.logs') }}" 
+        <a href="{{ route('github.logs') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('github.logs') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('github.logs')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'GitHub Logs' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">GitHub Logs</span>
+        </a>
+
+        <!-- AI Assistant -->
+        <a href="{{ route('ai-agent.index') }}"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                  {{ request()->routeIs('ai-agent.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
+                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+           x-tooltip="sidebarCollapsed ? 'AI Assistant' : ''">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <span x-show="!sidebarCollapsed" class="font-medium">AI Assistant</span>
         </a>
 
         <!-- Divider -->
@@ -133,10 +146,10 @@
         </div>
 
         <!-- Invoices -->
-        <a href="{{ route('invoices.index') }}" 
+        <a href="{{ route('invoices.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('invoices.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('invoices.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Invoices' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,10 +159,10 @@
         </a>
 
         <!-- Contracts -->
-        <a href="{{ route('contracts.index') }}" 
+        <a href="{{ route('contracts.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('contracts.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('contracts.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Contracts' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,10 +172,10 @@
         </a>
 
         <!-- Personal Notes -->
-        <a href="{{ route('notes.index') }}" 
+        <a href="{{ route('notes.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('notes.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('notes.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Personal Notes' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,26 +185,26 @@
         </a>
 
         <!-- Email Inbox -->
-        <a href="{{ route('email.inbox.index') }}" 
+        <a href="{{ route('email.inbox.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative
-                  {{ request()->routeIs('email.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('email.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Email Inbox' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Email Inbox</span>
-            <span id="email-unread-badge" 
-                  class="absolute top-1 right-1 px-1.5 py-0.5 text-xs font-bold rounded-full bg-red-500 text-white" 
+            <span id="email-unread-badge"
+                  class="absolute top-1 right-1 px-1.5 py-0.5 text-xs font-bold rounded-full bg-red-500 text-white"
                   style="display: none;">0</span>
         </a>
 
         <!-- Content Calendar -->
-        <a href="{{ route('social.calendar') }}" 
+        <a href="{{ route('social.calendar') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('social.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('social.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Content Calendar' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,10 +214,10 @@
         </a>
 
         <!-- SOP -->
-        <a href="{{ route('sop') }}" 
+        <a href="{{ route('sop') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('sop') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('sop')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'SOP' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,10 +233,10 @@
         </div>
 
         <!-- Review Cycles -->
-        <a href="{{ route('review-cycles.index') }}" 
+        <a href="{{ route('review-cycles.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('review-cycles.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('review-cycles.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Review Cycles' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,10 +246,10 @@
         </a>
 
         <!-- Performance Reviews -->
-        <a href="{{ route('reviews.index') }}" 
+        <a href="{{ route('reviews.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('reviews.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('reviews.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Performance Reviews' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,10 +259,10 @@
         </a>
 
         <!-- Goals & OKRs -->
-        <a href="{{ route('goals.index') }}" 
+        <a href="{{ route('goals.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('goals.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('goals.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Goals & OKRs' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,10 +272,10 @@
         </a>
 
         <!-- Skills -->
-        <a href="{{ route('skills.index') }}" 
+        <a href="{{ route('skills.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('skills.*') 
-                     ? 'bg-black text-white dark:bg-white dark:text-black' 
+                  {{ request()->routeIs('skills.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
            x-tooltip="sidebarCollapsed ? 'Skills' : ''">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,9 +287,9 @@
 
     <!-- Collapse Toggle Button (Desktop Only) -->
     <div class="hidden lg:block border-t border-gray-200 dark:border-gray-700 p-3">
-        <button @click="toggleSidebar()" 
+        <button @click="toggleSidebar()"
                 class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">
-            <svg class="w-5 h-5 transition-transform duration-200" 
+            <svg class="w-5 h-5 transition-transform duration-200"
                  :class="{'rotate-180': sidebarCollapsed}"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>

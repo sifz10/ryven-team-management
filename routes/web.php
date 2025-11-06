@@ -50,10 +50,10 @@ Route::post('/webhook/github', [GitHubWebhookController::class, 'handle'])->name
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/employees/{employee}/github/activities', [GitHubWebhookController::class, 'loadActivities'])->name('github.activities.load');
     Route::get('/employees/{employee}/github/check-new', [GitHubWebhookController::class, 'checkNew'])->name('github.activities.checkNew');
-    
+
     // GitHub Logs Page
     Route::get('/github-logs', [GitHubWebhookController::class, 'logs'])->name('github.logs');
-    
+
     // GitHub Pull Request routes
     Route::get('/github/pr/{log}', [GitHubPullRequestController::class, 'show'])->name('github.pr.show');
     Route::get('/github/pr/{log}/details', [GitHubPullRequestController::class, 'details'])->name('github.pr.details');
@@ -67,7 +67,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/github/pr/{log}/merge', [GitHubPullRequestController::class, 'merge'])->name('github.pr.merge');
     Route::post('/github/pr/{log}/close', [GitHubPullRequestController::class, 'close'])->name('github.pr.close');
     Route::post('/github/pr/{log}/ai-review', [GitHubPullRequestController::class, 'generateAIReview'])->name('github.pr.aiReview');
-    
+
     // Project Management routes
     Route::resource('projects', ProjectController::class);
     Route::get('/projects/{project}/today-work', [ProjectController::class, 'todayWork'])->name('projects.today-work');
@@ -89,10 +89,10 @@ Route::middleware('auth')->group(function () {
         Artisan::call($request->command);
         return 'Executed artisan command boss!';
     });
-    
+
     Route::get('/fix-cache', function () {
         $output = [];
-        
+
         // Ensure directories exist
         $dirs = [
             storage_path('framework/views'),
@@ -100,7 +100,7 @@ Route::middleware('auth')->group(function () {
             storage_path('framework/cache/data'),
             storage_path('framework/sessions'),
         ];
-        
+
         foreach ($dirs as $dir) {
             if (!is_dir($dir)) {
                 mkdir($dir, 0755, true);
@@ -109,24 +109,24 @@ Route::middleware('auth')->group(function () {
                 $output[] = "Directory exists: $dir";
             }
         }
-        
+
         // Clear caches
         Artisan::call('config:clear');
         $output[] = 'Config cleared';
-        
+
         Artisan::call('cache:clear');
         $output[] = 'Cache cleared';
-        
+
         Artisan::call('view:clear');
         $output[] = 'View cache cleared';
-        
+
         Artisan::call('route:clear');
         $output[] = 'Route cache cleared';
-        
+
         // Recache for production
         Artisan::call('config:cache');
         $output[] = 'Config cached';
-        
+
         return response()->json([
             'success' => true,
             'message' => 'All caches fixed!',
@@ -157,7 +157,7 @@ Route::middleware('auth')->group(function () {
     Route::post('employees/{employee}/payments', [EmployeePaymentController::class, 'store'])->name('employees.payments.store');
     Route::put('employees/{employee}/payments/{payment}', [EmployeePaymentController::class, 'update'])->name('employees.payments.update');
     Route::delete('employees/{employee}/payments/{payment}', [EmployeePaymentController::class, 'destroy'])->name('employees.payments.destroy');
-    
+
     Route::post('employees/{employee}/payments/{payment}/notes', [App\Http\Controllers\ActivityNoteController::class, 'store'])->name('employees.payments.notes.store');
     Route::delete('employees/{employee}/payments/{payment}/notes/{note}', [App\Http\Controllers\ActivityNoteController::class, 'destroy'])->name('employees.payments.notes.destroy');
 
@@ -218,7 +218,7 @@ Route::middleware('auth')->group(function () {
     Route::get('social/calendar', [App\Http\Controllers\ContentCalendarController::class, 'index'])->name('social.calendar');
     Route::get('social/calendar/posts', [App\Http\Controllers\ContentCalendarController::class, 'getPostsForDate'])->name('social.calendar.posts');
     Route::get('social/calendar/month-data', [App\Http\Controllers\ContentCalendarController::class, 'getMonthData'])->name('social.calendar.month-data');
-    
+
     // Social Accounts routes
     Route::get('social/accounts/connect/linkedin', [App\Http\Controllers\SocialAccountController::class, 'connectLinkedIn'])->name('social.connect.linkedin');
     Route::get('social/accounts/connect/facebook', [App\Http\Controllers\SocialAccountController::class, 'connectFacebook'])->name('social.connect.facebook');
@@ -237,7 +237,7 @@ Route::middleware('auth')->group(function () {
     })->name('social.debug.linkedin');
     Route::post('social/accounts/{socialAccount}/test', [App\Http\Controllers\SocialAccountController::class, 'testConnection'])->name('social.accounts.test');
     Route::resource('social/accounts', App\Http\Controllers\SocialAccountController::class)->names('social.accounts');
-    
+
     // Social Posts routes
     Route::post('social/posts/{socialPost}/generate', [App\Http\Controllers\SocialPostController::class, 'generate'])->name('social.posts.generate');
     Route::post('social/posts/{socialPost}/select-generation', [App\Http\Controllers\SocialPostController::class, 'selectGeneration'])->name('social.posts.select-generation');
@@ -281,31 +281,37 @@ Route::middleware('auth')->group(function () {
         Route::resource('review-cycles', App\Http\Controllers\ReviewCycleController::class);
         Route::post('review-cycles/{reviewCycle}/activate', [App\Http\Controllers\ReviewCycleController::class, 'activate'])->name('review-cycles.activate');
         Route::post('review-cycles/{reviewCycle}/complete', [App\Http\Controllers\ReviewCycleController::class, 'complete'])->name('review-cycles.complete');
-        
+
         // Performance Reviews
         Route::resource('reviews', App\Http\Controllers\PerformanceReviewController::class);
         Route::post('reviews/{review}/submit', [App\Http\Controllers\PerformanceReviewController::class, 'submit'])->name('reviews.submit');
         Route::post('reviews/{review}/approve', [App\Http\Controllers\PerformanceReviewController::class, 'approve'])->name('reviews.approve');
         Route::get('reviews/{review}/pdf', [App\Http\Controllers\PerformanceReviewController::class, 'downloadPdf'])->name('reviews.pdf');
-        
+
         // 360 Feedback
         Route::get('reviews/{review}/feedback', [App\Http\Controllers\PerformanceReviewController::class, 'feedbackForm'])->name('reviews.feedback.form');
         Route::post('reviews/{review}/feedback', [App\Http\Controllers\PerformanceReviewController::class, 'submitFeedback'])->name('reviews.feedback.submit');
-        
+
         // Goals & OKRs
         Route::resource('goals', App\Http\Controllers\GoalController::class);
         Route::post('goals/{goal}/update-progress', [App\Http\Controllers\GoalController::class, 'updateProgress'])->name('goals.update-progress');
         Route::post('goals/{goal}/complete', [App\Http\Controllers\GoalController::class, 'complete'])->name('goals.complete');
-        
+
         // Skills
         Route::resource('skills', App\Http\Controllers\SkillController::class);
         Route::post('skills/bulk-create', [App\Http\Controllers\SkillController::class, 'bulkCreate'])->name('skills.bulk-create');
-        
+
         // Employee Skills Assessment
         Route::get('employees/{employee}/skills', [App\Http\Controllers\EmployeeController::class, 'skills'])->name('employees.skills');
         Route::post('employees/{employee}/skills', [App\Http\Controllers\EmployeeController::class, 'assessSkill'])->name('employees.skills.assess');
         Route::put('employees/{employee}/skills/{employeeSkill}', [App\Http\Controllers\EmployeeController::class, 'updateSkillAssessment'])->name('employees.skills.update');
         Route::delete('employees/{employee}/skills/{employeeSkill}', [App\Http\Controllers\EmployeeController::class, 'removeSkill'])->name('employees.skills.remove');
+
+        // AI Agent
+        Route::get('ai-agent', [App\Http\Controllers\AIAgentController::class, 'index'])->name('ai-agent.index');
+        Route::post('ai-agent/command', [App\Http\Controllers\AIAgentController::class, 'processCommand'])->name('ai-agent.command');
+        Route::get('ai-agent/history', [App\Http\Controllers\AIAgentController::class, 'getConversationHistory'])->name('ai-agent.history');
+        Route::delete('ai-agent/conversation', [App\Http\Controllers\AIAgentController::class, 'clearConversation'])->name('ai-agent.clear');
     });
 });
 

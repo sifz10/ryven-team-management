@@ -7,6 +7,22 @@
     display: none !important;
 }
 
+/* Floating Chat Button Animations */
+.shadow-3xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes voice-ring {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
 /* Quill Editor Styles */
 .ql-toolbar {
     background: white;
@@ -188,23 +204,23 @@ aside::-webkit-scrollbar-thumb:hover {
 
 /* Pure black button styles */
 .btn-black {
-    @apply bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 
-           font-medium px-4 py-2 rounded-lg transition-all duration-200 
+    @apply bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200
+           font-medium px-4 py-2 rounded-lg transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white;
 }
 
 .btn-black-outline {
-    @apply border-2 border-black text-black hover:bg-black hover:text-white 
+    @apply border-2 border-black text-black hover:bg-black hover:text-white
            dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black
-           font-medium px-4 py-2 rounded-lg transition-all duration-200 
+           font-medium px-4 py-2 rounded-lg transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white;
 }
 
 /* Rounded icon buttons */
 .icon-btn {
-    @apply p-2 rounded-lg transition-all duration-200 
-           text-gray-700 dark:text-gray-300 
-           hover:bg-gray-100 dark:hover:bg-gray-700 
+    @apply p-2 rounded-lg transition-all duration-200
+           text-gray-700 dark:text-gray-300
+           hover:bg-gray-100 dark:hover:bg-gray-700
            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500;
 }
 
@@ -266,7 +282,7 @@ aside::-webkit-scrollbar-thumb:hover {
     aside, header {
         display: none !important;
     }
-    
+
     main {
         margin: 0 !important;
     }
