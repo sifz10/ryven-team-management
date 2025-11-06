@@ -325,10 +325,6 @@
                 </svg>
                                 <span x-show="!sidebarCollapsed" class="font-medium">Skills</span>
             </a>
-
-    </nav>
-            </a>
-            @endif
         @endif
     </nav>
 
