@@ -90,6 +90,41 @@
         </div>
         
         <?php echo $__env->yieldPushContent('scripts'); ?>
+        
+        <script>
+            // Global real-time email listener for navigation badge
+            document.addEventListener('DOMContentLoaded', function() {
+                <?php if(auth()->guard()->check()): ?>
+                Echo.private('user.<?php echo e(auth()->id()); ?>')
+                    .listen('.email.new', (e) => {
+                        // Update unread badge in navigation
+                        const badge = document.getElementById('email-unread-badge');
+                        if (badge) {
+                            const currentCount = parseInt(badge.textContent) || 0;
+                            const newCount = currentCount + 1;
+                            badge.textContent = newCount;
+                            badge.style.display = 'inline-block';
+                            
+                            // Add pulse animation
+                            badge.classList.add('animate-pulse');
+                            setTimeout(() => badge.classList.remove('animate-pulse'), 2000);
+                        }
+                    });
+                    
+                // Fetch initial unread count
+                fetch('/email/inbox/unread-count')
+                    .then(res => res.json())
+                    .then(data => {
+                        const badge = document.getElementById('email-unread-badge');
+                        if (badge && data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.style.display = 'inline-block';
+                        }
+                    })
+                    .catch(err => console.log('Could not fetch unread count'));
+                <?php endif; ?>
+            });
+        </script>
     </body>
 </html>
 <?php /**PATH F:\Project\salary\resources\views/layouts/app.blade.php ENDPATH**/ ?>

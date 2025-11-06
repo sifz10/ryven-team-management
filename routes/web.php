@@ -66,6 +66,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Project Management routes
     Route::resource('projects', ProjectController::class);
+    Route::get('/projects/{project}/today-work', [ProjectController::class, 'todayWork'])->name('projects.today-work');
+    Route::put('/projects/{project}/work/{submission}', [ProjectController::class, 'updateWorkSubmission'])->name('projects.work.update');
+    Route::delete('/projects/{project}/work/{submission}', [ProjectController::class, 'deleteWorkSubmission'])->name('projects.work.delete');
+    Route::post('/projects/{project}/send-report', [ProjectController::class, 'sendReport'])->name('projects.send-report');
+    Route::get('/projects-today-summary', [ProjectController::class, 'todaySummary'])->name('projects.today-summary');
 });
 
 // SOP page (authenticated)
@@ -141,6 +146,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/notifications/{notification}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     Route::resource('employees', EmployeeController::class);
+    Route::get('employees-deleted', [EmployeeController::class, 'deleted'])->name('employees.deleted');
+    Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
+    Route::delete('employees/{id}/force-delete', [EmployeeController::class, 'forceDelete'])->name('employees.force-delete');
     Route::post('employees/{employee}/discontinue', [EmployeeController::class, 'discontinue'])->name('employees.discontinue');
     Route::post('employees/{employee}/reactivate', [EmployeeController::class, 'reactivate'])->name('employees.reactivate');
 
@@ -233,6 +241,37 @@ Route::middleware('auth')->group(function () {
     Route::post('social/posts/{socialPost}/select-generation', [App\Http\Controllers\SocialPostController::class, 'selectGeneration'])->name('social.posts.select-generation');
     Route::post('social/posts/{socialPost}/publish', [App\Http\Controllers\SocialPostController::class, 'publish'])->name('social.posts.publish');
     Route::resource('social/posts', App\Http\Controllers\SocialPostController::class)->parameters(['posts' => 'socialPost'])->names('social.posts');
+
+    // Email System routes
+    Route::prefix('email')->group(function () {
+        // Email Account Management
+        Route::get('accounts', [App\Http\Controllers\EmailAccountController::class, 'index'])->name('email.accounts.index');
+        Route::get('accounts/create', [App\Http\Controllers\EmailAccountController::class, 'create'])->name('email.accounts.create');
+        Route::post('accounts', [App\Http\Controllers\EmailAccountController::class, 'store'])->name('email.accounts.store');
+        Route::get('accounts/{account}/edit', [App\Http\Controllers\EmailAccountController::class, 'edit'])->name('email.accounts.edit');
+        Route::put('accounts/{account}', [App\Http\Controllers\EmailAccountController::class, 'update'])->name('email.accounts.update');
+        Route::delete('accounts/{account}', [App\Http\Controllers\EmailAccountController::class, 'destroy'])->name('email.accounts.destroy');
+        Route::post('accounts/{account}/sync', [App\Http\Controllers\EmailAccountController::class, 'sync'])->name('email.accounts.sync');
+        Route::post('accounts/{account}/test', [App\Http\Controllers\EmailAccountController::class, 'testConnection'])->name('email.accounts.test');
+        Route::post('accounts/{account}/toggle', [App\Http\Controllers\EmailAccountController::class, 'toggleActive'])->name('email.accounts.toggle');
+
+        // Email Inbox
+        Route::get('inbox', [App\Http\Controllers\EmailInboxController::class, 'index'])->name('email.inbox.index');
+        Route::get('inbox/unread-count', [App\Http\Controllers\EmailInboxController::class, 'unreadCount'])->name('email.inbox.unread-count');
+        Route::get('inbox/{message}', [App\Http\Controllers\EmailInboxController::class, 'show'])->name('email.inbox.show');
+        Route::get('compose', [App\Http\Controllers\EmailInboxController::class, 'compose'])->name('email.inbox.compose');
+        Route::post('send', [App\Http\Controllers\EmailInboxController::class, 'send'])->name('email.inbox.send');
+        Route::get('inbox/{message}/reply', [App\Http\Controllers\EmailInboxController::class, 'reply'])->name('email.inbox.reply');
+        Route::post('inbox/{message}/reply', [App\Http\Controllers\EmailInboxController::class, 'sendReply'])->name('email.inbox.send-reply');
+        Route::post('inbox/{message}/read', [App\Http\Controllers\EmailInboxController::class, 'markAsRead'])->name('email.inbox.read');
+        Route::post('inbox/{message}/unread', [App\Http\Controllers\EmailInboxController::class, 'markAsUnread'])->name('email.inbox.unread');
+        Route::post('inbox/{message}/star', [App\Http\Controllers\EmailInboxController::class, 'toggleStar'])->name('email.inbox.star');
+        Route::post('inbox/{message}/trash', [App\Http\Controllers\EmailInboxController::class, 'trash'])->name('email.inbox.trash');
+        Route::delete('inbox/{message}', [App\Http\Controllers\EmailInboxController::class, 'destroy'])->name('email.inbox.destroy');
+        Route::post('inbox/{message}/restore', [App\Http\Controllers\EmailInboxController::class, 'restore'])->name('email.inbox.restore');
+        Route::post('inbox/bulk-action', [App\Http\Controllers\EmailInboxController::class, 'bulkAction'])->name('email.inbox.bulk-action');
+        Route::get('attachments/{id}/download', [App\Http\Controllers\EmailInboxController::class, 'downloadAttachment'])->name('email.attachments.download');
+    });
 });
 
 require __DIR__.'/auth.php';

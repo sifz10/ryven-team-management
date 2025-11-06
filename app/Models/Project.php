@@ -21,6 +21,8 @@ class Project extends Model
         'budget',
         'currency',
         'priority',
+        'last_report_sent_at',
+        'auto_send_reports',
     ];
 
     protected $casts = [
@@ -28,6 +30,8 @@ class Project extends Model
         'end_date' => 'date',
         'budget' => 'decimal:2',
         'priority' => 'integer',
+        'last_report_sent_at' => 'datetime',
+        'auto_send_reports' => 'boolean',
     ];
 
     public function workSubmissions(): HasMany

@@ -13,3 +13,6 @@ Schedule::command('notes:send-reminders')->everyMinute();
 
 // Process scheduled social media posts every minute
 Schedule::command('social:process-scheduled')->everyMinute();
+
+// Fetch emails from all active accounts every minute for near-real-time sync
+Schedule::job(new \App\Jobs\FetchEmails())->everyMinute();

@@ -1,10 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <a href="{{ route('projects.index') }}" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="{{ route('projects.index') }}" class="inline-flex items-center gap-2 px-4 py-2 text-white rounded-full transition-all shadow-md" style="background-color: #000000; border: 1px solid #333333;" onmouseover="this.style.backgroundColor='#1a1a1a'" onmouseout="this.style.backgroundColor='#000000'">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
+                Back
             </a>
             <div class="flex-1">
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -12,12 +13,20 @@
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Project Details & Work Log</p>
             </div>
-            <a href="{{ route('projects.edit', $project) }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-                Edit
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('projects.today-work', $project) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all font-semibold" style="background-color: #000000; border: 2px solid #000000;" onmouseover="this.style.backgroundColor='#1a1a1a'" onmouseout="this.style.backgroundColor='#000000'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Today's Work
+                </a>
+                <a href="{{ route('projects.edit', $project) }}" class="inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all font-semibold" style="background-color: #000000; border: 2px solid #000000;" onmouseover="this.style.backgroundColor='#1a1a1a'" onmouseout="this.style.backgroundColor='#000000'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -37,24 +46,14 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Status</h3>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold
-                                    @if($project->status === 'active') bg-green-100 text-green-800
-                                    @elseif($project->status === 'completed') bg-blue-100 text-blue-800
-                                    @elseif($project->status === 'on-hold') bg-yellow-100 text-yellow-800
-                                    @else bg-red-100 text-red-800
-                                    @endif">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-white" style="background-color: #000000; border: 1px solid #333333;">
                                     {{ ucfirst($project->status) }}
                                 </span>
                             </div>
 
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Priority</h3>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold
-                                    @if($project->priority === 4) bg-red-100 text-red-800
-                                    @elseif($project->priority === 3) bg-orange-100 text-orange-800
-                                    @elseif($project->priority === 2) bg-blue-100 text-blue-800
-                                    @else bg-gray-100 text-gray-800
-                                    @endif">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-white" style="background-color: #000000; border: 1px solid #333333;">
                                     {{ $project->priority_label }}
                                 </span>
                             </div>
@@ -108,14 +107,14 @@
                         @if($project->client_email)
                             <div>
                                 <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Email</h4>
-                                <a href="mailto:{{ $project->client_email }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ $project->client_email }}</a>
+                                <a href="mailto:{{ $project->client_email }}" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:underline">{{ $project->client_email }}</a>
                             </div>
                         @endif
 
                         @if($project->client_phone)
                             <div>
                                 <h4 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Phone</h4>
-                                <a href="tel:{{ $project->client_phone }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ $project->client_phone }}</a>
+                                <a href="tel:{{ $project->client_phone }}" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:underline">{{ $project->client_phone }}</a>
                             </div>
                         @endif
 

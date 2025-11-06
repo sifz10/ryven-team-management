@@ -49,6 +49,20 @@ return [
         'redirect' => env('LINKEDIN_REDIRECT_URI'),
     ],
 
+    'sms' => [
+        'provider' => env('SMS_PROVIDER', 'log'), // twilio, nexmo, or log
+        'twilio' => [
+            'account_sid' => env('TWILIO_ACCOUNT_SID'),
+            'auth_token' => env('TWILIO_AUTH_TOKEN'),
+            'from_number' => env('TWILIO_FROM_NUMBER'),
+        ],
+        'nexmo' => [
+            'api_key' => env('NEXMO_API_KEY'),
+            'api_secret' => env('NEXMO_API_SECRET'),
+            'from_name' => env('NEXMO_FROM_NAME', 'Ryven'),
+        ],
+    ],
+
     'facebook' => [
         'client_id' => env('FACEBOOK_APP_ID'),
         'client_secret' => env('FACEBOOK_APP_SECRET'),

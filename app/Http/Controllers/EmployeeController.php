@@ -201,4 +201,85 @@ class EmployeeController extends Controller
         $employee->delete();
         return redirect()->route('employees.index')->with('status', 'Employee deleted');
     }
+
+    /**
+     * Display a listing of soft deleted employees.
+     */
+    public function deleted(Request $request)
+    {
+        // Statistics for deleted employees
+        $deletedCount = Employee::onlyTrashed()->count();
+        
+        // Get all departments from deleted employees
+        $departments = Employee::onlyTrashed()
+            ->whereNotNull('department')
+            ->distinct()
+            ->pluck('department')
+            ->sort();
+
+        $query = Employee::onlyTrashed();
+
+        if ($request->filled('department')) {
+            $query->where('department', $request->string('department')->toString());
+        }
+
+        if ($request->filled('q')) {
+            $q = $request->string('q')->toString();
+            $query->where(function ($x) use ($q) {
+                $x->where('first_name', 'like', "%{$q}%")
+                    ->orWhere('last_name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%")
+                    ->orWhere('department', 'like', "%{$q}%")
+                    ->orWhere('position', 'like', "%{$q}%");
+            });
+        }
+
+        $employees = $query->with([
+            'payments' => function($q) {
+                $q->latest('paid_at')->limit(5);
+            }
+        ])->withCount([
+            'payments as achievement_count' => function($q) {
+                $q->where('activity_type', 'achievement');
+            },
+            'payments as warning_count' => function($q) {
+                $q->where('activity_type', 'warning');
+            },
+            'payments as payment_count' => function($q) {
+                $q->where('activity_type', 'payment');
+            },
+            'payments as note_count' => function($q) {
+                $q->where('activity_type', 'note');
+            }
+        ])->latest('deleted_at')->paginate(12)->withQueryString();
+        
+        return view('employees.deleted', compact(
+            'employees', 
+            'deletedCount',
+            'departments'
+        ));
+    }
+
+    /**
+     * Restore a soft deleted employee.
+     */
+    public function restore($id)
+    {
+        $employee = Employee::onlyTrashed()->findOrFail($id);
+        $employee->restore();
+        
+        return redirect()->route('employees.deleted')->with('status', 'Employee restored successfully');
+    }
+
+    /**
+     * Permanently delete an employee.
+     */
+    public function forceDelete($id)
+    {
+        $employee = Employee::onlyTrashed()->findOrFail($id);
+        $employee->forceDelete();
+        
+        return redirect()->route('employees.deleted')->with('status', 'Employee permanently deleted');
+    }
 }
