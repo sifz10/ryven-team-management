@@ -17,6 +17,11 @@ class CheckPermission
      */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
+        // Allow admin users (web guard) - they have full access
+        if (Auth::guard('web')->check()) {
+            return $next($request);
+        }
+
         // Check if employee is authenticated
         if (!Auth::guard('employee')->check()) {
             abort(403, 'Unauthorized access - Not authenticated');
