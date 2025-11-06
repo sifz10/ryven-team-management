@@ -1,21 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Social Media Accounts') }}
-            </h2>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ __('Social Media Accounts') }}
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Connect and manage your social platforms</p>
+            </div>
             <a href="{{ route('social.calendar') }}" 
-                class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-gray-900 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-700 transition">
+                class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border border-transparent rounded-full font-semibold text-xs uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-100 transition">
                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                {{ __('Back to Calendar') }}
+                <span class="hidden sm:inline">{{ __('Back to Calendar') }}</span>
+                <span class="sm:hidden">Calendar</span>
             </a>
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="space-y-6">
             @if (session('success'))
                 <div class="mb-6 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg">
                     {{ session('success') }}
@@ -174,8 +177,6 @@
                     </div>
                 </div>
             @endif
-        </div>
-    </div>
 
     <style>
         [x-cloak] { display: none !important; }

@@ -73,4 +73,26 @@ class Employee extends Model
     {
         return $this->hasMany(GitHubLog::class)->latest('event_at');
     }
+
+    public function performanceReviews(): HasMany
+    {
+        return $this->hasMany(PerformanceReview::class);
+    }
+
+    public function goals(): HasMany
+    {
+        return $this->hasMany(Goal::class);
+    }
+
+    public function skills()
+    {
+        return $this->belongsToMany(Skill::class, 'employee_skills')
+            ->withPivot(['proficiency_level', 'proficiency_label', 'years_experience', 'last_assessed_at', 'assessed_by', 'is_primary'])
+            ->withTimestamps();
+    }
+
+    public function employeeSkills(): HasMany
+    {
+        return $this->hasMany(EmployeeSkill::class);
+    }
 }

@@ -1,21 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-center gap-3">
                 <a href="{{ route('github.logs') }}" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
-                    <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                 </a>
                 <div>
-                    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    <h2 class="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Pull Request #{{ $pr['number'] }}
                     </h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ $repo['owner'] }}/{{ $repo['repo'] }}</p>
+                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{{ $repo['owner'] }}/{{ $repo['repo'] }}</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
                 @if($pr['merged'])
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
                         <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
@@ -33,7 +33,7 @@
                     
                     <!-- Merge Pull Request Button -->
                     <button onclick="window.mergePR(this)" 
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full shadow-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-4 h-4 merge-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -41,12 +41,13 @@
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="merge-text">Merge Pull Request</span>
+                        <span class="merge-text hidden sm:inline">Merge Pull Request</span>
+                        <span class="merge-text sm:hidden">Merge</span>
                     </button>
                     
                     <!-- Close Pull Request Button -->
                     <button onclick="window.closePR(this)" 
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-all font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-4 h-4 close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -113,8 +114,7 @@
         </div>
     </div>
 
-    <div class="py-12" x-data="prDetailsPage()" x-init="init()" @dropdown-selected.window="handleDropdownSelection($event.detail)">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6" x-data="prDetailsPage()" x-init="init()" @dropdown-selected.window="handleDropdownSelection($event.detail)">
             
             <!-- PR Header Info -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
@@ -636,7 +636,6 @@
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 
     <script>

@@ -16,8 +16,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="space-y-6">
             
             @if (session('status'))
                 <div class="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-300 px-4 py-3 rounded-xl flex items-center gap-3">
@@ -169,6 +168,5 @@
                     </div>
                 @endif
             </div>
-        </div>
     </div>
 </x-app-layout>

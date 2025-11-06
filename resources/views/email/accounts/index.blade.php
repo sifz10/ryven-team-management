@@ -1,20 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-white leading-tight">
-                {{ __('Email Accounts') }}
-            </h2>
-            <a href="{{ route('email.accounts.create') }}" class="inline-flex items-center px-6 py-3 bg-white text-black rounded-full font-semibold text-sm hover:bg-gray-200 transition">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-100 leading-tight">
+                    {{ __('Email Accounts') }}
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Manage your connected email accounts</p>
+            </div>
+            <a href="{{ route('email.accounts.create') }}" class="inline-flex items-center px-4 sm:px-6 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm hover:bg-gray-800 dark:hover:bg-gray-100 transition">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                Add Email Account
+                <span class="hidden sm:inline">Add Email Account</span>
+                <span class="sm:hidden">Add</span>
             </a>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="space-y-6">
             @if (session('success'))
                 <div class="mb-6 bg-green-600 text-white p-4 rounded-2xl">
                     {{ session('success') }}
@@ -132,6 +135,4 @@
                     </a>
                 </div>
             @endif
-        </div>
-    </div>
 </x-app-layout>

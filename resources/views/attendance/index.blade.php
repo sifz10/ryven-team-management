@@ -1,14 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
-                {{ __('Attendance Management') }}
-            </h2>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-100 leading-tight">
+                    {{ __('Attendance Management') }}
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Track and manage employee attendance records</p>
+            </div>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="space-y-6">
             @if (session('success'))
                 <div class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-800 dark:text-green-200">
                     {{ session('success') }}
@@ -18,11 +20,11 @@
             <!-- Employee Selection -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-2xl mb-6">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Select Employee</h3>
-                    <form method="GET" action="{{ route('attendance.index') }}" class="flex flex-wrap gap-4 items-end">
-                        <div class="flex-1 min-w-[250px]">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Select Employee</h3>
+                    <form method="GET" action="{{ route('attendance.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="sm:col-span-2">
                             <label for="employee_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Employee</label>
-                            <select name="employee_id" id="employee_id" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" onchange="this.form.submit()">
+                            <select name="employee_id" id="employee_id" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:border-gray-900 dark:focus:border-gray-400 focus:ring-gray-900 dark:focus:ring-gray-400" onchange="this.form.submit()">
                                 <option value="">-- Select an Employee --</option>
                                 @foreach($employees as $emp)
                                     <option value="{{ $emp->id }}" {{ $selectedEmployee && $selectedEmployee->id == $emp->id ? 'selected' : '' }}>
@@ -35,7 +37,7 @@
                         @if($selectedEmployee)
                             <div>
                                 <label for="month" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Month</label>
-                                <select name="month" id="month" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" onchange="this.form.submit()">
+                                <select name="month" id="month" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:border-gray-900 dark:focus:border-gray-400 focus:ring-gray-900 dark:focus:ring-gray-400" onchange="this.form.submit()">
                                     @for($m = 1; $m <= 12; $m++)
                                         <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
                                             {{ \Carbon\Carbon::create()->month($m)->format('F') }}
@@ -46,7 +48,7 @@
 
                             <div>
                                 <label for="year" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Year</label>
-                                <select name="year" id="year" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" onchange="this.form.submit()">
+                                <select name="year" id="year" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:border-gray-900 dark:focus:border-gray-400 focus:ring-gray-900 dark:focus:ring-gray-400" onchange="this.form.submit()">
                                     @for($y = now()->year - 1; $y <= now()->year + 1; $y++)
                                         <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
                                     @endfor
@@ -59,34 +61,35 @@
 
             @if($selectedEmployee)
                 <!-- Employee Info Card -->
-                <div class="bg-gradient-to-r from-gray-800 to-black rounded-2xl shadow-lg p-6 mb-6 text-white border border-gray-700">
-                    <div class="flex items-center justify-between">
+                <div class="bg-gradient-to-r from-gray-800 to-black dark:from-gray-100 dark:to-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 text-white dark:text-black border border-gray-700 dark:border-gray-300">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <h3 class="text-2xl font-bold">{{ $selectedEmployee->first_name }} {{ $selectedEmployee->last_name }}</h3>
-                            <p class="text-gray-300 mt-1">{{ $selectedEmployee->position }}</p>
-                            <p class="text-gray-300 text-sm mt-2">Base Salary: {{ number_format($selectedEmployee->salary, 2) }} {{ $selectedEmployee->currency ?? 'USD' }}</p>
-                            <p class="text-gray-400 text-xs mt-1">Hourly Rate: {{ number_format($selectedEmployee->salary / 208, 2) }} {{ $selectedEmployee->currency ?? 'USD' }}/hr</p>
+                            <h3 class="text-xl sm:text-2xl font-bold">{{ $selectedEmployee->first_name }} {{ $selectedEmployee->last_name }}</h3>
+                            <p class="text-gray-300 dark:text-gray-700 mt-1">{{ $selectedEmployee->position }}</p>
+                            <p class="text-gray-300 dark:text-gray-700 text-sm mt-2">Base Salary: {{ number_format($selectedEmployee->salary, 2) }} {{ $selectedEmployee->currency ?? 'USD' }}</p>
+                            <p class="text-gray-400 dark:text-gray-600 text-xs mt-1">Hourly Rate: {{ number_format($selectedEmployee->salary / 208, 2) }} {{ $selectedEmployee->currency ?? 'USD' }}/hr</p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-gray-400 text-sm">Viewing</p>
-                            <p class="text-2xl font-bold">{{ \Carbon\Carbon::create($year, $month)->format('F Y') }}</p>
+                        <div class="text-left sm:text-right">
+                            <p class="text-gray-400 dark:text-gray-600 text-sm">Viewing</p>
+                            <p class="text-xl sm:text-2xl font-bold">{{ \Carbon\Carbon::create($year, $month)->format('F Y') }}</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Bulk Populate Section -->
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-2xl mb-6">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="p-4 sm:p-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                             <div>
-                                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">🚀 Auto-Populate Monthly Hours</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Enter total monthly hours to automatically fill all working days (Saturday is weekend)</p>
+                                <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100">🚀 Auto-Populate Monthly Hours</h3>
+                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Enter total monthly hours to automatically fill all working days (Saturday is weekend)</p>
                             </div>
-                            <button onclick="toggleBulkPopulate()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-colors">
+                            <button onclick="toggleBulkPopulate()" class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full shadow hover:bg-gray-800 dark:hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-colors whitespace-nowrap">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
-                                <span id="toggleBulkBtn">Show Options</span>
+                                <span id="toggleBulkBtn" class="hidden sm:inline">Show Options</span>
+                                <span id="toggleBulkBtn" class="sm:hidden">Show</span>
                             </button>
                         </div>
 
@@ -164,14 +167,14 @@
 
                 <!-- Calendar -->
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-2xl mb-6">
-                    <div class="p-6">
-                        <div class="grid grid-cols-7 gap-2 mb-4">
+                    <div class="p-3 sm:p-6">
+                        <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-4">
                             @foreach(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $day)
-                                <div class="text-center font-semibold text-gray-700 dark:text-gray-300 py-2">{{ $day }}</div>
+                                <div class="text-center text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 py-2">{{ $day }}</div>
                             @endforeach
                         </div>
 
-                        <div class="grid grid-cols-7 gap-2">
+                        <div class="grid grid-cols-7 gap-1 sm:gap-2">
                             @php
                                 $date = \Carbon\Carbon::create($year, $month, 1);
                                 $daysInMonth = $date->daysInMonth;
@@ -255,14 +258,15 @@
                 <!-- Monthly Summary -->
                 @if($monthlySummary)
                     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm sm:rounded-2xl">
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Monthly Summary</h3>
-                                <button onclick="toggleMonthlyAdjustment()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-colors">
+                        <div class="p-4 sm:p-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                                <h3 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Monthly Summary</h3>
+                                <button onclick="toggleMonthlyAdjustment()" class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full shadow hover:bg-gray-800 dark:hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-colors whitespace-nowrap">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
-                                    <span id="toggleAdjustmentBtn">Monthly Adjustment</span>
+                                    <span id="toggleAdjustmentBtn" class="hidden sm:inline">Monthly Adjustment</span>
+                                    <span id="toggleAdjustmentBtn" class="sm:hidden">Adjust</span>
                                 </button>
                             </div>
 
@@ -443,12 +447,12 @@
     </div>
 
     <!-- Attendance Modal -->
-    <div id="attendanceModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50" onclick="if(event.target === this) closeAttendanceModal()">
-        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-2xl bg-white dark:bg-gray-800" onclick="event.stopPropagation()">
+    <div id="attendanceModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50 px-4" onclick="if(event.target === this) closeAttendanceModal()">
+        <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border w-full max-w-md shadow-lg rounded-2xl bg-white dark:bg-gray-800" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100" id="modalTitle">Mark Attendance</h3>
+                <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100" id="modalTitle">Mark Attendance</h3>
                 <button onclick="closeAttendanceModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>

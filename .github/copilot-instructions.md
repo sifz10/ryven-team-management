@@ -175,3 +175,55 @@ MAIL_MAILER=smtp
 - Token-based access for UAT/checklists - tokens are UUIDs stored in database
 - GitHub webhook should use Secret in production (currently not implemented)
 - SSL verification disabled in local environment only - re-enable for production
+
+## Button Components Style Guide
+- `<x-black-button>`: Primary action button with pure black background, white text, round and hover effect
+- `<x-icon-button>`: Icon-only button with hover background change, used for sidebar icons
+- Variants: `variant="outline"` for outline style, `variant="black"` for solid black
+- Use these components for consistency across the application UI
+
+```blade<!-- Icon Button -->
+<x-icon-button variant="black">
+    <svg>...</svg>
+</x-icon-button>
+```
+### Border Radius
+- Small: `rounded-md` (4px)
+- Default: `rounded-lg` (8px)
+- Large: `rounded-xl` (12px)
+- Circle: `rounded-full`
+## 📱 Responsive Breakpoints
+- Mobile: `< 1024px` - Sidebar hidden, hamburger menu
+- Desktop: `≥ 1024px` - Sidebar visible, collapsible
+## 🔧 Alpine.js State
+```javascript
+document.addEventListener('alpine:init', () => {
+    Alpine.data('sidebar', () => ({
+        open: false,
+        toggle() {
+            this.open = !this.open;
+        }
+    }));
+});
+```
+## 📂 File Structure
+```
+resources/views/layouts/
+├── app.blade.php           # Main wrapper
+├── sidebar.blade.php       # Left navigation
+└── topbar.blade.php        # Top header bar
+resources/views/components/
+├── black-button.blade.php  # Primary button
+└── icon-button.blade.php   # Icon-only button
+```
+## ✨ Key Features
+✅ Pure black/white active states
+✅ Smooth transitions (200ms)
+✅ Dark mode optimized
+✅ Mobile responsive
+✅ Persistent collapse state
+✅ Icon + text navigation
+✅ Grouped sections
+## 🚀 After Making Changes
+- Run `php artisan view:clear` to clear cached views
+- Rebuild assets with `npm run build` for production

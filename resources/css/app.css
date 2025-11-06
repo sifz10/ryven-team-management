@@ -132,3 +132,142 @@
 .dark .prose a {
     color: #60a5fa;
 }
+
+/* Sidebar & Layout Enhancements */
+.sidebar-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth scroll */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for sidebar */
+aside::-webkit-scrollbar {
+    width: 6px;
+}
+
+aside::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+aside::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.7);
+}
+
+.dark aside::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.5);
+}
+
+.dark aside::-webkit-scrollbar-thumb:hover {
+    background: rgba(75, 85, 99, 0.7);
+}
+
+/* Active link pulse animation */
+@keyframes pulse-slow {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Mobile menu slide animation enhancement */
+@media (max-width: 1023px) {
+    aside {
+        transition: transform 0.3s ease-in-out;
+    }
+}
+
+/* Pure black button styles */
+.btn-black {
+    @apply bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 
+           font-medium px-4 py-2 rounded-lg transition-all duration-200 
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white;
+}
+
+.btn-black-outline {
+    @apply border-2 border-black text-black hover:bg-black hover:text-white 
+           dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black
+           font-medium px-4 py-2 rounded-lg transition-all duration-200 
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black dark:focus:ring-white;
+}
+
+/* Rounded icon buttons */
+.icon-btn {
+    @apply p-2 rounded-lg transition-all duration-200 
+           text-gray-700 dark:text-gray-300 
+           hover:bg-gray-100 dark:hover:bg-gray-700 
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500;
+}
+
+/* Notification badge pulse */
+.badge-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Enhanced mobile responsiveness */
+@media (max-width: 640px) {
+    .mobile-compact {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
+
+/* Responsive containers - use full width efficiently */
+.responsive-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (min-width: 1536px) {
+    .responsive-container {
+        max-width: 1536px;
+    }
+}
+
+/* Better grid responsiveness */
+.responsive-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+@media (min-width: 640px) {
+    .responsive-grid {
+        gap: 1.5rem;
+    }
+}
+
+/* Tooltip styles (for collapsed sidebar) */
+[x-tooltip] {
+    position: relative;
+}
+
+/* Print styles */
+@media print {
+    aside, header {
+        display: none !important;
+    }
+    
+    main {
+        margin: 0 !important;
+    }
+}

@@ -1,15 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
-                {{ __('Standard Operating Procedure (SOP)') }}
-            </h2>
-            <a href="#" onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full shadow hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-100 leading-tight">
+                    {{ __('Standard Operating Procedure (SOP)') }}
+                </h2>
+                <p class="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-300">Version 1.0 • Effective: October 2025 • Prepared by: CEO – Kazi Abu Sifat</p>
+            </div>
+            <a href="#" onclick="window.print()" class="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full shadow hover:bg-gray-800 dark:hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 whitespace-nowrap">
                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 17H7v4h10v-4zM7 7V3h10v4M7 13h10m-12 4H5a2 2 0 01-2-2v-4a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2h-2"/></svg>
-                <span class="text-sm font-medium">Print</span>
+                <span class="text-sm font-medium hidden sm:inline">Print</span>
+                <span class="text-sm font-medium sm:hidden">Print</span>
             </a>
         </div>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Version 1.0 • Effective: October 2025 • Prepared by: CEO – Kazi Abu Sifat</p>
     </x-slot>
 
     <div x-data="{progress:0}" x-init="window.addEventListener('scroll',()=>{progress=Math.min(100,(window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100)})">
@@ -18,7 +21,7 @@
         </div>
     </div>
 
-        <main class="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+        <main class="space-y-6">
             <section class="grid gap-6 lg:grid-cols-3">
                 <div class="lg:col-span-2 space-y-10">
                     <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
@@ -352,7 +355,6 @@
                      </div>
                 </aside>
             </section>
-        </main>
-    </x-app-layout>
+</x-app-layout>
 
 

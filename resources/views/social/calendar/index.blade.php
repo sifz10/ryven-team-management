@@ -1,19 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Content Calendar') }}
-            </h2>
-            <div class="flex gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ __('Content Calendar') }}
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Plan and schedule social media posts</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
                 <a href="{{ route('social.accounts.index') }}" 
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-gray-900 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-700 active:bg-gray-900 dark:active:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border border-transparent rounded-full font-semibold text-xs uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-100 transition">
                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
                     </svg>
-                    {{ __('Accounts') }}
+                    <span class="hidden sm:inline">{{ __('Accounts') }}</span>
+                    <span class="sm:hidden">Acc</span>
                 </a>
                 <a href="{{ route('social.posts.create') }}" 
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-gray-900 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-700 active:bg-gray-900 dark:active:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border border-transparent rounded-full font-semibold text-xs uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-100 transition">
                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
@@ -23,21 +27,21 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="contentCalendar()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="space-y-6" x-data="contentCalendar()">
             <!-- Month Navigation -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg mb-6">
-                <div class="p-6 flex justify-between items-center">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-2xl mb-6">
+                <div class="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <button @click="previousMonth()" 
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-gray-900 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-700 transition">
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border border-transparent rounded-full font-semibold text-xs uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-100 transition">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
-                        Previous
+                        <span class="hidden sm:inline">Previous</span>
+                        <span class="sm:hidden">Prev</span>
                     </button>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100" x-text="currentMonthName"></h3>
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="currentMonthName"></h3>
                     <button @click="nextMonth()" 
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-gray-900 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-700 transition">
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black border border-transparent rounded-full font-semibold text-xs uppercase tracking-widest hover:bg-gray-800 dark:hover:bg-gray-100 transition">
                         Next
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -157,7 +161,6 @@
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 
     @push('scripts')

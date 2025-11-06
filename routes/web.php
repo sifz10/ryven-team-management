@@ -15,6 +15,10 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\UatProjectController;
 use App\Http\Controllers\UatPublicController;
 use App\Http\Controllers\PersonalNoteController;
+use App\Http\Controllers\ReviewCycleController;
+use App\Http\Controllers\PerformanceReviewController;
+use App\Http\Controllers\GoalController;
+use App\Http\Controllers\SkillController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -78,9 +82,7 @@ Route::get('/sop', function () {
     return view('sop');
 })->middleware(['auth'])->name('sop');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/artisan/{command}', function (Request $request) {
@@ -271,6 +273,39 @@ Route::middleware('auth')->group(function () {
         Route::post('inbox/{message}/restore', [App\Http\Controllers\EmailInboxController::class, 'restore'])->name('email.inbox.restore');
         Route::post('inbox/bulk-action', [App\Http\Controllers\EmailInboxController::class, 'bulkAction'])->name('email.inbox.bulk-action');
         Route::get('attachments/{id}/download', [App\Http\Controllers\EmailInboxController::class, 'downloadAttachment'])->name('email.attachments.download');
+    });
+
+    // Performance Review System routes
+    Route::prefix('performance')->group(function () {
+        // Review Cycles
+        Route::resource('review-cycles', App\Http\Controllers\ReviewCycleController::class);
+        Route::post('review-cycles/{reviewCycle}/activate', [App\Http\Controllers\ReviewCycleController::class, 'activate'])->name('review-cycles.activate');
+        Route::post('review-cycles/{reviewCycle}/complete', [App\Http\Controllers\ReviewCycleController::class, 'complete'])->name('review-cycles.complete');
+        
+        // Performance Reviews
+        Route::resource('reviews', App\Http\Controllers\PerformanceReviewController::class);
+        Route::post('reviews/{review}/submit', [App\Http\Controllers\PerformanceReviewController::class, 'submit'])->name('reviews.submit');
+        Route::post('reviews/{review}/approve', [App\Http\Controllers\PerformanceReviewController::class, 'approve'])->name('reviews.approve');
+        Route::get('reviews/{review}/pdf', [App\Http\Controllers\PerformanceReviewController::class, 'downloadPdf'])->name('reviews.pdf');
+        
+        // 360 Feedback
+        Route::get('reviews/{review}/feedback', [App\Http\Controllers\PerformanceReviewController::class, 'feedbackForm'])->name('reviews.feedback.form');
+        Route::post('reviews/{review}/feedback', [App\Http\Controllers\PerformanceReviewController::class, 'submitFeedback'])->name('reviews.feedback.submit');
+        
+        // Goals & OKRs
+        Route::resource('goals', App\Http\Controllers\GoalController::class);
+        Route::post('goals/{goal}/update-progress', [App\Http\Controllers\GoalController::class, 'updateProgress'])->name('goals.update-progress');
+        Route::post('goals/{goal}/complete', [App\Http\Controllers\GoalController::class, 'complete'])->name('goals.complete');
+        
+        // Skills
+        Route::resource('skills', App\Http\Controllers\SkillController::class);
+        Route::post('skills/bulk-create', [App\Http\Controllers\SkillController::class, 'bulkCreate'])->name('skills.bulk-create');
+        
+        // Employee Skills Assessment
+        Route::get('employees/{employee}/skills', [App\Http\Controllers\EmployeeController::class, 'skills'])->name('employees.skills');
+        Route::post('employees/{employee}/skills', [App\Http\Controllers\EmployeeController::class, 'assessSkill'])->name('employees.skills.assess');
+        Route::put('employees/{employee}/skills/{employeeSkill}', [App\Http\Controllers\EmployeeController::class, 'updateSkillAssessment'])->name('employees.skills.update');
+        Route::delete('employees/{employee}/skills/{employeeSkill}', [App\Http\Controllers\EmployeeController::class, 'removeSkill'])->name('employees.skills.remove');
     });
 });
 

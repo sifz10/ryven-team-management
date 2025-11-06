@@ -83,6 +83,27 @@
                                         <span id="email-unread-badge" class="ml-2 px-2 py-0.5 bg-black text-white text-xs font-semibold rounded-full" style="display: none;">0</span>
                                     </span>
                                 </a>
+                                <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
+                                <a href="{{ route('review-cycles.index') }}" 
+                                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition
+                                    {{ request()->routeIs('review-cycles.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                    🔄 Review Cycles
+                                </a>
+                                <a href="{{ route('reviews.index') }}" 
+                                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition
+                                    {{ request()->routeIs('reviews.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                    ⭐ Performance Reviews
+                                </a>
+                                <a href="{{ route('goals.index') }}" 
+                                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition
+                                    {{ request()->routeIs('goals.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                    🎯 Goals & OKRs
+                                </a>
+                                <a href="{{ route('skills.index') }}" 
+                                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition
+                                    {{ request()->routeIs('skills.*') ? 'bg-gray-100 dark:bg-gray-700' : '' }}">
+                                    💡 Skills
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -184,6 +205,27 @@
             <x-responsive-nav-link :href="route('social.calendar')" :active="request()->routeIs('social.*')">
                 📅 {{ __('Content Calendar') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('email.inbox.index')" :active="request()->routeIs('email.*')">
+                📧 {{ __('Email Inbox') }}
+            </x-responsive-nav-link>
+            
+            <!-- Performance Section -->
+            <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Performance</div>
+            
+            <x-responsive-nav-link :href="route('review-cycles.index')" :active="request()->routeIs('review-cycles.*')">
+                🔄 {{ __('Review Cycles') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('reviews.index')" :active="request()->routeIs('reviews.*')">
+                ⭐ {{ __('Performance Reviews') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('goals.index')" :active="request()->routeIs('goals.*')">
+                🎯 {{ __('Goals & OKRs') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('skills.index')" :active="request()->routeIs('skills.*')">
+                💡 {{ __('Skills') }}
+            </x-responsive-nav-link>
+            
             <button @click="toggleTheme()" class="block w-full text-left px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700">Toggle theme</button>
         </div>
 

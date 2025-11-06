@@ -11,11 +11,11 @@
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <!-- Header -->
         <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-            <div class="max-w-screen-2xl mx-auto px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Inbox</h1>
+            <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Inbox</h1>
                     
-                    <div class="flex items-center gap-3" x-data="{ isSyncing: false }">
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3" x-data="{ isSyncing: false }">
                         <!-- Sync Button -->
                         <?php if($currentAccount): ?>
                             <button @click="isSyncing = true; fetch('<?php echo e(route('email.accounts.sync', $currentAccount)); ?>', { method: 'POST', headers: { 'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>', 'Accept': 'application/json' } }).then(r => r.json()).then(d => { console.log('Sync response:', d); setTimeout(() => { isSyncing = false; window.location.reload(); }, 1000); }).catch(err => { console.error('Sync error:', err); isSyncing = false; alert('Sync failed. Please check console for details.'); })"
@@ -40,19 +40,20 @@
                             </select>
                         <?php endif; ?>
 
-                        <a href="<?php echo e(route('email.inbox.compose')); ?>" class="inline-flex items-center px-6 py-2 bg-black text-white rounded-full font-semibold text-sm hover:bg-gray-800 transition">
+                        <a href="<?php echo e(route('email.inbox.compose')); ?>" class="inline-flex items-center px-4 sm:px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-semibold text-sm hover:bg-gray-800 dark:hover:bg-gray-100 transition">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                             </svg>
-                            Compose
+                            <span class="hidden sm:inline">Compose</span>
+                            <span class="sm:hidden">New</span>
                         </a>
 
-                        <a href="<?php echo e(route('email.accounts.index')); ?>" class="inline-flex items-center px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full font-semibold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 transition">
+                        <a href="<?php echo e(route('email.accounts.index')); ?>" class="inline-flex items-center px-4 sm:px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full font-semibold text-sm hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 transition">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
-                            Settings
+                            <span class="hidden sm:inline">Settings</span>
                         </a>
                     </div>
                 </div>
@@ -73,14 +74,23 @@
             </div>
         </div>
 
-        <div class="max-w-screen-2xl mx-auto px-6 py-6">
-            <div class="flex gap-6">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6">
+            <div class="flex flex-col lg:flex-row gap-6">
                 <!-- Sidebar -->
-                <div class="w-64 flex-shrink-0">
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl p-4 sticky top-24">
+                <div class="w-full lg:w-64 flex-shrink-0" x-data="{ mobileMenuOpen: false }">
+                    <!-- Mobile Toggle Button -->
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                            class="lg:hidden w-full mb-4 px-4 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-semibold flex items-center justify-between">
+                        <span>Folders & Filters</span>
+                        <svg class="w-5 h-5 transition-transform" :class="{ 'rotate-180': mobileMenuOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    
+                    <div :class="{ 'hidden': !mobileMenuOpen, 'block': mobileMenuOpen }" class="lg:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl sm:rounded-3xl p-4 lg:sticky lg:top-24">
                         <nav class="space-y-1">
                             <a href="<?php echo e(route('email.inbox.index', ['account' => $currentAccount?->id, 'folder' => 'INBOX'])); ?>" 
-                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($folder == 'INBOX' ? 'bg-black text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
+                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($folder == 'INBOX' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                                 </svg>
@@ -88,7 +98,7 @@
                             </a>
 
                             <a href="<?php echo e(route('email.inbox.index', ['account' => $currentAccount?->id, 'folder' => 'Sent'])); ?>" 
-                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($folder == 'Sent' ? 'bg-white text-black' : 'text-gray-400 hover:bg-gray-900'); ?> transition">
+                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($folder == 'Sent' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                 </svg>
@@ -96,7 +106,7 @@
                             </a>
 
                             <a href="<?php echo e(route('email.inbox.index', ['account' => $currentAccount?->id, 'folder' => 'Drafts'])); ?>" 
-                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($folder == 'Drafts' ? 'bg-black text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
+                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($folder == 'Drafts' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
@@ -104,7 +114,7 @@
                             </a>
 
                             <a href="<?php echo e(route('email.inbox.index', ['account' => $currentAccount?->id, 'folder' => 'Trash'])); ?>" 
-                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($folder == 'Trash' ? 'bg-black text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
+                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($folder == 'Trash' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
@@ -114,7 +124,7 @@
                             <div class="border-t border-gray-200 dark:border-gray-700 my-3"></div>
 
                             <a href="<?php echo e(route('email.inbox.index', ['account' => $currentAccount?->id, 'folder' => $folder, 'filter' => 'unread'])); ?>" 
-                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($filter == 'unread' ? 'bg-black text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
+                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($filter == 'unread' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                 </svg>
@@ -122,7 +132,7 @@
                             </a>
 
                             <a href="<?php echo e(route('email.inbox.index', ['account' => $currentAccount?->id, 'folder' => $folder, 'filter' => 'starred'])); ?>" 
-                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($filter == 'starred' ? 'bg-black text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
+                                class="flex items-center px-4 py-3 rounded-2xl <?php echo e($filter == 'starred' ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'); ?> transition">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
                                 </svg>
@@ -146,29 +156,29 @@
                         <!-- Bulk Actions Bar -->
                         <div x-show="selectedEmails.length > 0" 
                              x-transition
-                             class="bg-black text-white rounded-2xl p-4 mb-4 flex items-center justify-between"
+                             class="bg-black dark:bg-white text-white dark:text-black rounded-2xl p-3 sm:p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                              x-data="{ showModal: false, modalAction: '', modalTitle: '', modalMessage: '' }">
-                            <div>
+                            <div class="text-sm sm:text-base">
                                 <span class="font-semibold" x-text="selectedEmails.length"></span> email(s) selected
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex flex-wrap gap-2">
                                 <?php if($folder === 'Trash'): ?>
                                     <button @click="window.bulkAction('restore', selectedEmails)" 
-                                            class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition">
-                                        ♻️ Restore
+                                            class="px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 rounded-full font-semibold text-sm transition">
+                                        ♻️ <span class="hidden sm:inline">Restore</span>
                                     </button>
                                     <button @click="modalAction = 'delete'; modalTitle = 'Delete Forever?'; modalMessage = 'Are you sure you want to permanently delete ' + selectedEmails.length + ' email(s)? This action cannot be undone.'; showModal = true" 
-                                            class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition">
-                                        ❌ Delete Forever
+                                            class="px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-700 rounded-full font-semibold text-sm transition">
+                                        ❌ <span class="hidden sm:inline">Delete Forever</span>
                                     </button>
                                 <?php else: ?>
                                     <button @click="modalAction = 'trash'; modalTitle = 'Move to Trash?'; modalMessage = 'Are you sure you want to move ' + selectedEmails.length + ' email(s) to trash?'; showModal = true" 
-                                            class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition">
-                                        🗑️ Move to Trash
+                                            class="px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-700 rounded-full font-semibold text-sm transition">
+                                        🗑️ <span class="hidden sm:inline">Move to Trash</span>
                                     </button>
                                 <?php endif; ?>
                                 <button @click="selectedEmails = []; selectAll = false" 
-                                        class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold transition">
+                                        class="px-3 sm:px-4 py-2 bg-gray-700 dark:bg-gray-300 hover:bg-gray-600 dark:hover:bg-gray-400 rounded-full font-semibold text-sm transition">
                                     Cancel
                                 </button>
                             </div>
@@ -253,29 +263,29 @@
                                     </form>
 
                                     <!-- Email Content - Clickable -->
-                                    <a href="<?php echo e(route('email.inbox.show', $message)); ?>" class="flex items-center flex-1 min-w-0 ml-4">
+                                    <a href="<?php echo e(route('email.inbox.show', $message)); ?>" class="flex flex-col sm:flex-row sm:items-center flex-1 min-w-0 ml-4 gap-2 sm:gap-0">
                                         <!-- From -->
-                                        <div class="w-48 flex-shrink-0">
-                                            <p class="font-semibold <?php echo e(!$message->is_read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'); ?> truncate">
+                                        <div class="sm:w-48 flex-shrink-0">
+                                            <p class="font-semibold text-sm sm:text-base <?php echo e(!$message->is_read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'); ?> truncate">
                                                 <?php echo e($message->from_name ?: $message->from_email); ?>
 
                                             </p>
                                         </div>
 
                                         <!-- Subject & Preview -->
-                                        <div class="flex-1 mx-6 min-w-0">
-                                            <p class="font-semibold <?php echo e(!$message->is_read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'); ?> truncate">
+                                        <div class="flex-1 sm:mx-6 min-w-0">
+                                            <p class="font-semibold text-sm sm:text-base <?php echo e(!$message->is_read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'); ?> truncate">
                                                 <?php echo e(Str::limit($message->subject ?: '(No Subject)', 60)); ?>
 
                                             </p>
-                                            <p class="text-sm text-gray-500 dark:text-gray-500 truncate">
+                                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-500 truncate">
                                                 <?php echo e(Str::limit(strip_tags($message->body_text), 80)); ?>
 
                                             </p>
                                         </div>
 
                                         <!-- Date -->
-                                        <div class="flex items-center gap-3 flex-shrink-0">
+                                        <div class="flex items-center gap-3 flex-shrink-0 text-xs sm:text-sm">
                                             <?php if($message->has_attachments): ?>
                                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>

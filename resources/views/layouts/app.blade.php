@@ -20,23 +20,40 @@
         
         @stack('styles')
     </head>
-    <body class="font-sans antialiased" x-data x-init="document.documentElement.classList.toggle('dark', localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches))">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+    <body class="font-sans antialiased bg-gray-100 dark:bg-gray-900" 
+          x-data="{ 
+              sidebarOpen: false,
+              sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+              toggleSidebar() {
+                  this.sidebarCollapsed = !this.sidebarCollapsed;
+                  localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+              }
+          }" 
+          x-init="document.documentElement.classList.toggle('dark', localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches))">
+        
+        <div class="min-h-screen flex">
+            <!-- Sidebar -->
+            @include('layouts.sidebar')
+            
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col min-h-screen" :class="{'lg:ml-64': !sidebarCollapsed, 'lg:ml-20': sidebarCollapsed}">
+                <!-- Top Navigation Bar -->
+                @include('layouts.topbar')
+                
+                <!-- Page Heading -->
+                @isset($header)
+                    <header class="bg-white dark:bg-gray-800 shadow">
+                        <div class="mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @endisset
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
-
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
+                <!-- Page Content -->
+                <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
+                    {{ $slot }}
+                </main>
+            </div>
         </div>
         <div class="fixed bottom-6 right-6 z-50" x-data>
             @if (session('status'))

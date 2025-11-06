@@ -1,20 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Invoices') }}
-            </h2>
-            <a href="{{ route('invoices.create') }}" class="inline-flex items-center px-5 py-2.5 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 hover:shadow-xl transition">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ __('Invoices') }}
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Create and manage invoices</p>
+            </div>
+            <a href="{{ route('invoices.create') }}" class="inline-flex items-center px-4 sm:px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full shadow-lg hover:bg-gray-800 dark:hover:bg-gray-100 hover:shadow-xl transition">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                New Invoice
+                <span class="hidden sm:inline">New Invoice</span>
+                <span class="sm:hidden">New</span>
             </a>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="space-y-6">
             @if (session('success'))
                 <div class="mb-4 px-4 py-3 rounded-lg bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
                     {{ session('success') }}
@@ -152,7 +155,5 @@
                     @endif
                 </div>
             </div>
-        </div>
-    </div>
 </x-app-layout>
 
