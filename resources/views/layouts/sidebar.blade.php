@@ -48,59 +48,95 @@
 
     <!-- Navigation Links -->
     <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        <!-- Dashboard -->
-        <a href="{{ route('dashboard') }}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('dashboard')
-                     ? 'bg-black text-white dark:bg-white dark:text-black'
-                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
-           x-tooltip="sidebarCollapsed ? 'Dashboard' : ''">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-            </svg>
-            <span x-show="!sidebarCollapsed" class="font-medium">Dashboard</span>
-        </a>
+        @if(Auth::guard('employee')->check())
+            <!-- Employee Dashboard -->
+            <a href="{{ route('employee.dashboard') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('employee.dashboard')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'Dashboard' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">Dashboard</span>
+            </a>
 
-        <!-- Employees -->
-        <a href="{{ route('employees.index') }}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('employees.*')
-                     ? 'bg-black text-white dark:bg-white dark:text-black'
-                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
-           x-tooltip="sidebarCollapsed ? 'Employees' : ''">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-            </svg>
-            <span x-show="!sidebarCollapsed" class="font-medium">Employees</span>
-        </a>
+            <!-- Employee Profile -->
+            <a href="{{ route('employee.profile.edit') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('employee.profile.*')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'My Profile' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">My Profile</span>
+            </a>
+        @else
+            <!-- Admin Dashboard -->
+            <a href="{{ route('dashboard') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('dashboard')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'Dashboard' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">Dashboard</span>
+            </a>
+        @endif
 
-        <!-- Attendance -->
-        <a href="{{ route('attendance.index') }}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('attendance.*')
-                     ? 'bg-black text-white dark:bg-white dark:text-black'
-                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
-           x-tooltip="sidebarCollapsed ? 'Attendance' : ''">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-            </svg>
-            <span x-show="!sidebarCollapsed" class="font-medium">Attendance</span>
-        </a>
+        @if(Auth::guard('web')->check())
+            <!-- Admin Only: Employees -->
+            @if(auth()->user()->hasPermission('view-employees'))
+            <a href="{{ route('employees.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('employees.*')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'Employees' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">Employees</span>
+            </a>
+            @endif
 
-        <!-- Projects -->
-        <a href="{{ route('projects.index') }}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('projects.*')
-                     ? 'bg-black text-white dark:bg-white dark:text-black'
-                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
-           x-tooltip="sidebarCollapsed ? 'Projects' : ''">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
-            </svg>
-            <span x-show="!sidebarCollapsed" class="font-medium">Projects</span>
+            <!-- Admin Only: Attendance -->
+            @if(auth()->user()->hasPermission('view-attendance'))
+            <a href="{{ route('attendance.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('attendance.*')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'Attendance' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">Attendance</span>
+            </a>
+            @endif
+
+            <!-- Admin Only: Projects -->
+            @if(auth()->user()->hasPermission('view-projects'))
+            <a href="{{ route('projects.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('projects.*')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'Projects' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">Projects</span>
         </a>
+        @endif
 
         <!-- UAT -->
+        @if(auth()->user()->hasPermission('view-uat-projects'))
         <a href="{{ route('uat.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('uat.*')
@@ -112,8 +148,10 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">UAT Testing</span>
         </a>
+        @endif
 
         <!-- GitHub Logs -->
+        @if(auth()->user()->hasPermission('view-github-logs'))
         <a href="{{ route('github.logs') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('github.logs')
@@ -125,6 +163,7 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">GitHub Logs</span>
         </a>
+        @endif
 
         <!-- AI Assistant -->
         <a href="{{ route('ai-agent.index') }}"
@@ -145,7 +184,23 @@
             Management
         </div>
 
+        <!-- Roles & Permissions -->
+        @if(auth()->user()->hasPermission('view-roles'))
+        <a href="{{ route('roles.index') }}"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                  {{ request()->routeIs('roles.*')
+                     ? 'bg-black text-white dark:bg-white dark:text-black'
+                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+           x-tooltip="sidebarCollapsed ? 'Roles' : ''">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span x-show="!sidebarCollapsed" class="font-medium">Roles & Permissions</span>
+        </a>
+        @endif
+
         <!-- Invoices -->
+        @if(auth()->user()->hasPermission('view-invoices'))
         <a href="{{ route('invoices.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('invoices.*')
@@ -157,8 +212,10 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Invoices</span>
         </a>
+        @endif
 
         <!-- Contracts -->
+        @if(auth()->user()->hasPermission('view-contracts'))
         <a href="{{ route('contracts.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('contracts.*')
@@ -170,8 +227,10 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Contracts</span>
         </a>
+        @endif
 
         <!-- Personal Notes -->
+        @if(auth()->user()->hasPermission('view-notes'))
         <a href="{{ route('notes.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('notes.*')
@@ -183,6 +242,7 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Personal Notes</span>
         </a>
+        @endif
 
         <!-- Email Inbox -->
         <a href="{{ route('email.inbox.index') }}"
@@ -233,6 +293,7 @@
         </div>
 
         <!-- Review Cycles -->
+        @if(auth()->user()->hasPermission('view-review-cycles'))
         <a href="{{ route('review-cycles.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('review-cycles.*')
@@ -244,8 +305,10 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Review Cycles</span>
         </a>
+        @endif
 
         <!-- Performance Reviews -->
+        @if(auth()->user()->hasPermission('view-reviews'))
         <a href="{{ route('reviews.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('reviews.*')
@@ -257,8 +320,10 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Performance Reviews</span>
         </a>
+        @endif
 
         <!-- Goals & OKRs -->
+        @if(auth()->user()->hasPermission('view-goals'))
         <a href="{{ route('goals.index') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
                   {{ request()->routeIs('goals.*')
@@ -270,19 +335,23 @@
             </svg>
             <span x-show="!sidebarCollapsed" class="font-medium">Goals & OKRs</span>
         </a>
+        @endif
 
-        <!-- Skills -->
-        <a href="{{ route('skills.index') }}"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
-                  {{ request()->routeIs('skills.*')
-                     ? 'bg-black text-white dark:bg-white dark:text-black'
-                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
-           x-tooltip="sidebarCollapsed ? 'Skills' : ''">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-            </svg>
-            <span x-show="!sidebarCollapsed" class="font-medium">Skills</span>
-        </a>
+            <!-- Skills -->
+            @if(auth()->user()->hasPermission('view-skills'))
+            <a href="{{ route('skills.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('skills.*')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'Skills' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">Skills</span>
+            </a>
+            @endif
+        @endif
     </nav>
 
     <!-- Collapse Toggle Button (Desktop Only) -->

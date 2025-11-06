@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhook/github',
         ]);
+
+        // Register employee authentication middleware
+        $middleware->alias([
+            'employee.auth' => \App\Http\Middleware\EmployeeAuth::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
+        ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
         // Generate daily checklists every day at midnight

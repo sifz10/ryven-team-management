@@ -93,4 +93,86 @@ class User extends Authenticatable
     {
         return $this->hasMany(EmailAccount::class);
     }
+
+    /**
+     * Get the roles assigned to the user.
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'employee_role', 'employee_id', 'role_id');
+    }
+
+    /**
+     * Get all permissions for the user through roles.
+     */
+    public function permissions()
+    {
+        return $this->roles->flatMap->permissions->unique('id');
+    }
+
+    /**
+     * Check if user has a specific permission.
+     * Users in the admin portal have all permissions by default.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        // Admin users have all permissions
+        return true;
+    }
+
+    /**
+     * Check if user has any of the given permissions.
+     * Users in the admin portal have all permissions by default.
+     */
+    public function hasAnyPermission(array $permissions): bool
+    {
+        // Admin users have all permissions
+        return true;
+    }
+
+    /**
+     * Check if user has all of the given permissions.
+     * Users in the admin portal have all permissions by default.
+     */
+    public function hasAllPermissions(array $permissions): bool
+    {
+        // Admin users have all permissions
+        return true;
+    }
+
+    /**
+     * Check if user has a specific role.
+     * Users in the admin portal are considered super admins.
+     */
+    public function hasRole(string $role): bool
+    {
+        // Admin users have super admin role
+        return $role === 'super-admin';
+    }
+
+    /**
+     * Check if user has any of the given roles.
+     * Users in the admin portal are considered super admins.
+     */
+    public function hasAnyRole(array $roles): bool
+    {
+        // Admin users have super admin role
+        return in_array('super-admin', $roles);
+    }
+
+    /**
+     * Check if user has all of the given roles.
+     * Users in the admin portal are considered super admins.
+     */
+    public function hasAllRoles(array $roles): bool
+    {
+        // Admin users have super admin role
+        // Only return true if all requested roles are 'super-admin'
+        foreach ($roles as $role) {
+            if ($role !== 'super-admin') {
+                return false;
+            }
+        }
+        return true;
+    }
 }

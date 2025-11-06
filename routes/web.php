@@ -27,6 +27,31 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Employee Authentication Routes
+Route::prefix('employee')->name('employee.')->group(function () {
+    // Guest routes (not authenticated)
+    Route::middleware('guest:employee')->group(function () {
+        Route::get('/login', [App\Http\Controllers\Employee\Auth\LoginController::class, 'create'])
+            ->name('login');
+        Route::post('/login', [App\Http\Controllers\Employee\Auth\LoginController::class, 'store'])
+            ->name('login.store');
+    });
+
+    // Authenticated employee routes
+    Route::middleware('employee.auth')->group(function () {
+        Route::post('/logout', [App\Http\Controllers\Employee\Auth\LoginController::class, 'destroy'])
+            ->name('logout');
+        Route::get('/dashboard', [App\Http\Controllers\Employee\DashboardController::class, 'index'])
+            ->name('dashboard');
+
+        // Employee profile and settings
+        Route::get('/profile', [App\Http\Controllers\Employee\ProfileController::class, 'edit'])
+            ->name('profile.edit');
+        Route::patch('/profile', [App\Http\Controllers\Employee\ProfileController::class, 'update'])
+            ->name('profile.update');
+    });
+});
+
 // Public checklist routes (no authentication required)
 Route::get('/checklist/{token}', [ChecklistController::class, 'publicView'])->name('checklist.public.view');
 Route::get('/checklist/{token}/item/{item}/toggle', [ChecklistController::class, 'publicToggleItem'])->name('checklist.public.toggle');
@@ -52,29 +77,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/employees/{employee}/github/check-new', [GitHubWebhookController::class, 'checkNew'])->name('github.activities.checkNew');
 
     // GitHub Logs Page
-    Route::get('/github-logs', [GitHubWebhookController::class, 'logs'])->name('github.logs');
+    Route::get('/github-logs', [GitHubWebhookController::class, 'logs'])->name('github.logs')->middleware('permission:view-github-logs');
 
     // GitHub Pull Request routes
-    Route::get('/github/pr/{log}', [GitHubPullRequestController::class, 'show'])->name('github.pr.show');
-    Route::get('/github/pr/{log}/details', [GitHubPullRequestController::class, 'details'])->name('github.pr.details');
-    Route::post('/github/pr/{log}/comment', [GitHubPullRequestController::class, 'comment'])->name('github.pr.comment');
-    Route::post('/github/pr/{log}/review', [GitHubPullRequestController::class, 'review'])->name('github.pr.review');
-    Route::post('/github/pr/{log}/assign', [GitHubPullRequestController::class, 'assign'])->name('github.pr.assign');
-    Route::delete('/github/pr/{log}/assign/reviewer/{username}', [GitHubPullRequestController::class, 'removeReviewer'])->name('github.pr.removeReviewer');
-    Route::delete('/github/pr/{log}/assign/assignee/{username}', [GitHubPullRequestController::class, 'removeAssignee'])->name('github.pr.removeAssignee');
-    Route::post('/github/pr/{log}/labels', [GitHubPullRequestController::class, 'addLabel'])->name('github.pr.addLabel');
-    Route::delete('/github/pr/{log}/labels/{label}', [GitHubPullRequestController::class, 'removeLabel'])->name('github.pr.removeLabel');
-    Route::post('/github/pr/{log}/merge', [GitHubPullRequestController::class, 'merge'])->name('github.pr.merge');
-    Route::post('/github/pr/{log}/close', [GitHubPullRequestController::class, 'close'])->name('github.pr.close');
-    Route::post('/github/pr/{log}/ai-review', [GitHubPullRequestController::class, 'generateAIReview'])->name('github.pr.aiReview');
+    Route::get('/github/pr/{log}', [GitHubPullRequestController::class, 'show'])->name('github.pr.show')->middleware('permission:view-github-logs');
+    Route::get('/github/pr/{log}/details', [GitHubPullRequestController::class, 'details'])->name('github.pr.details')->middleware('permission:view-github-logs');
+    Route::post('/github/pr/{log}/comment', [GitHubPullRequestController::class, 'comment'])->name('github.pr.comment')->middleware('permission:manage-github-logs');
+    Route::post('/github/pr/{log}/review', [GitHubPullRequestController::class, 'review'])->name('github.pr.review')->middleware('permission:manage-github-logs');
+    Route::post('/github/pr/{log}/assign', [GitHubPullRequestController::class, 'assign'])->name('github.pr.assign')->middleware('permission:manage-github-logs');
+    Route::delete('/github/pr/{log}/assign/reviewer/{username}', [GitHubPullRequestController::class, 'removeReviewer'])->name('github.pr.removeReviewer')->middleware('permission:manage-github-logs');
+    Route::delete('/github/pr/{log}/assign/assignee/{username}', [GitHubPullRequestController::class, 'removeAssignee'])->name('github.pr.removeAssignee')->middleware('permission:manage-github-logs');
+    Route::post('/github/pr/{log}/labels', [GitHubPullRequestController::class, 'addLabel'])->name('github.pr.addLabel')->middleware('permission:manage-github-logs');
+    Route::delete('/github/pr/{log}/labels/{label}', [GitHubPullRequestController::class, 'removeLabel'])->name('github.pr.removeLabel')->middleware('permission:manage-github-logs');
+    Route::post('/github/pr/{log}/merge', [GitHubPullRequestController::class, 'merge'])->name('github.pr.merge')->middleware('permission:manage-github-logs');
+    Route::post('/github/pr/{log}/close', [GitHubPullRequestController::class, 'close'])->name('github.pr.close')->middleware('permission:manage-github-logs');
+    Route::post('/github/pr/{log}/ai-review', [GitHubPullRequestController::class, 'generateAIReview'])->name('github.pr.aiReview')->middleware('permission:view-github-logs');
 
     // Project Management routes
-    Route::resource('projects', ProjectController::class);
-    Route::get('/projects/{project}/today-work', [ProjectController::class, 'todayWork'])->name('projects.today-work');
-    Route::put('/projects/{project}/work/{submission}', [ProjectController::class, 'updateWorkSubmission'])->name('projects.work.update');
-    Route::delete('/projects/{project}/work/{submission}', [ProjectController::class, 'deleteWorkSubmission'])->name('projects.work.delete');
-    Route::post('/projects/{project}/send-report', [ProjectController::class, 'sendReport'])->name('projects.send-report');
-    Route::get('/projects-today-summary', [ProjectController::class, 'todaySummary'])->name('projects.today-summary');
+    Route::resource('projects', ProjectController::class)->middleware([
+        'index' => 'permission:view-projects',
+        'show' => 'permission:view-projects',
+        'create' => 'permission:create-projects',
+        'store' => 'permission:create-projects',
+        'edit' => 'permission:edit-projects',
+        'update' => 'permission:edit-projects',
+        'destroy' => 'permission:delete-projects',
+    ]);
+    Route::get('/projects/{project}/today-work', [ProjectController::class, 'todayWork'])->name('projects.today-work')->middleware('permission:view-projects');
+    Route::put('/projects/{project}/work/{submission}', [ProjectController::class, 'updateWorkSubmission'])->name('projects.work.update')->middleware('permission:edit-projects');
+    Route::delete('/projects/{project}/work/{submission}', [ProjectController::class, 'deleteWorkSubmission'])->name('projects.work.delete')->middleware('permission:edit-projects');
+    Route::post('/projects/{project}/send-report', [ProjectController::class, 'sendReport'])->name('projects.send-report')->middleware('permission:edit-projects');
+    Route::get('/projects-today-summary', [ProjectController::class, 'todaySummary'])->name('projects.today-summary')->middleware('permission:view-projects');
 });
 
 // SOP page (authenticated)
@@ -147,72 +180,122 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/clear-read', [App\Http\Controllers\NotificationController::class, 'clearRead'])->name('notifications.clear-read');
     Route::delete('/notifications/{notification}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 
-    Route::resource('employees', EmployeeController::class);
-    Route::get('employees-deleted', [EmployeeController::class, 'deleted'])->name('employees.deleted');
-    Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])->name('employees.restore');
-    Route::delete('employees/{id}/force-delete', [EmployeeController::class, 'forceDelete'])->name('employees.force-delete');
-    Route::post('employees/{employee}/discontinue', [EmployeeController::class, 'discontinue'])->name('employees.discontinue');
-    Route::post('employees/{employee}/reactivate', [EmployeeController::class, 'reactivate'])->name('employees.reactivate');
+    // Employee Management routes
+    Route::resource('employees', EmployeeController::class)->middleware([
+        'index' => 'permission:view-employees',
+        'show' => 'permission:view-employees',
+        'create' => 'permission:create-employees',
+        'store' => 'permission:create-employees',
+        'edit' => 'permission:edit-employees',
+        'update' => 'permission:edit-employees',
+        'destroy' => 'permission:delete-employees',
+    ]);
+    Route::get('employees-deleted', [EmployeeController::class, 'deleted'])->name('employees.deleted')->middleware('permission:view-employees');
+    Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])->name('employees.restore')->middleware('permission:edit-employees');
+    Route::delete('employees/{id}/force-delete', [EmployeeController::class, 'forceDelete'])->name('employees.force-delete')->middleware('permission:delete-employees');
+    Route::post('employees/{employee}/discontinue', [EmployeeController::class, 'discontinue'])->name('employees.discontinue')->middleware('permission:discontinue-employees');
+    Route::post('employees/{employee}/reactivate', [EmployeeController::class, 'reactivate'])->name('employees.reactivate')->middleware('permission:edit-employees');
 
-    Route::post('employees/{employee}/payments', [EmployeePaymentController::class, 'store'])->name('employees.payments.store');
-    Route::put('employees/{employee}/payments/{payment}', [EmployeePaymentController::class, 'update'])->name('employees.payments.update');
-    Route::delete('employees/{employee}/payments/{payment}', [EmployeePaymentController::class, 'destroy'])->name('employees.payments.destroy');
+    // Employee Payments routes
+    Route::post('employees/{employee}/payments', [EmployeePaymentController::class, 'store'])->name('employees.payments.store')->middleware('permission:manage-payments');
+    Route::put('employees/{employee}/payments/{payment}', [EmployeePaymentController::class, 'update'])->name('employees.payments.update')->middleware('permission:manage-payments');
+    Route::delete('employees/{employee}/payments/{payment}', [EmployeePaymentController::class, 'destroy'])->name('employees.payments.destroy')->middleware('permission:manage-payments');
 
-    Route::post('employees/{employee}/payments/{payment}/notes', [App\Http\Controllers\ActivityNoteController::class, 'store'])->name('employees.payments.notes.store');
-    Route::delete('employees/{employee}/payments/{payment}/notes/{note}', [App\Http\Controllers\ActivityNoteController::class, 'destroy'])->name('employees.payments.notes.destroy');
+    // Payment Notes routes
+    Route::post('employees/{employee}/payments/{payment}/notes', [App\Http\Controllers\ActivityNoteController::class, 'store'])->name('employees.payments.notes.store')->middleware('permission:manage-payments');
+    Route::delete('employees/{employee}/payments/{payment}/notes/{note}', [App\Http\Controllers\ActivityNoteController::class, 'destroy'])->name('employees.payments.notes.destroy')->middleware('permission:manage-payments');
 
-    Route::post('employees/{employee}/bank-accounts', [EmployeeBankAccountController::class, 'store'])->name('employees.bank-accounts.store');
-    Route::put('employees/{employee}/bank-accounts/{account}', [EmployeeBankAccountController::class, 'update'])->name('employees.bank-accounts.update');
-    Route::delete('employees/{employee}/bank-accounts/{account}', [EmployeeBankAccountController::class, 'destroy'])->name('employees.bank-accounts.destroy');
+    // Bank Accounts routes
+    Route::post('employees/{employee}/bank-accounts', [EmployeeBankAccountController::class, 'store'])->name('employees.bank-accounts.store')->middleware('permission:manage-bank-accounts');
+    Route::put('employees/{employee}/bank-accounts/{account}', [EmployeeBankAccountController::class, 'update'])->name('employees.bank-accounts.update')->middleware('permission:manage-bank-accounts');
+    Route::delete('employees/{employee}/bank-accounts/{account}', [EmployeeBankAccountController::class, 'destroy'])->name('employees.bank-accounts.destroy')->middleware('permission:manage-bank-accounts');
 
-    Route::post('employees/{employee}/accesses', [EmployeeAccessController::class, 'store'])->name('employees.accesses.store');
-    Route::put('employees/{employee}/accesses/{access}', [EmployeeAccessController::class, 'update'])->name('employees.accesses.update');
-    Route::delete('employees/{employee}/accesses/{access}', [EmployeeAccessController::class, 'destroy'])->name('employees.accesses.destroy');
+    // Employee Accesses routes
+    Route::post('employees/{employee}/accesses', [EmployeeAccessController::class, 'store'])->name('employees.accesses.store')->middleware('permission:manage-accesses');
+    Route::put('employees/{employee}/accesses/{access}', [EmployeeAccessController::class, 'update'])->name('employees.accesses.update')->middleware('permission:manage-accesses');
+    Route::delete('employees/{employee}/accesses/{access}', [EmployeeAccessController::class, 'destroy'])->name('employees.accesses.destroy')->middleware('permission:manage-accesses');
 
     // Employment Contract routes
-    Route::get('contracts', [EmploymentContractController::class, 'index'])->name('contracts.index');
-    Route::get('employees/{employee}/contracts/create', [EmploymentContractController::class, 'create'])->name('contracts.create');
-    Route::post('employees/{employee}/contracts', [EmploymentContractController::class, 'store'])->name('contracts.store');
-    Route::get('contracts/{contract}', [EmploymentContractController::class, 'show'])->name('contracts.show');
-    Route::get('contracts/{contract}/edit', [EmploymentContractController::class, 'edit'])->name('contracts.edit');
-    Route::put('contracts/{contract}', [EmploymentContractController::class, 'update'])->name('contracts.update');
-    Route::delete('contracts/{contract}', [EmploymentContractController::class, 'destroy'])->name('contracts.destroy');
-    Route::get('contracts/{contract}/pdf', [EmploymentContractController::class, 'downloadPdf'])->name('contracts.pdf');
+    Route::get('contracts', [EmploymentContractController::class, 'index'])->name('contracts.index')->middleware('permission:view-contracts');
+    Route::get('employees/{employee}/contracts/create', [EmploymentContractController::class, 'create'])->name('contracts.create')->middleware('permission:create-contracts');
+    Route::post('employees/{employee}/contracts', [EmploymentContractController::class, 'store'])->name('contracts.store')->middleware('permission:create-contracts');
+    Route::get('contracts/{contract}', [EmploymentContractController::class, 'show'])->name('contracts.show')->middleware('permission:view-contracts');
+    Route::get('contracts/{contract}/edit', [EmploymentContractController::class, 'edit'])->name('contracts.edit')->middleware('permission:edit-contracts');
+    Route::put('contracts/{contract}', [EmploymentContractController::class, 'update'])->name('contracts.update')->middleware('permission:edit-contracts');
+    Route::delete('contracts/{contract}', [EmploymentContractController::class, 'destroy'])->name('contracts.destroy')->middleware('permission:delete-contracts');
+    Route::get('contracts/{contract}/pdf', [EmploymentContractController::class, 'downloadPdf'])->name('contracts.pdf')->middleware('permission:view-contracts');
 
     // Attendance routes
-    Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index');
-    Route::post('attendance', [AttendanceController::class, 'store'])->name('attendance.store');
-    Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
-    Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
-    Route::post('attendance/bulk-populate', [AttendanceController::class, 'bulkPopulate'])->name('attendance.bulk-populate');
-    Route::post('attendance/monthly-adjustment', [AttendanceController::class, 'saveMonthlyAdjustment'])->name('attendance.monthly-adjustment');
+    Route::get('attendance', [AttendanceController::class, 'index'])->name('attendance.index')->middleware('permission:view-attendance');
+    Route::post('attendance', [AttendanceController::class, 'store'])->name('attendance.store')->middleware('permission:manage-attendance');
+    Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update')->middleware('permission:manage-attendance');
+    Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy')->middleware('permission:manage-attendance');
+    Route::post('attendance/bulk-populate', [AttendanceController::class, 'bulkPopulate'])->name('attendance.bulk-populate')->middleware('permission:approve-attendance');
+    Route::post('attendance/monthly-adjustment', [AttendanceController::class, 'saveMonthlyAdjustment'])->name('attendance.monthly-adjustment')->middleware('permission:approve-attendance');
 
     // Checklist routes
-    Route::post('employees/{employee}/checklists/templates', [ChecklistController::class, 'storeTemplate'])->name('employees.checklists.templates.store');
-    Route::put('employees/{employee}/checklists/templates/{template}', [ChecklistController::class, 'updateTemplate'])->name('employees.checklists.templates.update');
-    Route::delete('employees/{employee}/checklists/templates/{template}', [ChecklistController::class, 'destroyTemplate'])->name('employees.checklists.templates.destroy');
-    Route::post('employees/{employee}/checklists/items/{item}/toggle', [ChecklistController::class, 'toggleItem'])->name('employees.checklists.items.toggle');
-    Route::post('employees/{employee}/checklists/generate-today', [ChecklistController::class, 'generateTodayChecklists'])->name('employees.checklists.generate-today');
-    Route::post('employees/{employee}/checklists/{checklist}/send-email', [ChecklistController::class, 'sendChecklistEmail'])->name('employees.checklists.send-email');
+    Route::post('employees/{employee}/checklists/templates', [ChecklistController::class, 'storeTemplate'])->name('employees.checklists.templates.store')->middleware('permission:create-checklists');
+    Route::put('employees/{employee}/checklists/templates/{template}', [ChecklistController::class, 'updateTemplate'])->name('employees.checklists.templates.update')->middleware('permission:edit-checklists');
+    Route::delete('employees/{employee}/checklists/templates/{template}', [ChecklistController::class, 'destroyTemplate'])->name('employees.checklists.templates.destroy')->middleware('permission:delete-checklists');
+    Route::post('employees/{employee}/checklists/items/{item}/toggle', [ChecklistController::class, 'toggleItem'])->name('employees.checklists.items.toggle')->middleware('permission:view-checklists');
+    Route::post('employees/{employee}/checklists/generate-today', [ChecklistController::class, 'generateTodayChecklists'])->name('employees.checklists.generate-today')->middleware('permission:create-checklists');
+    Route::post('employees/{employee}/checklists/{checklist}/send-email', [ChecklistController::class, 'sendChecklistEmail'])->name('employees.checklists.send-email')->middleware('permission:view-checklists');
 
     // Invoice routes
-    Route::resource('invoices', InvoiceController::class);
-    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
-    Route::get('invoices/{invoice}/preview', [InvoiceController::class, 'previewPdf'])->name('invoices.preview');
-    Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email');
+    Route::resource('invoices', InvoiceController::class)->middleware([
+        'index' => 'permission:view-invoices',
+        'show' => 'permission:view-invoices',
+        'create' => 'permission:create-invoices',
+        'store' => 'permission:create-invoices',
+        'edit' => 'permission:edit-invoices',
+        'update' => 'permission:edit-invoices',
+        'destroy' => 'permission:delete-invoices',
+    ]);
+    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf')->middleware('permission:view-invoices');
+    Route::get('invoices/{invoice}/preview', [InvoiceController::class, 'previewPdf'])->name('invoices.preview')->middleware('permission:view-invoices');
+    Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.send-email')->middleware('permission:edit-invoices');
 
     // UAT routes
-    Route::resource('uat', UatProjectController::class)->parameters(['uat' => 'project']);
-    Route::post('uat/{project}/test-cases', [UatProjectController::class, 'storeTestCase'])->name('uat.test-cases.store');
-    Route::get('uat/{project}/test-cases/{testCase}/edit', [UatProjectController::class, 'editTestCase'])->name('uat.test-cases.edit');
-    Route::put('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'updateTestCase'])->name('uat.test-cases.update');
-    Route::delete('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'destroyTestCase'])->name('uat.test-cases.destroy');
-    Route::post('uat/{project}/users', [UatProjectController::class, 'addUser'])->name('uat.users.add');
-    Route::delete('uat/{project}/users/{user}', [UatProjectController::class, 'removeUser'])->name('uat.users.remove');
+    Route::resource('uat', UatProjectController::class)->parameters(['uat' => 'project'])->middleware([
+        'index' => 'permission:view-uat-projects',
+        'show' => 'permission:view-uat-projects',
+        'create' => 'permission:create-uat-projects',
+        'store' => 'permission:create-uat-projects',
+        'edit' => 'permission:edit-uat-projects',
+        'update' => 'permission:edit-uat-projects',
+        'destroy' => 'permission:delete-uat-projects',
+    ]);
+    Route::post('uat/{project}/test-cases', [UatProjectController::class, 'storeTestCase'])->name('uat.test-cases.store')->middleware('permission:manage-test-cases');
+    Route::get('uat/{project}/test-cases/{testCase}/edit', [UatProjectController::class, 'editTestCase'])->name('uat.test-cases.edit')->middleware('permission:manage-test-cases');
+    Route::put('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'updateTestCase'])->name('uat.test-cases.update')->middleware('permission:manage-test-cases');
+    Route::delete('uat/{project}/test-cases/{testCase}', [UatProjectController::class, 'destroyTestCase'])->name('uat.test-cases.destroy')->middleware('permission:manage-test-cases');
+    Route::post('uat/{project}/users', [UatProjectController::class, 'addUser'])->name('uat.users.add')->middleware('permission:manage-uat-users');
+    Route::delete('uat/{project}/users/{user}', [UatProjectController::class, 'removeUser'])->name('uat.users.remove')->middleware('permission:manage-uat-users');
 
     // Personal Notes routes
-    Route::get('notes/emails/search', [PersonalNoteController::class, 'searchEmails'])->name('notes.emails.search');
-    Route::resource('notes', PersonalNoteController::class);
+    Route::get('notes/emails/search', [PersonalNoteController::class, 'searchEmails'])->name('notes.emails.search')->middleware('permission:manage-notes');
+    Route::resource('notes', PersonalNoteController::class)->middleware([
+        'index' => 'permission:view-notes',
+        'show' => 'permission:view-notes',
+        'create' => 'permission:manage-notes',
+        'store' => 'permission:manage-notes',
+        'edit' => 'permission:manage-notes',
+        'update' => 'permission:manage-notes',
+        'destroy' => 'permission:manage-notes',
+    ]);
+
+    // Role Management routes
+    Route::get('roles/assign', [App\Http\Controllers\RoleController::class, 'assignForm'])->name('roles.assign-form')->middleware('permission:assign-permissions');
+    Route::post('roles/assign/{employee}', [App\Http\Controllers\RoleController::class, 'assignRoles'])->name('roles.assign-roles')->middleware('permission:assign-permissions');
+    Route::resource('roles', App\Http\Controllers\RoleController::class)->middleware([
+        'index' => 'permission:view-roles',
+        'show' => 'permission:view-roles',
+        'create' => 'permission:manage-roles',
+        'store' => 'permission:manage-roles',
+        'edit' => 'permission:manage-roles',
+        'update' => 'permission:manage-roles',
+        'destroy' => 'permission:manage-roles',
+    ]);
 
     // Content Calendar & Social Media routes
     Route::get('social/calendar', [App\Http\Controllers\ContentCalendarController::class, 'index'])->name('social.calendar');
@@ -278,34 +361,66 @@ Route::middleware('auth')->group(function () {
     // Performance Review System routes
     Route::prefix('performance')->group(function () {
         // Review Cycles
-        Route::resource('review-cycles', App\Http\Controllers\ReviewCycleController::class);
-        Route::post('review-cycles/{reviewCycle}/activate', [App\Http\Controllers\ReviewCycleController::class, 'activate'])->name('review-cycles.activate');
-        Route::post('review-cycles/{reviewCycle}/complete', [App\Http\Controllers\ReviewCycleController::class, 'complete'])->name('review-cycles.complete');
+        Route::resource('review-cycles', App\Http\Controllers\ReviewCycleController::class)->middleware([
+            'index' => 'permission:view-review-cycles',
+            'show' => 'permission:view-review-cycles',
+            'create' => 'permission:create-review-cycles',
+            'store' => 'permission:create-review-cycles',
+            'edit' => 'permission:edit-review-cycles',
+            'update' => 'permission:edit-review-cycles',
+            'destroy' => 'permission:delete-review-cycles',
+        ]);
+        Route::post('review-cycles/{reviewCycle}/activate', [App\Http\Controllers\ReviewCycleController::class, 'activate'])->name('review-cycles.activate')->middleware('permission:edit-review-cycles');
+        Route::post('review-cycles/{reviewCycle}/complete', [App\Http\Controllers\ReviewCycleController::class, 'complete'])->name('review-cycles.complete')->middleware('permission:edit-review-cycles');
 
         // Performance Reviews
-        Route::resource('reviews', App\Http\Controllers\PerformanceReviewController::class);
-        Route::post('reviews/{review}/submit', [App\Http\Controllers\PerformanceReviewController::class, 'submit'])->name('reviews.submit');
-        Route::post('reviews/{review}/approve', [App\Http\Controllers\PerformanceReviewController::class, 'approve'])->name('reviews.approve');
-        Route::get('reviews/{review}/pdf', [App\Http\Controllers\PerformanceReviewController::class, 'downloadPdf'])->name('reviews.pdf');
+        Route::resource('reviews', App\Http\Controllers\PerformanceReviewController::class)->middleware([
+            'index' => 'permission:view-reviews',
+            'show' => 'permission:view-reviews',
+            'create' => 'permission:conduct-reviews',
+            'store' => 'permission:conduct-reviews',
+            'edit' => 'permission:conduct-reviews',
+            'update' => 'permission:conduct-reviews',
+            'destroy' => 'permission:conduct-reviews',
+        ]);
+        Route::post('reviews/{review}/submit', [App\Http\Controllers\PerformanceReviewController::class, 'submit'])->name('reviews.submit')->middleware('permission:conduct-reviews');
+        Route::post('reviews/{review}/approve', [App\Http\Controllers\PerformanceReviewController::class, 'approve'])->name('reviews.approve')->middleware('permission:approve-reviews');
+        Route::get('reviews/{review}/pdf', [App\Http\Controllers\PerformanceReviewController::class, 'downloadPdf'])->name('reviews.pdf')->middleware('permission:view-reviews');
 
         // 360 Feedback
-        Route::get('reviews/{review}/feedback', [App\Http\Controllers\PerformanceReviewController::class, 'feedbackForm'])->name('reviews.feedback.form');
-        Route::post('reviews/{review}/feedback', [App\Http\Controllers\PerformanceReviewController::class, 'submitFeedback'])->name('reviews.feedback.submit');
+        Route::get('reviews/{review}/feedback', [App\Http\Controllers\PerformanceReviewController::class, 'feedbackForm'])->name('reviews.feedback.form')->middleware('permission:provide-feedback');
+        Route::post('reviews/{review}/feedback', [App\Http\Controllers\PerformanceReviewController::class, 'submitFeedback'])->name('reviews.feedback.submit')->middleware('permission:provide-feedback');
 
         // Goals & OKRs
-        Route::resource('goals', App\Http\Controllers\GoalController::class);
-        Route::post('goals/{goal}/update-progress', [App\Http\Controllers\GoalController::class, 'updateProgress'])->name('goals.update-progress');
-        Route::post('goals/{goal}/complete', [App\Http\Controllers\GoalController::class, 'complete'])->name('goals.complete');
+        Route::resource('goals', App\Http\Controllers\GoalController::class)->middleware([
+            'index' => 'permission:view-goals',
+            'show' => 'permission:view-goals',
+            'create' => 'permission:manage-goals',
+            'store' => 'permission:manage-goals',
+            'edit' => 'permission:manage-goals',
+            'update' => 'permission:manage-goals',
+            'destroy' => 'permission:manage-goals',
+        ]);
+        Route::post('goals/{goal}/update-progress', [App\Http\Controllers\GoalController::class, 'updateProgress'])->name('goals.update-progress')->middleware('permission:manage-goals');
+        Route::post('goals/{goal}/complete', [App\Http\Controllers\GoalController::class, 'complete'])->name('goals.complete')->middleware('permission:manage-goals');
 
         // Skills
-        Route::resource('skills', App\Http\Controllers\SkillController::class);
-        Route::post('skills/bulk-create', [App\Http\Controllers\SkillController::class, 'bulkCreate'])->name('skills.bulk-create');
+        Route::resource('skills', App\Http\Controllers\SkillController::class)->middleware([
+            'index' => 'permission:view-skills',
+            'show' => 'permission:view-skills',
+            'create' => 'permission:manage-skills',
+            'store' => 'permission:manage-skills',
+            'edit' => 'permission:manage-skills',
+            'update' => 'permission:manage-skills',
+            'destroy' => 'permission:manage-skills',
+        ]);
+        Route::post('skills/bulk-create', [App\Http\Controllers\SkillController::class, 'bulkCreate'])->name('skills.bulk-create')->middleware('permission:manage-skills');
 
         // Employee Skills Assessment
-        Route::get('employees/{employee}/skills', [App\Http\Controllers\EmployeeController::class, 'skills'])->name('employees.skills');
-        Route::post('employees/{employee}/skills', [App\Http\Controllers\EmployeeController::class, 'assessSkill'])->name('employees.skills.assess');
-        Route::put('employees/{employee}/skills/{employeeSkill}', [App\Http\Controllers\EmployeeController::class, 'updateSkillAssessment'])->name('employees.skills.update');
-        Route::delete('employees/{employee}/skills/{employeeSkill}', [App\Http\Controllers\EmployeeController::class, 'removeSkill'])->name('employees.skills.remove');
+        Route::get('employees/{employee}/skills', [App\Http\Controllers\EmployeeController::class, 'skills'])->name('employees.skills')->middleware('permission:view-employees');
+        Route::post('employees/{employee}/skills', [App\Http\Controllers\EmployeeController::class, 'assessSkill'])->name('employees.skills.assess')->middleware('permission:edit-employees');
+        Route::put('employees/{employee}/skills/{employeeSkill}', [App\Http\Controllers\EmployeeController::class, 'updateSkillAssessment'])->name('employees.skills.update')->middleware('permission:edit-employees');
+        Route::delete('employees/{employee}/skills/{employeeSkill}', [App\Http\Controllers\EmployeeController::class, 'removeSkill'])->name('employees.skills.remove')->middleware('permission:edit-employees');
 
         // AI Agent
         Route::get('ai-agent', [App\Http\Controllers\AIAgentController::class, 'index'])->name('ai-agent.index');

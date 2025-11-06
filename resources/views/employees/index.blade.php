@@ -8,6 +8,7 @@
                 <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Manage and track your team members</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                @if(auth()->user()->hasPermission('view-employees'))
                 <a href="{{ route('employees.deleted') }}" class="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-600 text-white dark:bg-gray-700 dark:text-white rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 font-semibold text-sm sm:text-base">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -15,6 +16,8 @@
                     <span class="hidden sm:inline">Deleted Users</span>
                     <span class="sm:hidden">Deleted</span>
                 </a>
+                @endif
+                @if(auth()->user()->hasPermission('create-employees'))
                 <a href="{{ route('employees.create') }}" class="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-black text-white dark:bg-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:ring-offset-2 transition-all duration-200 font-semibold text-sm sm:text-base">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -22,12 +25,13 @@
                     <span class="hidden sm:inline">Add Employee</span>
                     <span class="sm:hidden">Add</span>
                 </a>
+                @endif
             </div>
         </div>
     </x-slot>
 
     <div class="space-y-6">
-            
+
             @if (session('status'))
                 <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-800 dark:text-green-300 px-4 py-3 rounded-xl flex items-center gap-3">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,13 +203,13 @@
                                     Active
                                 </span>
                             @endif
-                            
+
                             <div class="flex items-center gap-3">
                                 <!-- Avatar with Initials -->
                                 <div class="w-14 h-14 rounded-full bg-gradient-to-br from-black to-gray-700 flex items-center justify-center text-white text-xl font-bold shadow-lg border-4 border-white dark:border-gray-800 flex-shrink-0">
                                     {{ strtoupper(substr($employee->first_name, 0, 1) . substr($employee->last_name, 0, 1)) }}
                                 </div>
-                                
+
                                 <div class="flex-1 min-w-0">
                                     <h3 class="text-lg font-bold text-gray-900 dark:text-white truncate">
                                         {{ $employee->first_name }} {{ $employee->last_name }}
@@ -353,6 +357,7 @@
 
                         <!-- Card Footer with Actions -->
                         <div class="px-4 pb-4 flex items-center gap-2">
+                            @if(auth()->user()->hasPermission('view-employees'))
                             <a href="{{ route('employees.show', $employee) }}" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-full shadow hover:bg-gray-800 transition-all group-hover:shadow-lg text-sm font-medium">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -360,11 +365,15 @@
                                 </svg>
                                 View Full Profile
                             </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('edit-employees'))
                             <a href="{{ route('employees.edit', $employee) }}" class="inline-flex items-center justify-center p-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all" title="Edit Employee">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('delete-employees'))
                             <form method="POST" action="{{ route('employees.destroy', $employee) }}" onsubmit="return confirm('Are you sure you want to delete this employee? This action can be undone from the Deleted Users tab.');" class="inline">
                                 @csrf
                                 @method('DELETE')
@@ -374,6 +383,7 @@
                                     </svg>
                                 </button>
                             </form>
+                            @endif
                         </div>
                     </div>
                 @empty
