@@ -30,17 +30,32 @@
                         </div>
 
                         <div class="flex items-center space-x-2">
-                            <!-- Interactive Voice Badge -->
+                            <!-- Interactive Voice Input Badge -->
                             <div class="relative">
                                 <button @click="toggleVoiceInput()"
                                         class="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300"
-                                        :class="isListening ? 'bg-red-500 text-white shadow-lg shadow-red-500/50 animate-pulse' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'">
+                                        :class="isListening ? 'bg-red-500 text-white shadow-lg shadow-red-500/50 animate-pulse' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                                        title="Voice Input (Speak to AI)">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" />
                                     </svg>
                                     <span class="text-sm font-semibold" x-text="isListening ? 'Listening...' : 'Voice Input'"></span>
                                 </button>
                                 <div x-show="isListening" class="absolute inset-0 rounded-xl border-2 border-red-500 animate-ping opacity-75"></div>
+                            </div>
+
+                            <!-- Voice Output Toggle -->
+                            <div class="relative">
+                                <button @click="toggleVoiceOutput()"
+                                        class="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300"
+                                        :class="isSpeaking ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/50 animate-pulse' : voiceEnabled ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                                        :title="voiceEnabled ? 'AI Voice: ON' : 'AI Voice: OFF'">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-sm font-semibold" x-text="isSpeaking ? 'Speaking...' : voiceEnabled ? 'AI Voice: ON' : 'AI Voice: OFF'"></span>
+                                </button>
+                                <div x-show="isSpeaking" class="absolute inset-0 rounded-xl border-2 border-blue-500 animate-ping opacity-75"></div>
                             </div>
 
                             <!-- Message Count -->
@@ -284,7 +299,10 @@
                 currentMessage: '',
                 isLoading: false,
                 isListening: false,
+                isSpeaking: false,
                 recognition: null,
+                synthesis: window.speechSynthesis,
+                voiceEnabled: true,
                 messageCount: 0,
 
                 init() {
@@ -297,7 +315,7 @@
                         setTimeout(() => this.sendMessage(), 500);
                     }
 
-                    // Initialize Speech Recognition
+                    // Initialize Speech Recognition (Input)
                     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                         this.recognition = new SpeechRecognition();
@@ -310,6 +328,8 @@
                             this.currentMessage = transcript;
                             this.isListening = false;
                             this.showNotification('Voice captured: "' + transcript + '"', 'success');
+                            // Auto-send the voice message
+                            setTimeout(() => this.sendMessage(), 500);
                         };
 
                         this.recognition.onerror = (event) => {
@@ -321,6 +341,12 @@
                         this.recognition.onend = () => {
                             this.isListening = false;
                         };
+                    }
+
+                    // Check if Speech Synthesis is supported
+                    if (!this.synthesis) {
+                        console.warn('Text-to-Speech not supported in this browser');
+                        this.voiceEnabled = false;
                     }
 
                     // Initialize real-time Echo listener (if available)
@@ -370,12 +396,70 @@
                     }
                 },
 
+                speak(text) {
+                    if (!this.synthesis) return;
+
+                    // Stop any ongoing speech
+                    this.stopSpeaking();
+
+                    // Clean text for speech (remove markdown and special characters)
+                    const cleanText = text
+                        .replace(/\*\*/g, '')
+                        .replace(/\*/g, '')
+                        .replace(/`/g, '')
+                        .replace(/#{1,6}\s/g, '')
+                        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+                        .trim();
+
+                    const utterance = new SpeechSynthesisUtterance(cleanText);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 1.0;
+
+                    utterance.onstart = () => {
+                        this.isSpeaking = true;
+                    };
+
+                    utterance.onend = () => {
+                        this.isSpeaking = false;
+                    };
+
+                    utterance.onerror = (event) => {
+                        console.error('Speech synthesis error:', event);
+                        this.isSpeaking = false;
+                    };
+
+                    this.synthesis.speak(utterance);
+                },
+
+                stopSpeaking() {
+                    if (this.synthesis && this.synthesis.speaking) {
+                        this.synthesis.cancel();
+                        this.isSpeaking = false;
+                    }
+                },
+
+                toggleVoiceOutput() {
+                    this.voiceEnabled = !this.voiceEnabled;
+                    if (!this.voiceEnabled) {
+                        this.stopSpeaking();
+                    }
+                    this.showNotification(
+                        this.voiceEnabled ? 'Voice output enabled' : 'Voice output disabled',
+                        'success'
+                    );
+                },
+
                 async sendMessage() {
                     if (!this.currentMessage.trim() || this.isLoading) return;
 
                     const userMessage = this.currentMessage.trim();
                     this.currentMessage = '';
                     this.isLoading = true;
+
+                    // Stop any ongoing speech
+                    this.stopSpeaking();
 
                     // Add user message to chat
                     this.addMessage('user', userMessage);
@@ -394,6 +478,10 @@
 
                         if (data.success) {
                             this.addMessage('assistant', data.message);
+                            // Speak the response
+                            if (this.voiceEnabled) {
+                                this.speak(data.message);
+                            }
                         } else {
                             this.addMessage('assistant', data.message || 'Sorry, something went wrong.', true);
                         }
