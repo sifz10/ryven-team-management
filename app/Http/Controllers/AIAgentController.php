@@ -29,11 +29,18 @@ class AIAgentController extends Controller
     public function processCommand(Request $request)
     {
         $request->validate([
-            'message' => 'required|string|max:1000'
+            'message' => 'required|string|max:1000',
+            'conversation_history' => 'sometimes|array'
         ]);
 
         $userId = Auth::id();
-        $result = $this->agentService->processCommand($request->message, $userId);
+        $previousHistory = $request->input('conversation_history', []);
+
+        $result = $this->agentService->processCommand(
+            $request->message,
+            $userId,
+            $previousHistory
+        );
 
         return response()->json($result);
     }

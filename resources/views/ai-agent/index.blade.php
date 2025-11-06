@@ -304,6 +304,7 @@
                 synthesis: window.speechSynthesis,
                 voiceEnabled: true,
                 messageCount: 0,
+                conversationHistory: [],
 
                 init() {
                     // Check for pending message from floating chat button
@@ -471,13 +472,22 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
-                            body: JSON.stringify({ message: userMessage })
+                            body: JSON.stringify({
+                                message: userMessage,
+                                conversation_history: this.conversationHistory
+                            })
                         });
 
                         const data = await response.json();
 
                         if (data.success) {
                             this.addMessage('assistant', data.message);
+
+                            // Update conversation history from response
+                            if (data.conversation_history) {
+                                this.conversationHistory = data.conversation_history;
+                            }
+
                             // Speak the response
                             if (this.voiceEnabled) {
                                 this.speak(data.message);
@@ -584,6 +594,9 @@
                         while (container.children.length > 1) {
                             container.removeChild(container.lastChild);
                         }
+                        // Clear conversation history
+                        this.conversationHistory = [];
+                        this.messageCount = 0;
                         this.showNotification('Conversation cleared', 'success');
                     }
                 },

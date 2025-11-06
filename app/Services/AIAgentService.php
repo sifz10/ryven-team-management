@@ -23,9 +23,14 @@ class AIAgentService
     /**
      * Process a user command and return a response
      */
-    public function processCommand(string $userMessage, ?int $userId = null): array
+    public function processCommand(string $userMessage, ?int $userId = null, array $previousHistory = []): array
     {
         try {
+            // Load previous conversation history if provided
+            if (!empty($previousHistory)) {
+                $this->conversationHistory = $previousHistory;
+            }
+
             // Add user message to conversation history
             $this->conversationHistory[] = [
                 'role' => 'user',
@@ -145,6 +150,12 @@ class AIAgentService
             'send_checklist_email' => $this->sendChecklistEmail($arguments),
             'generate_email' => $this->generateEmail($arguments),
             'send_custom_email' => $this->sendCustomEmail($arguments),
+            'get_employee_profile' => $this->getEmployeeProfile($arguments),
+            'update_employee_profile' => $this->updateEmployeeProfile($arguments),
+            'add_activity_log' => $this->addActivityLog($arguments),
+            'get_employee_activity_logs' => $this->getEmployeeActivityLogs($arguments),
+            'manage_employee_access' => $this->manageEmployeeAccess($arguments),
+            'get_employee_github_activity' => $this->getEmployeeGitHubActivity($arguments),
             default => ['error' => 'Unknown function: ' . $functionName]
         };
     }
@@ -741,6 +752,180 @@ class AIAgentService
                         'required' => ['recipient_email', 'subject', 'body']
                     ]
                 ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_employee_profile',
+                    'description' => 'Get comprehensive employee profile including all related data: contracts, checklists, GitHub activity, attendance, payments, etc.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'employee_id' => [
+                                'type' => 'integer',
+                                'description' => 'Employee ID'
+                            ],
+                            'include' => [
+                                'type' => 'array',
+                                'items' => [
+                                    'type' => 'string'
+                                ],
+                                'description' => 'Data to include: contracts, checklists, github, attendance, payments, access, all (default: all)'
+                            ]
+                        ],
+                        'required' => ['employee_id']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'update_employee_profile',
+                    'description' => 'Update employee profile information (name, email, position, department, salary, etc.)',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'employee_id' => [
+                                'type' => 'integer',
+                                'description' => 'Employee ID'
+                            ],
+                            'first_name' => [
+                                'type' => 'string',
+                                'description' => 'First name (optional)'
+                            ],
+                            'last_name' => [
+                                'type' => 'string',
+                                'description' => 'Last name (optional)'
+                            ],
+                            'email' => [
+                                'type' => 'string',
+                                'description' => 'Email address (optional)'
+                            ],
+                            'github_username' => [
+                                'type' => 'string',
+                                'description' => 'GitHub username (optional)'
+                            ],
+                            'phone' => [
+                                'type' => 'string',
+                                'description' => 'Phone number (optional)'
+                            ],
+                            'position' => [
+                                'type' => 'string',
+                                'description' => 'Job position (optional)'
+                            ],
+                            'department' => [
+                                'type' => 'string',
+                                'description' => 'Department (optional)'
+                            ],
+                            'salary' => [
+                                'type' => 'number',
+                                'description' => 'Salary amount (optional)'
+                            ],
+                            'currency' => [
+                                'type' => 'string',
+                                'description' => 'Currency (USD, BDT, etc.) (optional)'
+                            ]
+                        ],
+                        'required' => ['employee_id']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'add_activity_log',
+                    'description' => 'Add an activity note/log for an employee payment or action',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'employee_payment_id' => [
+                                'type' => 'integer',
+                                'description' => 'Employee payment ID (optional, if logging payment activity)'
+                            ],
+                            'note' => [
+                                'type' => 'string',
+                                'description' => 'Activity note or log message'
+                            ]
+                        ],
+                        'required' => ['note']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_employee_activity_logs',
+                    'description' => 'Get activity logs for an employee or payment',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'employee_payment_id' => [
+                                'type' => 'integer',
+                                'description' => 'Filter by payment ID (optional)'
+                            ],
+                            'limit' => [
+                                'type' => 'integer',
+                                'description' => 'Number of logs to retrieve (default: 50)'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'manage_employee_access',
+                    'description' => 'Add or update employee access credentials (servers, tools, accounts, etc.)',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'employee_id' => [
+                                'type' => 'integer',
+                                'description' => 'Employee ID'
+                            ],
+                            'action' => [
+                                'type' => 'string',
+                                'enum' => ['add', 'list'],
+                                'description' => 'Action: add new access or list existing'
+                            ],
+                            'title' => [
+                                'type' => 'string',
+                                'description' => 'Access title/name (required for add)'
+                            ],
+                            'note_markdown' => [
+                                'type' => 'string',
+                                'description' => 'Access details in markdown (credentials, URLs, etc.) (optional)'
+                            ]
+                        ],
+                        'required' => ['employee_id', 'action']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_employee_github_activity',
+                    'description' => 'Get detailed GitHub activity for a specific employee',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'employee_id' => [
+                                'type' => 'integer',
+                                'description' => 'Employee ID'
+                            ],
+                            'days' => [
+                                'type' => 'integer',
+                                'description' => 'Number of days to look back (default: 30)'
+                            ],
+                            'event_type' => [
+                                'type' => 'string',
+                                'enum' => ['push', 'pull_request', 'pull_request_review', 'all'],
+                                'description' => 'Filter by event type (optional, default: all)'
+                            ]
+                        ],
+                        'required' => ['employee_id']
+                    ]
+                ]
             ]
         ];
     }
@@ -756,13 +941,18 @@ Your capabilities include:
 
 **Employee Management:**
 - Add, list, and search employees
-- Get detailed employee information and GitHub profiles
+- Get comprehensive employee profiles with all related data
+- Update employee information (name, email, position, salary, etc.)
 - Track employee contracts and discontinuation status
+- Manage employee access credentials (servers, tools, accounts)
+- Add and view activity logs for employees
 
 **GitHub & Development:**
 - Check GitHub activity (commits, PRs, reviews)
 - Find inactive developers and generate activity reports
 - Analyze employee GitHub statistics and contributions
+- Get detailed GitHub activity for specific employees
+- Track repositories, commits, PRs, and reviews per employee
 
 **Attendance Tracking:**
 - View attendance records with filters (by employee, month)
@@ -1979,6 +2169,371 @@ When users ask questions, use the appropriate tools to fetch real-time data. Be 
         } catch (\Exception $e) {
             Log::error('Error sending custom email: ' . $e->getMessage());
             return ['error' => 'Failed to send email: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get comprehensive employee profile
+     */
+    private function getEmployeeProfile(array $args): array
+    {
+        try {
+            $employee = Employee::find($args['employee_id']);
+            if (!$employee) {
+                return ['error' => 'Employee not found'];
+            }
+
+            $include = $args['include'] ?? ['all'];
+            $includeAll = in_array('all', $include);
+
+            $profile = [
+                'employee' => [
+                    'id' => $employee->id,
+                    'name' => $employee->first_name . ' ' . $employee->last_name,
+                    'email' => $employee->email,
+                    'github_username' => $employee->github_username,
+                    'phone' => $employee->phone,
+                    'position' => $employee->position,
+                    'department' => $employee->department,
+                    'salary' => $employee->salary,
+                    'currency' => $employee->currency,
+                    'hired_at' => $employee->hired_at?->format('Y-m-d'),
+                    'discontinued_at' => $employee->discontinued_at?->format('Y-m-d'),
+                    'status' => $employee->discontinued_at ? 'Discontinued' : 'Active'
+                ]
+            ];
+
+            // Include contracts
+            if ($includeAll || in_array('contracts', $include)) {
+                $contracts = $employee->contracts()->get();
+                $profile['contracts'] = [
+                    'count' => $contracts->count(),
+                    'list' => $contracts->map(function($contract) {
+                        return [
+                            'id' => $contract->id,
+                            'position' => $contract->position,
+                            'salary' => $contract->salary,
+                            'currency' => $contract->currency,
+                            'start_date' => $contract->start_date?->format('Y-m-d'),
+                            'end_date' => $contract->end_date?->format('Y-m-d'),
+                            'is_active' => is_null($contract->end_date) || $contract->end_date >= Carbon::today()
+                        ];
+                    })->toArray()
+                ];
+            }
+
+            // Include checklists
+            if ($includeAll || in_array('checklists', $include)) {
+                $dailyChecklists = $employee->dailyChecklists()->latest('date')->limit(10)->get();
+                $profile['daily_checklists'] = [
+                    'count' => $dailyChecklists->count(),
+                    'recent' => $dailyChecklists->map(function($checklist) {
+                        return [
+                            'id' => $checklist->id,
+                            'date' => $checklist->date->format('Y-m-d'),
+                            'items_count' => $checklist->items->count(),
+                            'completion_percentage' => $checklist->completion_percentage
+                        ];
+                    })->toArray()
+                ];
+            }
+
+            // Include GitHub activity
+            if ($includeAll || in_array('github', $include)) {
+                $githubLogs = $employee->githubLogs()->limit(20)->get();
+                $profile['github_activity'] = [
+                    'total_activities' => $githubLogs->count(),
+                    'recent' => $githubLogs->map(function($log) {
+                        return [
+                            'event_type' => $log->event_type,
+                            'repository' => $log->repository_name,
+                            'commits_count' => $log->commits_count,
+                            'event_at' => $log->event_at->format('Y-m-d H:i:s')
+                        ];
+                    })->toArray()
+                ];
+            }
+
+            // Include attendance
+            if ($includeAll || in_array('attendance', $include)) {
+                $attendance = $employee->attendances()->limit(20)->get();
+                $profile['attendance'] = [
+                    'total_records' => $attendance->count(),
+                    'recent' => $attendance->map(function($record) {
+                        return [
+                            'date' => $record->date->format('Y-m-d'),
+                            'status' => $record->status,
+                            'check_in' => $record->check_in,
+                            'check_out' => $record->check_out
+                        ];
+                    })->toArray()
+                ];
+            }
+
+            // Include payments
+            if ($includeAll || in_array('payments', $include)) {
+                $payments = $employee->payments()->limit(10)->get();
+                $profile['payments'] = [
+                    'total_payments' => $payments->count(),
+                    'recent' => $payments->map(function($payment) {
+                        return [
+                            'id' => $payment->id,
+                            'amount' => $payment->amount,
+                            'currency' => $payment->currency,
+                            'paid_at' => $payment->paid_at?->format('Y-m-d'),
+                            'payment_method' => $payment->payment_method
+                        ];
+                    })->toArray()
+                ];
+            }
+
+            // Include access credentials
+            if ($includeAll || in_array('access', $include)) {
+                $access = $employee->accesses()->get();
+                $profile['access_credentials'] = [
+                    'count' => $access->count(),
+                    'list' => $access->map(function($item) {
+                        return [
+                            'id' => $item->id,
+                            'title' => $item->title,
+                            'has_notes' => !empty($item->note_markdown),
+                            'has_attachment' => !empty($item->attachment_path)
+                        ];
+                    })->toArray()
+                ];
+            }
+
+            return $profile;
+        } catch (\Exception $e) {
+            Log::error('Error getting employee profile: ' . $e->getMessage());
+            return ['error' => 'Failed to get employee profile: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Update employee profile
+     */
+    private function updateEmployeeProfile(array $args): array
+    {
+        try {
+            $employee = Employee::find($args['employee_id']);
+            if (!$employee) {
+                return ['error' => 'Employee not found'];
+            }
+
+            $updated = [];
+            $updatableFields = [
+                'first_name', 'last_name', 'email', 'github_username',
+                'phone', 'position', 'department', 'salary', 'currency'
+            ];
+
+            foreach ($updatableFields as $field) {
+                if (isset($args[$field])) {
+                    $employee->$field = $args[$field];
+                    $updated[] = $field;
+                }
+            }
+
+            if (!empty($updated)) {
+                $employee->save();
+            }
+
+            return [
+                'success' => true,
+                'message' => "Employee profile updated successfully",
+                'employee_id' => $employee->id,
+                'updated_fields' => $updated,
+                'employee' => [
+                    'name' => $employee->first_name . ' ' . $employee->last_name,
+                    'email' => $employee->email,
+                    'position' => $employee->position,
+                    'department' => $employee->department
+                ]
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error updating employee profile: ' . $e->getMessage());
+            return ['error' => 'Failed to update employee profile: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Add activity log
+     */
+    private function addActivityLog(array $args): array
+    {
+        try {
+            $user = request()->user();
+            if (!$user) {
+                return ['error' => 'Authentication required to add activity logs'];
+            }
+
+            $log = \App\Models\ActivityNote::create([
+                'employee_payment_id' => $args['employee_payment_id'] ?? null,
+                'user_id' => $user->id,
+                'note' => $args['note']
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'Activity log added successfully',
+                'log_id' => $log->id,
+                'note' => $log->note,
+                'created_at' => $log->created_at->format('Y-m-d H:i:s')
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error adding activity log: ' . $e->getMessage());
+            return ['error' => 'Failed to add activity log: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get employee activity logs
+     */
+    private function getEmployeeActivityLogs(array $args): array
+    {
+        try {
+            $query = \App\Models\ActivityNote::with(['payment.employee', 'user']);
+
+            if (isset($args['employee_payment_id'])) {
+                $query->where('employee_payment_id', $args['employee_payment_id']);
+            }
+
+            $limit = $args['limit'] ?? 50;
+            $logs = $query->latest()->limit($limit)->get();
+
+            return [
+                'count' => $logs->count(),
+                'logs' => $logs->map(function($log) {
+                    return [
+                        'id' => $log->id,
+                        'note' => $log->note,
+                        'employee' => $log->payment && $log->payment->employee
+                            ? $log->payment->employee->first_name . ' ' . $log->payment->employee->last_name
+                            : 'N/A',
+                        'payment_id' => $log->employee_payment_id,
+                        'logged_by' => $log->user ? $log->user->name : 'Unknown',
+                        'created_at' => $log->created_at->format('Y-m-d H:i:s')
+                    ];
+                })->toArray()
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error getting activity logs: ' . $e->getMessage());
+            return ['error' => 'Failed to get activity logs: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Manage employee access credentials
+     */
+    private function manageEmployeeAccess(array $args): array
+    {
+        try {
+            $employee = Employee::find($args['employee_id']);
+            if (!$employee) {
+                return ['error' => 'Employee not found'];
+            }
+
+            if ($args['action'] === 'add') {
+                if (!isset($args['title'])) {
+                    return ['error' => 'Title is required for adding access'];
+                }
+
+                $access = \App\Models\EmployeeAccess::create([
+                    'employee_id' => $args['employee_id'],
+                    'title' => $args['title'],
+                    'note_markdown' => $args['note_markdown'] ?? ''
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Access credential '{$args['title']}' added for {$employee->first_name} {$employee->last_name}",
+                    'access_id' => $access->id,
+                    'title' => $access->title
+                ];
+            } else {
+                // List access
+                $accesses = $employee->accesses()->get();
+
+                return [
+                    'employee' => $employee->first_name . ' ' . $employee->last_name,
+                    'count' => $accesses->count(),
+                    'access_list' => $accesses->map(function($access) {
+                        return [
+                            'id' => $access->id,
+                            'title' => $access->title,
+                            'has_notes' => !empty($access->note_markdown),
+                            'has_attachment' => !empty($access->attachment_path),
+                            'created_at' => $access->created_at->format('Y-m-d H:i:s')
+                        ];
+                    })->toArray()
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error('Error managing employee access: ' . $e->getMessage());
+            return ['error' => 'Failed to manage employee access: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get employee GitHub activity
+     */
+    private function getEmployeeGitHubActivity(array $args): array
+    {
+        try {
+            $employee = Employee::find($args['employee_id']);
+            if (!$employee) {
+                return ['error' => 'Employee not found'];
+            }
+
+            $days = $args['days'] ?? 30;
+            $startDate = Carbon::now()->subDays($days);
+
+            $query = $employee->githubLogs()->where('event_at', '>=', $startDate);
+
+            if (isset($args['event_type']) && $args['event_type'] !== 'all') {
+                $query->where('event_type', $args['event_type']);
+            }
+
+            $activities = $query->get();
+
+            $pushCount = $activities->where('event_type', 'push')->count();
+            $prCount = $activities->where('event_type', 'pull_request')->count();
+            $reviewCount = $activities->where('event_type', 'pull_request_review')->count();
+            $totalCommits = $activities->where('event_type', 'push')->sum('commits_count');
+
+            return [
+                'employee' => [
+                    'id' => $employee->id,
+                    'name' => $employee->first_name . ' ' . $employee->last_name,
+                    'github_username' => $employee->github_username
+                ],
+                'period' => [
+                    'days' => $days,
+                    'from' => $startDate->format('Y-m-d'),
+                    'to' => Carbon::now()->format('Y-m-d')
+                ],
+                'summary' => [
+                    'total_activities' => $activities->count(),
+                    'pushes' => $pushCount,
+                    'pull_requests' => $prCount,
+                    'reviews' => $reviewCount,
+                    'total_commits' => $totalCommits,
+                    'average_commits_per_push' => $pushCount > 0 ? round($totalCommits / $pushCount, 2) : 0
+                ],
+                'repositories' => $activities->pluck('repository_name')->unique()->values()->toArray(),
+                'recent_activities' => $activities->take(20)->map(function($activity) {
+                    return [
+                        'event_type' => $activity->event_type,
+                        'repository' => $activity->repository_name,
+                        'commits_count' => $activity->commits_count,
+                        'branch' => $activity->branch_name,
+                        'event_at' => $activity->event_at->format('Y-m-d H:i:s')
+                    ];
+                })->toArray()
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error getting employee GitHub activity: ' . $e->getMessage());
+            return ['error' => 'Failed to get GitHub activity: ' . $e->getMessage()];
         }
     }
 }
