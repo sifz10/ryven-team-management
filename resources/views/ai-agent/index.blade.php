@@ -1,119 +1,186 @@
 <x-app-layout>
-    <div class="py-6 h-screen flex flex-col" x-data="aiAgent()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 flex-1 flex flex-col">
-            <!-- Modern Header -->
-            <div class="mb-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <!-- AI Icon with Animation -->
-                        <div class="relative">
-                            <div class="w-12 h-12 bg-black dark:bg-white rounded-full flex items-center justify-center">
-                                <svg class="w-7 h-7 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                </svg>
-                            </div>
-                            <div x-show="isLoading" class="absolute inset-0 border-2 border-black dark:border-white border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">AI Assistant</h2>
-                            <div class="flex items-center space-x-2 mt-1">
-                                <div class="flex items-center space-x-1.5">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">Online</span>
+    <div class="h-screen flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" x-data="aiAgent()">
+        <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 flex-1 flex flex-col">
+            <!-- Ultra Modern Header with Glass Effect -->
+            <div class="mb-4">
+                <div class="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <!-- Animated AI Icon -->
+                            <div class="relative group">
+                                <div class="absolute -inset-1 bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-300 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-300"></div>
+                                <div class="relative w-14 h-14 bg-gradient-to-br from-black to-gray-800 dark:from-white dark:to-gray-200 rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                                    <svg class="w-8 h-8 text-white dark:text-black" :class="isLoading ? 'animate-pulse' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                    </svg>
+                                    <div x-show="isLoading" class="absolute inset-0 border-3 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin"></div>
                                 </div>
-                                <span class="text-gray-400">•</span>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Real-time enabled</span>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight">AI Assistant</h2>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <div class="flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30">
+                                        <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                                        <span class="text-xs font-semibold text-green-700 dark:text-green-400">Online</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">•</span>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400 font-medium">Powered by GPT-4o</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="flex items-center space-x-3">
-                        <!-- Voice Status Badge -->
-                        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700">
-                            <svg class="w-4 h-4" :class="isListening ? 'text-red-500 animate-pulse' : 'text-gray-500 dark:text-gray-400'" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-xs font-medium" :class="isListening ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'">
-                                <span x-show="!isListening">Voice Ready</span>
-                                <span x-show="isListening">Listening...</span>
-                            </span>
+                        <div class="flex items-center space-x-2">
+                            <!-- Interactive Voice Badge -->
+                            <div class="relative">
+                                <button @click="toggleVoiceInput()"
+                                        class="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300"
+                                        :class="isListening ? 'bg-red-500 text-white shadow-lg shadow-red-500/50 animate-pulse' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-sm font-semibold" x-text="isListening ? 'Listening...' : 'Voice Input'"></span>
+                                </button>
+                                <div x-show="isListening" class="absolute inset-0 rounded-xl border-2 border-red-500 animate-ping opacity-75"></div>
+                            </div>
+
+                            <!-- Message Count -->
+                            <div class="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-700">
+                                <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+                                </svg>
+                                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300" x-text="messageCount"></span>
+                            </div>
+
+                            <!-- Clear Chat Button -->
+                            <button @click="clearConversation()"
+                                    class="p-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-all duration-200"
+                                    title="Clear conversation">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
                         </div>
-
-                        <!-- Clear Chat Button -->
-                        <x-icon-button
-                            variant="black"
-                            @click="clearConversation()"
-                            title="Clear conversation">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </x-icon-button>
                     </div>
                 </div>
             </div>
 
-            <!-- Modern Chat Container -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 flex-1 flex flex-col overflow-hidden">
-                <!-- Messages Area with Modern Styling -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-                    <!-- Modern Welcome Message -->
+            <!-- Ultra Modern Chat Container with Glass Effect -->
+            <div class="backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 flex-1 flex flex-col overflow-hidden">
+                <!-- Messages Area with Gradient Background -->
+                <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-br from-gray-50/50 via-white to-blue-50/30 dark:from-gray-900/50 dark:via-gray-800 dark:to-blue-900/10">
+                    <!-- Interactive Welcome Message -->
                     <div class="flex items-start space-x-4 animate-fade-in">
                         <div class="flex-shrink-0">
-                            <div class="w-10 h-10 bg-black dark:bg-white rounded-full flex items-center justify-center shadow-lg">
-                                <svg class="w-6 h-6 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                </svg>
+                            <div class="relative group">
+                                <div class="absolute -inset-1 bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-300 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-300"></div>
+                                <div class="relative w-12 h-12 bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-200 rounded-full flex items-center justify-center shadow-xl">
+                                    <svg class="w-7 h-7 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex-1 max-w-3xl">
-                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-tl-none p-5 shadow-sm">
-                                <p class="text-base font-medium text-gray-900 dark:text-white mb-3">
-                                    👋 Welcome! I'm your AI assistant
-                                </p>
-                                <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
-                                    I can help you manage your team effectively. Here's what I can do:
-                                </p>
-                                <div class="grid gap-2.5">
-                                    <div class="flex items-start space-x-2.5">
-                                        <div class="w-5 h-5 rounded-full bg-black dark:bg-white flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <svg class="w-3 h-3 text-white dark:text-black" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Manage employees (add, search, view details)</span>
-                                    </div>
-                                    <div class="flex items-start space-x-2.5">
-                                        <div class="w-5 h-5 rounded-full bg-black dark:bg-white flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <svg class="w-3 h-3 text-white dark:text-black" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Check GitHub activity and find inactive developers</span>
-                                    </div>
-                                    <div class="flex items-start space-x-2.5">
-                                        <div class="w-5 h-5 rounded-full bg-black dark:bg-white flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <svg class="w-3 h-3 text-white dark:text-black" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Generate team statistics and reports</span>
-                                    </div>
-                                    <div class="flex items-start space-x-2.5">
-                                        <div class="w-5 h-5 rounded-full bg-black dark:bg-white flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <svg class="w-3 h-3 text-white dark:text-black" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                        </div>
-                                        <span class="text-sm text-gray-700 dark:text-gray-300">Answer questions about your team</span>
+                        <div class="flex-1 max-w-4xl">
+                            <div class="backdrop-blur-lg bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-3xl rounded-tl-none p-6 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                                <div class="flex items-start space-x-3 mb-4">
+                                    <span class="text-3xl">👋</span>
+                                    <div>
+                                        <p class="text-lg font-bold text-gray-900 dark:text-white">
+                                            Welcome! I'm your AI-powered team assistant
+                                        </p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            Ask me anything about your team, and I'll help you instantly
+                                        </p>
                                     </div>
                                 </div>
-                                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                    <p class="text-xs text-gray-600 dark:text-gray-400 flex items-center space-x-2">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+                                <!-- Interactive Quick Action Buttons -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+                                    <button @click="currentMessage = 'List all employees'; sendMessage();"
+                                            class="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg hover:scale-105 transition-all duration-300 text-left">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-lg bg-black dark:bg-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <svg class="w-6 h-6 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-gray-900 dark:text-white">List Employees</p>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">View all team members</p>
+                                            </div>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-black dark:group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </button>
+
+                                    <button @click="currentMessage = 'Who didn\'t push code today?'; sendMessage();"
+                                            class="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg hover:scale-105 transition-all duration-300 text-left">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-lg bg-black dark:bg-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <svg class="w-6 h-6 text-white dark:text-black" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-gray-900 dark:text-white">GitHub Activity</p>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">Check inactive devs</p>
+                                            </div>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-black dark:group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </button>
+
+                                    <button @click="currentMessage = 'Generate team statistics'; sendMessage();"
+                                            class="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg hover:scale-105 transition-all duration-300 text-left">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-lg bg-black dark:bg-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <svg class="w-6 h-6 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-gray-900 dark:text-white">Team Statistics</p>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">Get insights & reports</p>
+                                            </div>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-black dark:group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </button>
+
+                                    <button @click="currentMessage = 'Search for John'; sendMessage();"
+                                            class="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg hover:scale-105 transition-all duration-300 text-left">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-lg bg-black dark:bg-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <svg class="w-6 h-6 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-semibold text-gray-900 dark:text-white">Search Employee</p>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">Find team members</p>
+                                            </div>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-black dark:group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- Quick Tip -->
+                                <div class="mt-5 pt-5 border-t border-gray-200/50 dark:border-gray-700/50">
+                                    <div class="flex items-start space-x-3 p-3 bg-black/5 dark:bg-white/5 rounded-xl">
+                                        <svg class="w-5 h-5 text-black dark:text-white flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                         </svg>
-                                        <span>Try: <span class="font-medium text-gray-900 dark:text-white">"Who didn't push code today?"</span></span>
-                                    </p>
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900 dark:text-white">Pro Tip</p>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">You can also type custom questions or use voice input for hands-free interaction!</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2 mt-2 ml-1">

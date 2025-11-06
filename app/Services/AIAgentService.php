@@ -81,10 +81,17 @@ class AIAgentService
      */
     private function callOpenAI(): array
     {
-        $response = Http::withHeaders([
+        $http = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
-        ])->post('https://api.openai.com/v1/chat/completions', [
+        ]);
+
+        // Disable SSL verification for local development (Windows fix)
+        if (app()->environment('local')) {
+            $http = $http->withoutVerifying();
+        }
+
+        $response = $http->post('https://api.openai.com/v1/chat/completions', [
             'model' => 'gpt-4o-mini',
             'messages' => array_merge([
                 [
@@ -199,7 +206,7 @@ class AIAgentService
                     'description' => 'Check all GitHub activity for today across all employees',
                     'parameters' => [
                         'type' => 'object',
-                        'properties' => []
+                        'properties' => (object)[]
                     ]
                 ]
             ],
@@ -210,7 +217,7 @@ class AIAgentService
                     'description' => 'Find employees who have not pushed any code today',
                     'parameters' => [
                         'type' => 'object',
-                        'properties' => []
+                        'properties' => (object)[]
                     ]
                 ]
             ],
