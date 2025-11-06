@@ -135,6 +135,7 @@ class AIAgentService
             'get_contracts_data' => $this->getContractsData($arguments),
             'get_performance_reviews' => $this->getPerformanceReviews($arguments),
             'get_personal_notes' => $this->getPersonalNotes($arguments),
+            'create_personal_note' => $this->createPersonalNote($arguments),
             'get_platform_statistics' => $this->getPlatformStatistics(),
             'search_platform_data' => $this->searchPlatformData($arguments),
             'create_checklist' => $this->createChecklist($arguments),
@@ -463,6 +464,40 @@ class AIAgentService
             [
                 'type' => 'function',
                 'function' => [
+                    'name' => 'create_personal_note',
+                    'description' => 'Create a new personal note for the user. Use this when the user wants to save information, take a note, remember something, save a password, backup code, website link, or any personal information.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'title' => [
+                                'type' => 'string',
+                                'description' => 'Note title or name'
+                            ],
+                            'content' => [
+                                'type' => 'string',
+                                'description' => 'Note content, text, password, or information (optional for website_link type)'
+                            ],
+                            'type' => [
+                                'type' => 'string',
+                                'enum' => ['text', 'password', 'backup_code', 'website_link', 'file'],
+                                'description' => 'Type of note: text (default), password, backup_code, website_link, file'
+                            ],
+                            'url' => [
+                                'type' => 'string',
+                                'description' => 'URL for website_link type notes (optional)'
+                            ],
+                            'reminder_time' => [
+                                'type' => 'string',
+                                'description' => 'Optional reminder date/time in format YYYY-MM-DD HH:MM:SS (optional)'
+                            ]
+                        ],
+                        'required' => ['title', 'type']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
                     'name' => 'get_platform_statistics',
                     'description' => 'Get overall platform statistics and metrics',
                     'parameters' => [
@@ -759,9 +794,11 @@ Your capabilities include:
 - Filter reviews by employee or cycle
 
 **Personal Notes:**
+- Create and save personal notes (text, passwords, backup codes, website links)
 - Search and manage personal notes (user's own notes only)
 - Filter by type, category, or search term
 - Track notes with reminders
+- Support for different note types: text, password, backup_code, website_link, file
 
 **Checklist Management:**
 - Create checklist templates (reusable) or daily checklists (one-time)
@@ -1331,6 +1368,69 @@ When users ask questions, use the appropriate tools to fetch real-time data. Be 
                 ];
             })->toArray()
         ];
+    }
+
+    /**
+     * Create a personal note
+     */
+    private function createPersonalNote(array $args): array
+    {
+        try {
+            // Get authenticated user from request
+            $user = request()->user();
+
+            if (!$user) {
+                return ['error' => 'Authentication required to create personal notes'];
+            }
+
+            // Validate type
+            $validTypes = ['text', 'password', 'backup_code', 'website_link', 'file'];
+            $type = $args['type'] ?? 'text';
+
+            if (!in_array($type, $validTypes)) {
+                return ['error' => 'Invalid note type. Valid types: text, password, backup_code, website_link, file'];
+            }
+
+            // Prepare note data
+            $noteData = [
+                'user_id' => $user->id,
+                'title' => $args['title'],
+                'type' => $type,
+                'content' => $args['content'] ?? null,
+                'url' => $args['url'] ?? null,
+            ];
+
+            // Handle reminder time if provided
+            if (isset($args['reminder_time'])) {
+                try {
+                    $noteData['reminder_time'] = Carbon::parse($args['reminder_time']);
+                    $noteData['reminder_sent'] = false;
+                } catch (\Exception $e) {
+                    return ['error' => 'Invalid reminder time format. Use YYYY-MM-DD HH:MM:SS'];
+                }
+            }
+
+            // Create the note
+            $note = \App\Models\PersonalNote::create($noteData);
+
+            return [
+                'success' => true,
+                'message' => "Personal note '{$note->title}' created successfully",
+                'note' => [
+                    'id' => $note->id,
+                    'title' => $note->title,
+                    'type' => $note->type,
+                    'content' => $note->content,
+                    'url' => $note->url,
+                    'has_reminder' => !is_null($note->reminder_time),
+                    'reminder_time' => $note->reminder_time ? $note->reminder_time->format('Y-m-d H:i:s') : null,
+                    'created_at' => $note->created_at->format('Y-m-d H:i:s')
+                ]
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error creating personal note: ' . $e->getMessage());
+            return ['error' => 'Failed to create personal note: ' . $e->getMessage()];
+        }
     }
 
     /**
