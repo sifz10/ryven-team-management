@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'employee.auth' => \App\Http\Middleware\EmployeeAuth::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'client.must.change.password' => \App\Http\Middleware\ClientMustChangePassword::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule): void {

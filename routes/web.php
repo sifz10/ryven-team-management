@@ -12,6 +12,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\GitHubWebhookController;
 use App\Http\Controllers\GitHubPullRequestController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\UatProjectController;
 use App\Http\Controllers\UatPublicController;
 use App\Http\Controllers\PersonalNoteController;
@@ -93,6 +94,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/github/pr/{log}/close', [GitHubPullRequestController::class, 'close'])->name('github.pr.close')->middleware('permission:manage-github-logs');
     Route::post('/github/pr/{log}/ai-review', [GitHubPullRequestController::class, 'generateAIReview'])->name('github.pr.aiReview')->middleware('permission:view-github-logs');
 
+    // Client Management routes
+    Route::resource('clients', ClientController::class)->middleware([
+        'index' => 'permission:view-clients',
+        'show' => 'permission:view-clients',
+        'create' => 'permission:create-clients',
+        'store' => 'permission:create-clients',
+        'edit' => 'permission:edit-clients',
+        'update' => 'permission:edit-clients',
+        'destroy' => 'permission:delete-clients',
+    ]);
+
+    // Client Team Members routes
+    Route::post('clients/{client}/team-members', [App\Http\Controllers\ClientTeamMemberController::class, 'store'])->name('clients.team-members.store')->middleware('permission:edit-clients');
+    Route::delete('clients/{client}/team-members/{teamMember}', [App\Http\Controllers\ClientTeamMemberController::class, 'destroy'])->name('clients.team-members.destroy')->middleware('permission:edit-clients');
+    Route::post('clients/{client}/team-members/{teamMember}/resend', [App\Http\Controllers\ClientTeamMemberController::class, 'resendInvitation'])->name('clients.team-members.resend')->middleware('permission:edit-clients');
+    Route::post('clients/{client}/team-members/{teamMember}/projects', [App\Http\Controllers\ClientTeamMemberController::class, 'updateProjects'])->name('clients.team-members.update-projects')->middleware('permission:edit-clients');
+
     // Project Management routes
     Route::resource('projects', ProjectController::class)->middleware([
         'index' => 'permission:view-projects',
@@ -103,6 +121,60 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'permission:edit-projects',
         'destroy' => 'permission:delete-projects',
     ]);
+
+    // Project Tasks
+    Route::post('/projects/{project}/tasks', [ProjectController::class, 'storeTasks'])->name('projects.tasks.store')->middleware('permission:create-projects');
+    Route::put('/projects/{project}/tasks/{task}', [ProjectController::class, 'updateTask'])->name('projects.tasks.update')->middleware('permission:edit-projects');
+    Route::delete('/projects/{project}/tasks/{task}', [ProjectController::class, 'destroyTask'])->name('projects.tasks.destroy')->middleware('permission:delete-projects');
+    Route::post('/projects/{project}/tasks/order', [ProjectController::class, 'updateTaskOrder'])->name('projects.tasks.order')->middleware('permission:edit-projects');
+    Route::put('/projects/{project}/tasks/{task}/move', [ProjectController::class, 'moveTask'])->name('projects.tasks.move')->middleware('permission:edit-projects');
+    Route::post('/projects/{project}/tasks/{task}/checklist', [ProjectController::class, 'updateChecklist'])->name('projects.tasks.checklist.update')->middleware('permission:edit-projects');
+
+    // Task Files
+    Route::post('/projects/{project}/tasks/{task}/files', [ProjectController::class, 'uploadTaskFile'])->name('projects.tasks.files.upload')->middleware('permission:edit-projects');
+    Route::get('/projects/{project}/tasks/{task}/files/{file}/download', [ProjectController::class, 'downloadTaskFile'])->name('projects.tasks.files.download')->middleware('permission:view-projects');
+    Route::delete('/projects/{project}/tasks/{task}/files/{file}', [ProjectController::class, 'deleteTaskFile'])->name('projects.tasks.files.delete')->middleware('permission:delete-projects');
+
+    // Task Comments
+    Route::get('/projects/{project}/tasks/{task}/comments', [ProjectController::class, 'getTaskComments'])->name('projects.tasks.comments.index')->middleware('permission:view-projects');
+    Route::post('/projects/{project}/tasks/{task}/comments', [ProjectController::class, 'storeTaskComment'])->name('projects.tasks.comments.store')->middleware('permission:edit-projects');
+
+    // Comment Replies
+    Route::post('/projects/{project}/tasks/{task}/comments/{comment}/replies', [ProjectController::class, 'storeCommentReply'])->name('projects.tasks.comments.replies.store')->middleware('permission:edit-projects');
+
+    // Comment Reactions
+    Route::post('/projects/{project}/tasks/{task}/comments/{comment}/reactions', [ProjectController::class, 'toggleCommentReaction'])->name('projects.tasks.comments.reactions.toggle')->middleware('permission:edit-projects');
+
+    // Task Reminders
+    Route::get('/projects/{project}/tasks/{task}/reminders', [ProjectController::class, 'getTaskReminders'])->name('projects.tasks.reminders.index')->middleware('permission:view-projects');
+    Route::post('/projects/{project}/tasks/{task}/reminders', [ProjectController::class, 'storeTaskReminder'])->name('projects.tasks.reminders.store')->middleware('permission:edit-projects');
+    Route::put('/projects/{project}/tasks/{task}/reminders/{reminder}', [ProjectController::class, 'updateTaskReminder'])->name('projects.tasks.reminders.update')->middleware('permission:edit-projects');
+    Route::delete('/projects/{project}/tasks/{task}/reminders/{reminder}', [ProjectController::class, 'destroyTaskReminder'])->name('projects.tasks.reminders.destroy')->middleware('permission:delete-projects');
+    Route::get('/projects/{project}/tasks/{task}/reminder-recipients', [ProjectController::class, 'getTaskRecipientsForReminders'])->name('projects.tasks.reminder.recipients')->middleware('permission:view-projects');
+
+    // Employee autocomplete for mentions
+    Route::get('/projects/{project}/employees/mention', [ProjectController::class, 'getEmployeesForMention'])->name('projects.employees.mention')->middleware('permission:view-projects');
+
+    // Project Files
+    Route::post('/projects/{project}/files', [ProjectController::class, 'storeFile'])->name('projects.files.store')->middleware('permission:create-projects');
+    Route::delete('/projects/{project}/files/{file}', [ProjectController::class, 'destroyFile'])->name('projects.files.destroy')->middleware('permission:delete-projects');
+
+    // Project Discussions
+    Route::post('/projects/{project}/discussions', [ProjectController::class, 'storeDiscussion'])->name('projects.discussions.store')->middleware('permission:create-projects');
+    Route::post('/projects/{project}/discussions/{discussion}/toggle-pin', [ProjectController::class, 'togglePinDiscussion'])->name('projects.discussions.toggle-pin')->middleware('permission:edit-projects');
+    Route::delete('/projects/{project}/discussions/{discussion}', [ProjectController::class, 'destroyDiscussion'])->name('projects.discussions.destroy')->middleware('permission:delete-projects');
+
+    // Project Expenses
+    Route::post('/projects/{project}/expenses', [ProjectController::class, 'storeExpense'])->name('projects.expenses.store')->middleware('permission:create-projects');
+    Route::put('/projects/{project}/expenses/{expense}', [ProjectController::class, 'updateExpense'])->name('projects.expenses.update')->middleware('permission:edit-projects');
+    Route::delete('/projects/{project}/expenses/{expense}', [ProjectController::class, 'destroyExpense'])->name('projects.expenses.destroy')->middleware('permission:delete-projects');
+
+    // Project Tickets
+    Route::post('/projects/{project}/tickets', [ProjectController::class, 'storeTicket'])->name('projects.tickets.store')->middleware('permission:create-projects');
+    Route::put('/projects/{project}/tickets/{ticket}', [ProjectController::class, 'updateTicket'])->name('projects.tickets.update')->middleware('permission:edit-projects');
+    Route::delete('/projects/{project}/tickets/{ticket}', [ProjectController::class, 'destroyTicket'])->name('projects.tickets.destroy')->middleware('permission:delete-projects');
+
+    // Legacy project routes
     Route::get('/projects/{project}/today-work', [ProjectController::class, 'todayWork'])->name('projects.today-work')->middleware('permission:view-projects');
     Route::put('/projects/{project}/work/{submission}', [ProjectController::class, 'updateWorkSubmission'])->name('projects.work.update')->middleware('permission:edit-projects');
     Route::delete('/projects/{project}/work/{submission}', [ProjectController::class, 'deleteWorkSubmission'])->name('projects.work.delete')->middleware('permission:edit-projects');
@@ -427,6 +499,35 @@ Route::middleware('auth')->group(function () {
         Route::post('ai-agent/command', [App\Http\Controllers\AIAgentController::class, 'processCommand'])->name('ai-agent.command');
         Route::get('ai-agent/history', [App\Http\Controllers\AIAgentController::class, 'getConversationHistory'])->name('ai-agent.history');
         Route::delete('ai-agent/conversation', [App\Http\Controllers\AIAgentController::class, 'clearConversation'])->name('ai-agent.clear');
+    });
+});
+
+// Client Portal Routes
+Route::prefix('client')->name('client.')->group(function () {
+    // Guest routes (not authenticated)
+    Route::middleware('guest:client')->group(function () {
+        Route::get('/login', [App\Http\Controllers\Client\ClientAuthController::class, 'showLogin'])
+            ->name('login');
+        Route::post('/login', [App\Http\Controllers\Client\ClientAuthController::class, 'login'])
+            ->name('login.post');
+
+        // Team member invitation acceptance
+        Route::get('/team/accept/{token}', [App\Http\Controllers\Client\ClientAuthController::class, 'acceptInvitation'])
+            ->name('team.accept');
+    });
+
+    // Authenticated client routes
+    Route::middleware(['auth:client', 'client.must.change.password'])->group(function () {
+        Route::post('/logout', [App\Http\Controllers\Client\ClientAuthController::class, 'logout'])
+            ->name('logout');
+
+        Route::get('/password/change', [App\Http\Controllers\Client\ClientAuthController::class, 'showChangePassword'])
+            ->name('password.change');
+        Route::post('/password/change', [App\Http\Controllers\Client\ClientAuthController::class, 'changePassword'])
+            ->name('password.change.post');
+
+        Route::get('/dashboard', [App\Http\Controllers\Client\ClientDashboardController::class, 'index'])
+            ->name('dashboard');
     });
 });
 

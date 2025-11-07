@@ -374,10 +374,13 @@
                             </a>
                             @endif
                             @if(auth()->user()->hasPermission('delete-employees'))
-                            <form method="POST" action="{{ route('employees.destroy', $employee) }}" onsubmit="return confirm('Are you sure you want to delete this employee? This action can be undone from the Deleted Users tab.');" class="inline">
+                            <form method="POST" action="{{ route('employees.destroy', $employee) }}" id="delete-form-{{ $employee->id }}" class="inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="inline-flex items-center justify-center p-2 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-full hover:bg-red-200 dark:hover:bg-red-900/40 transition-all" title="Delete Employee">
+                                <button type="button"
+                                        @click="$dispatch('open-delete-modal', { id: 'deleteModal', form: document.getElementById('delete-form-{{ $employee->id }}') })"
+                                        class="inline-flex items-center justify-center p-2 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-full hover:bg-red-200 dark:hover:bg-red-900/40 transition-all"
+                                        title="Delete Employee">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>
@@ -419,4 +422,12 @@
             @endif
 
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <x-delete-modal id="deleteModal">
+        <x-slot name="title">Delete Employee</x-slot>
+        <x-slot name="message">
+            Are you sure you want to delete this employee? This action can be undone from the Deleted Users tab.
+        </x-slot>
+    </x-delete-modal>
 </x-app-layout>

@@ -35,9 +35,11 @@
                     Create Contract
                 </a>
                 @if(!$employee->discontinued_at)
-                    <form method="POST" action="{{ route('employees.discontinue', $employee) }}" onsubmit="return confirm('Mark this employee as discontinued?')">
+                    <form method="POST" action="{{ route('employees.discontinue', $employee) }}" id="discontinue-form">
                         @csrf
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 hover:shadow-xl transition">
+                        <button type="button"
+                                @click="$dispatch('open-delete-modal', { id: 'discontinueModal', form: document.getElementById('discontinue-form') })"
+                                class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 hover:shadow-xl transition">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
@@ -259,7 +261,7 @@
                         </div>
                             @endif
                         </div>
-                        
+
                 <!-- Key Metrics -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
@@ -547,10 +549,14 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <button type="button" class="text-gray-700 text-sm" x-data @click="$dispatch('open-modal', 'edit-account-{{ $account->id }}')">Edit</button>
-                                        <form method="POST" action="{{ route('employees.bank-accounts.destroy', [$employee, $account]) }}">
+                                        <form method="POST" action="{{ route('employees.bank-accounts.destroy', [$employee, $account]) }}" id="delete-account-{{ $account->id }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="text-red-600 text-sm" onclick="return confirm('Remove this account?')">Delete</button>
+                                            <button type="button"
+                                                    @click="$dispatch('open-delete-modal', { id: 'deleteAccountModal', form: document.getElementById('delete-account-{{ $account->id }}') })"
+                                                    class="text-red-600 text-sm hover:text-red-700 transition">
+                                                Delete
+                                            </button>
                                         </form>
                                     </div>
                                 </div>
@@ -637,10 +643,14 @@
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <button type="button" class="text-gray-700 text-sm" x-data @click="$dispatch('open-modal', 'edit-access-{{ $access->id }}')">Edit</button>
-                                        <form method="POST" action="{{ route('employees.accesses.destroy', [$employee, $access]) }}">
+                                        <form method="POST" action="{{ route('employees.accesses.destroy', [$employee, $access]) }}" id="delete-access-{{ $access->id }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="text-red-600 text-sm" onclick="return confirm('Remove this access?')">Delete</button>
+                                            <button type="button"
+                                                    @click="$dispatch('open-delete-modal', { id: 'deleteAccessModal', form: document.getElementById('delete-access-{{ $access->id }}') })"
+                                                    class="text-red-600 text-sm hover:text-red-700 transition">
+                                                Delete
+                                            </button>
                                         </form>
                                     </div>
                                     @if($access->attachment_path)
@@ -704,9 +714,9 @@
                     </div>
                     <div class="p-6 text-gray-900 dark:text-white">
                     @if (session('status'))
-                            <div class="mb-6 px-4 py-3 bg-green-50 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 rounded-xl text-green-700 dark:text-green-300 flex items-center gap-3 shadow-sm" 
-                                 x-data="{ show: true }" 
-                                 x-show="show" 
+                            <div class="mb-6 px-4 py-3 bg-green-50 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30 rounded-xl text-green-700 dark:text-green-300 flex items-center gap-3 shadow-sm"
+                                 x-data="{ show: true }"
+                                 x-show="show"
                                  x-transition
                                  x-init="setTimeout(() => show = false, 5000)">
                                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -785,7 +795,7 @@
                                 @php
                                     // Get activity type from database or default to 'note'
                                     $activityType = $payment->activity_type ?? 'note';
-                                    
+
                                     // Set colors, icons, and badges based on stored activity type
                                     switch($activityType) {
                                         case 'achievement':
@@ -836,7 +846,7 @@
                                             @endif
                                         </svg>
                                     </div>
-                                    
+
                                     <!-- Activity Card -->
                                     <div class="bg-white dark:bg-gray-800/60 backdrop-blur-sm border {{ $borderColor }} rounded-xl p-4 shadow-sm hover:shadow-md dark:hover:shadow-xl transition-all duration-200">
                                         <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
@@ -862,10 +872,12 @@
                                                     </svg>
                                                     Edit
                                                 </button>
-                                                <form method="POST" action="{{ route('employees.payments.destroy', [$employee, $payment]) }}?tab=timeline" class="inline">
+                                                <form method="POST" action="{{ route('employees.payments.destroy', [$employee, $payment]) }}?tab=timeline" id="delete-payment-{{ $payment->id }}" class="inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                    <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-800 transition text-xs font-medium shadow-sm" onclick="return confirm('Remove this entry?')">
+                                                    <button type="button"
+                                                            @click="$dispatch('open-delete-modal', { id: 'deletePaymentModal', form: document.getElementById('delete-payment-{{ $payment->id }}') })"
+                                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 dark:bg-red-700 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-800 transition text-xs font-medium shadow-sm">
                                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                         </svg>
@@ -874,7 +886,7 @@
                                             </form>
                                         </div>
                                     </div>
-                                        
+
                                         @if($payment->amount)
                                             <div class="mb-3">
                                                 <div class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -886,26 +898,26 @@
                                     </div>
                                             </div>
                                         @endif
-                                        
+
                                     @if($payment->note)
                                             <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ $payment->note }}</div>
                                     @endif
 
                                         <!-- Activity Notes Section -->
-                                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" 
+                                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
                                              x-data="{
                                                 notes: {{ $payment->notes->count() }},
                                                 showNoteForm: false,
                                                 noteText: '',
                                                 submitting: false,
                                                 error: '',
-                                                
+
                                                 async submitNote() {
                                                     if (!this.noteText.trim()) return;
-                                                    
+
                                                     this.submitting = true;
                                                     this.error = '';
-                                                    
+
                                                     try {
                                                         const response = await fetch('{{ route('employees.payments.notes.store', [$employee, $payment]) }}', {
                                                             method: 'POST',
@@ -918,21 +930,21 @@
                                                                 note: this.noteText
                                                             })
                                                         });
-                                                        
+
                                                         if (!response.ok) {
                                                             throw new Error('Network response was not ok');
                                                         }
-                                                        
+
                                                         const data = await response.json();
-                                                        
+
                                                         if (data.success) {
                                                             const container = document.getElementById('notes-container-{{ $payment->id }}');
                                                             container.insertAdjacentHTML('beforeend', data.html);
-                                                            
+
                                                             this.notes++;
                                                             this.noteText = '';
                                                             this.showNoteForm = false;
-                                                            
+
                                                             setTimeout(() => {
                                                                 container.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                                                             }, 100);
@@ -948,7 +960,7 @@
                                                 }
                                              }"
                                              data-payment-id="{{ $payment->id }}">
-                                            
+
                                             <!-- Notes List -->
                                             <div x-show="notes > 0" class="mb-4">
                                                 <div class="flex items-center gap-2 mb-3">
@@ -972,7 +984,7 @@
                                                     </svg>
                                                     <span x-text="showNoteForm ? 'Cancel' : 'Add Note'"></span>
                                                 </button>
-                                                
+
                                                 <form x-show="showNoteForm" x-transition @submit.prevent="submitNote()" class="mt-3 space-y-3">
                                                     <textarea x-model="noteText" rows="3" class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm" placeholder="Add a note to this activity..." required></textarea>
                                                     <div class="flex items-center gap-2">
@@ -1123,12 +1135,12 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="space-y-2">
                                             @foreach ($checklist->items as $item)
                                                 <div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition" data-item-container="{{ $item->id }}">
-                                                    <input 
-                                                        type="checkbox" 
+                                                    <input
+                                                        type="checkbox"
                                                         id="item-{{ $item->id }}"
                                                         {{ $item->is_completed ? 'checked' : '' }}
                                                         onchange="toggleChecklistItem({{ $item->id }}, {{ $employee->id }}, {{ $checklist->id }})"
@@ -1323,16 +1335,18 @@
                                                 <button type="button" x-data @click="$dispatch('open-modal', 'edit-template-{{ $template->id }}')" class="text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                                                     Edit
                                                 </button>
-                                                <form method="POST" action="{{ route('employees.checklists.templates.destroy', [$employee, $template]) }}" class="inline">
+                                                <form method="POST" action="{{ route('employees.checklists.templates.destroy', [$employee, $template]) }}" id="delete-template-{{ $template->id }}" class="inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" onclick="return confirm('Delete this template? This will also remove all associated daily checklists.')">
+                                                    <button type="button"
+                                                            @click="$dispatch('open-delete-modal', { id: 'deleteTemplateModal', form: document.getElementById('delete-template-{{ $template->id }}') })"
+                                                            class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
                                                         Delete
                                                     </button>
                                                 </form>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                                             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3">CHECKLIST ITEMS ({{ $template->items->count() }})</p>
                                             <ul class="space-y-2">
@@ -1503,7 +1517,7 @@
             } text-white font-medium`;
             toast.textContent = message;
             document.body.appendChild(toast);
-            
+
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
@@ -1514,12 +1528,12 @@
             const btn = document.getElementById('generate-btn');
             const btnText = document.getElementById('generate-btn-text');
             const originalText = btnText.textContent;
-            
+
             // Disable button and show loading
             btn.disabled = true;
             btn.classList.add('opacity-75', 'cursor-not-allowed');
             btnText.textContent = 'Generating...';
-            
+
             fetch(`/employees/${employeeId}/checklists/generate-today`, {
                 method: 'POST',
                 headers: {
@@ -1555,12 +1569,12 @@
             const btn = document.querySelector(`[data-send-btn="${checklistId}"]`);
             const btnText = document.querySelector(`[data-send-text="${checklistId}"]`);
             const originalText = btnText.textContent;
-            
+
             // Disable button and show loading
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
             btnText.textContent = 'Sending...';
-            
+
             fetch(`/employees/${employeeId}/checklists/${checklistId}/send-email`, {
                 method: 'POST',
                 headers: {
@@ -1599,7 +1613,7 @@
         function toggleChecklistItem(itemId, employeeId, checklistId) {
             const checkbox = document.getElementById(`item-${itemId}`);
             const originalState = checkbox.checked;
-            
+
             fetch(`/employees/${employeeId}/checklists/items/${itemId}/toggle`, {
                 method: 'POST',
                 headers: {
@@ -1617,7 +1631,7 @@
                     } else {
                         label.className = 'text-gray-900 dark:text-white';
                     }
-                    
+
                     // Update the timestamp
                     const timestamp = document.querySelector(`[data-item-timestamp="${itemId}"]`);
                     if (data.completed_at) {
@@ -1625,10 +1639,10 @@
                     } else {
                         timestamp.textContent = '';
                     }
-                    
+
                     // Update completion percentage
                     updateCompletionPercentage(checklistId);
-                    
+
                     // Show success toast
                     showToast(data.is_completed ? '✓ Item completed!' : '○ Item unchecked');
                 } else {
@@ -1648,20 +1662,56 @@
         function updateCompletionPercentage(checklistId) {
             const checklistEl = document.querySelector(`[data-checklist-id="${checklistId}"]`);
             if (!checklistEl) return;
-            
+
             const checkboxes = checklistEl.querySelectorAll('input[type="checkbox"]');
             const total = checkboxes.length;
             const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
             const percentage = total > 0 ? Math.round((completed / total) * 100 * 10) / 10 : 0;
-            
+
             const display = document.querySelector(`[data-completion-display="${checklistId}"]`);
             if (display) {
                 display.textContent = `${percentage}%`;
-                
+
                 // Add a brief animation
                 display.classList.add('scale-110');
                 setTimeout(() => display.classList.remove('scale-110'), 200);
             }
         }
     </script>
+
+    <!-- Delete Confirmation Modals -->
+    <x-delete-modal id="discontinueModal">
+        <x-slot name="title">Discontinue Employee</x-slot>
+        <x-slot name="message">
+            Are you sure you want to mark this employee as discontinued? This action can be reversed later.
+        </x-slot>
+    </x-delete-modal>
+
+    <x-delete-modal id="deleteAccountModal">
+        <x-slot name="title">Remove Bank Account</x-slot>
+        <x-slot name="message">
+            Are you sure you want to remove this bank account? This action cannot be undone.
+        </x-slot>
+    </x-delete-modal>
+
+    <x-delete-modal id="deleteAccessModal">
+        <x-slot name="title">Remove Access</x-slot>
+        <x-slot name="message">
+            Are you sure you want to remove this access entry? This action cannot be undone.
+        </x-slot>
+    </x-delete-modal>
+
+    <x-delete-modal id="deletePaymentModal">
+        <x-slot name="title">Delete Payment Entry</x-slot>
+        <x-slot name="message">
+            Are you sure you want to delete this payment entry? This action cannot be undone.
+        </x-slot>
+    </x-delete-modal>
+
+    <x-delete-modal id="deleteTemplateModal">
+        <x-slot name="title">Delete Checklist Template</x-slot>
+        <x-slot name="message">
+            Are you sure you want to delete this template? This will also remove all associated daily checklists.
+        </x-slot>
+    </x-delete-modal>
 </x-app-layout>

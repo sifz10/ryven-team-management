@@ -10,3 +10,8 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('user.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
+
+// Public channel for task comments (real-time updates)
+Broadcast::channel('task.{taskId}', function ($user, $taskId) {
+    return true; // Anyone viewing the task can see comments
+});
