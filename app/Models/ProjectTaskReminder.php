@@ -14,6 +14,8 @@ class ProjectTaskReminder extends Model
         'created_by',
         'recipient_type',
         'recipient_id',
+        'recipient_name',
+        'recipient_email',
         'remind_at',
         'message',
         'is_sent',
@@ -50,7 +52,12 @@ class ProjectTaskReminder extends Model
         if ($this->recipient_type === 'employee') {
             return Employee::find($this->recipient_id);
         } elseif ($this->recipient_type === 'client') {
-            return \App\Models\UatUser::find($this->recipient_id);
+            // For clients, return a simple object with stored details
+            return (object) [
+                'id' => $this->recipient_id,
+                'name' => $this->recipient_name,
+                'email' => $this->recipient_email,
+            ];
         }
         return null;
     }

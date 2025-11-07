@@ -55,6 +55,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the employee associated with this user
+     */
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
+
+    /**
      * Get the user's personal notes
      */
     public function personalNotes()

@@ -1157,20 +1157,179 @@
                             <div class="space-y-3">
                                 <!-- Recipient Selection -->
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Remind Who?</label>
-                                    <select x-model="reminderForm.recipient" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400">
-                                        <option value="">Select recipient...</option>
-                                        <optgroup label="Team Members" x-show="reminderRecipients.employees && reminderRecipients.employees.length > 0">
-                                            <template x-for="employee in reminderRecipients.employees || []" :key="'emp-' + employee.id">
-                                                <option :value="'employee-' + employee.id" x-text="employee.name + ' (' + employee.email + ')'"></option>
+                                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Remind Who? (Select multiple)</label>
+
+                                    <!-- Selected Recipients -->
+                                    <div x-show="reminderForm.selectedRecipients.length > 0" class="flex flex-wrap gap-2 mb-2">
+                                        <template x-for="recipient in reminderForm.selectedRecipients" :key="recipient.value">
+                                            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border-2 border-yellow-400 dark:border-yellow-500 rounded-lg">
+                                                <!-- Avatar -->
+                                                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                                     :class="recipient.type === 'employee' ? 'bg-gradient-to-br from-blue-500 to-blue-700' : 'bg-gradient-to-br from-purple-500 to-purple-700'">
+                                                    <span x-text="recipient.initials"></span>
+                                                </div>
+                                                <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="recipient.name"></span>
+                                                <span class="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                                                      :class="recipient.type === 'employee' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400' : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400'"
+                                                      x-text="recipient.type === 'employee' ? 'Team' : 'Client'">
+                                                </span>
+                                                <button @click="removeRecipient(recipient.value)" type="button" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Search Input -->
+                                    <div class="relative" x-effect="recipientSearch && (focusedRecipientIndex = 0)">
+                                        <div class="relative flex items-center">
+                                            <svg class="w-5 h-5 text-gray-400 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                            </svg>
+                                            <input
+                                                type="text"
+                                                x-model="recipientSearch"
+                                                @focus="showRecipientDropdown = true"
+                                                @input="showRecipientDropdown = true"
+                                                @keydown.escape="showRecipientDropdown = false"
+                                                @keydown.arrow-down.prevent="focusNextRecipient()"
+                                                @keydown.arrow-up.prevent="focusPrevRecipient()"
+                                                @keydown.enter.prevent="selectFocusedRecipient()"
+                                                placeholder="Type to search team members or clients..."
+                                                class="w-full px-3 py-2 pl-10 pr-10 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 dark:focus:ring-yellow-400 dark:focus:border-yellow-400 transition-all">
+                                            <div class="absolute right-3 flex items-center gap-1">
+                                                <span x-show="recipientSearch"
+                                                      @click="recipientSearch = ''; showRecipientDropdown = true"
+                                                      class="cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </span>
+                                                <svg x-show="showRecipientDropdown" class="w-4 h-4 text-gray-400 transition-transform" :class="{'rotate-180': showRecipientDropdown}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                        <!-- Dropdown -->
+                                        <div x-show="showRecipientDropdown"
+                                             @click.away="showRecipientDropdown = false"
+                                             x-cloak
+                                             x-transition:enter="transition ease-out duration-100"
+                                             x-transition:enter-start="transform opacity-0 scale-95"
+                                             x-transition:enter-end="transform opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-75"
+                                             x-transition:leave-start="transform opacity-100 scale-100"
+                                             x-transition:leave-end="transform opacity-0 scale-95"
+                                             class="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-72 overflow-y-auto">
+
+                                            <!-- Loading State -->
+                                            <template x-if="!reminderRecipients.employees && !reminderRecipients.clients">
+                                                <div class="px-4 py-8 text-center">
+                                                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading recipients...</p>
+                                                </div>
                                             </template>
-                                        </optgroup>
-                                        <optgroup label="Client Users" x-show="reminderRecipients.clients && reminderRecipients.clients.length > 0">
-                                            <template x-for="client in reminderRecipients.clients || []" :key="'client-' + client.id">
-                                                <option :value="'client-' + client.id" x-text="client.name + ' (' + client.email + ')'"></option>
+
+                                            <!-- Team Members -->
+                                            <template x-if="filteredReminderEmployees.length > 0">
+                                                <div>
+                                                    <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600 sticky top-0">
+                                                        <div class="flex items-center justify-between">
+                                                            <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Team Members</span>
+                                                            <span class="text-xs text-gray-500 dark:text-gray-400" x-text="`${filteredReminderEmployees.length} found`"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="py-1">
+                                                        <template x-for="(employee, empIndex) in filteredReminderEmployees" :key="'emp-' + employee.id">
+                                                            <button
+                                                                @click="addRecipient('employee', employee)"
+                                                                type="button"
+                                                                :class="{
+                                                                    'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500': isRecipientSelected('employee-' + employee.id),
+                                                                    'bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500': focusedRecipientIndex === empIndex,
+                                                                    'hover:bg-gray-100 dark:hover:bg-gray-700 border-l-4 border-transparent': !isRecipientSelected('employee-' + employee.id) && focusedRecipientIndex !== empIndex
+                                                                }"
+                                                                class="w-full flex items-center gap-3 px-3 py-2.5 transition-all duration-150 text-left">
+                                                                <!-- Avatar -->
+                                                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm">
+                                                                    <span x-text="employee.initials"></span>
+                                                                </div>
+                                                                <!-- Info -->
+                                                                <div class="flex-1 min-w-0">
+                                                                    <div class="flex items-center gap-2">
+                                                                        <div class="text-sm font-semibold text-gray-900 dark:text-white truncate" x-text="employee.name"></div>
+                                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                                                                            Team
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate" x-text="employee.email"></div>
+                                                                </div>
+                                                                <!-- Checkmark if selected -->
+                                                                <svg x-show="isRecipientSelected('employee-' + employee.id)" class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                                </svg>
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </div>
                                             </template>
-                                        </optgroup>
-                                    </select>
+
+                                            <!-- Client Users -->
+                                            <template x-if="filteredReminderClients.length > 0">
+                                                <div>
+                                                    <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600 sticky top-0">
+                                                        <div class="flex items-center justify-between">
+                                                            <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Client Users</span>
+                                                            <span class="text-xs text-gray-500 dark:text-gray-400" x-text="`${filteredReminderClients.length} found`"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="py-1">
+                                                        <template x-for="(client, clientIndex) in filteredReminderClients" :key="'client-' + client.id">
+                                                            <button
+                                                                @click="addRecipient('client', client)"
+                                                                type="button"
+                                                                :class="{
+                                                                    'bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500': isRecipientSelected('client-' + client.id),
+                                                                    'bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500': focusedRecipientIndex === (filteredReminderEmployees.length + clientIndex),
+                                                                    'hover:bg-gray-100 dark:hover:bg-gray-700 border-l-4 border-transparent': !isRecipientSelected('client-' + client.id) && focusedRecipientIndex !== (filteredReminderEmployees.length + clientIndex)
+                                                                }"
+                                                                class="w-full flex items-center gap-3 px-3 py-2.5 transition-all duration-150 text-left">
+                                                                <!-- Avatar -->
+                                                                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm">
+                                                                    <span x-text="client.initials"></span>
+                                                                </div>
+                                                                <!-- Info -->
+                                                                <div class="flex-1 min-w-0">
+                                                                    <div class="flex items-center gap-2">
+                                                                        <div class="text-sm font-semibold text-gray-900 dark:text-white truncate" x-text="client.name"></div>
+                                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
+                                                                            Client
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate" x-text="client.email"></div>
+                                                                </div>
+                                                                <!-- Checkmark if selected -->
+                                                                <svg x-show="isRecipientSelected('client-' + client.id)" class="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                                </svg>
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            <!-- No Results -->
+                                            <div x-show="filteredReminderEmployees.length === 0 && filteredReminderClients.length === 0" class="px-3 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                                No recipients found
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Helper Text -->
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">You can select multiple recipients to send the same reminder to all of them</p>
                                 </div>
 
                                 <!-- Date/Time Selection -->
@@ -1190,11 +1349,12 @@
                                     <button @click="cancelReminderForm()" class="px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
                                         Cancel
                                     </button>
-                                    <button @click="saveReminder()" :disabled="!reminderForm.recipient || !reminderForm.remind_at" class="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-lg text-sm font-bold transition-colors disabled:cursor-not-allowed">
+                                    <button @click="saveReminder()" :disabled="reminderForm.selectedRecipients.length === 0 || !reminderForm.remind_at" class="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-lg text-sm font-bold transition-colors disabled:cursor-not-allowed">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>
                                         <span x-text="editingReminder ? 'Update' : 'Save'"></span> Reminder
+                                        <span x-show="!editingReminder && reminderForm.selectedRecipients.length > 1" class="ml-1 px-1.5 py-0.5 bg-yellow-600 rounded-full text-xs" x-text="'(' + reminderForm.selectedRecipients.length + ')'"></span>
                                     </button>
                                 </div>
                             </div>
@@ -1450,6 +1610,54 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Reminder Confirmation Modal -->
+    <div x-show="showDeleteModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         @click.self="cancelDeleteReminder()">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md border-2 border-gray-200 dark:border-gray-700"
+                 @click.stop
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100">
+
+                <!-- Icon -->
+                <div class="flex items-center justify-center pt-8 pb-4">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="px-8 pb-8 text-center">
+                    <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-3">
+                        Delete Reminder?
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        Are you sure you want to delete this reminder? This action cannot be undone.
+                    </p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-3 p-6 bg-gray-50 dark:bg-gray-900/50 rounded-b-2xl border-t border-gray-200 dark:border-gray-700">
+                    <button @click="cancelDeleteReminder()"
+                            class="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 font-extrabold hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                        Cancel
+                    </button>
+                    <button @click="confirmDeleteReminder()"
+                            class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-extrabold hover:shadow-lg hover:scale-105 transition-all">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -1559,10 +1767,35 @@ document.addEventListener('alpine:init', () => {
         reminderRecipients: { employees: [], clients: [] },
         showAddReminderForm: false,
         editingReminder: null,
+        showRecipientDropdown: false,
+        recipientSearch: '',
+        focusedRecipientIndex: -1,
+        showDeleteModal: false,
+        deletingReminderId: null,
         reminderForm: {
-            recipient: '',
+            selectedRecipients: [],
             remind_at: '',
             message: ''
+        },
+
+        get filteredReminderEmployees() {
+            if (!this.reminderRecipients.employees) return [];
+            if (!this.recipientSearch) return this.reminderRecipients.employees;
+            const search = this.recipientSearch.toLowerCase();
+            return this.reminderRecipients.employees.filter(emp =>
+                emp.name.toLowerCase().includes(search) ||
+                emp.email.toLowerCase().includes(search)
+            );
+        },
+
+        get filteredReminderClients() {
+            if (!this.reminderRecipients.clients) return [];
+            if (!this.recipientSearch) return this.reminderRecipients.clients;
+            const search = this.recipientSearch.toLowerCase();
+            return this.reminderRecipients.clients.filter(client =>
+                client.name.toLowerCase().includes(search) ||
+                client.email.toLowerCase().includes(search)
+            );
         },
 
         get filteredTags() {
@@ -2158,73 +2391,186 @@ document.addEventListener('alpine:init', () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        this.reminderRecipients = data.recipients;
+                        // Add initials to recipients
+                        this.reminderRecipients = {
+                            employees: (data.recipients.employees || []).map(emp => ({
+                                ...emp,
+                                initials: this.getInitials(emp.name)
+                            })),
+                            clients: (data.recipients.clients || []).map(client => ({
+                                ...client,
+                                initials: this.getInitials(client.name)
+                            }))
+                        };
                     }
                 });
         },
 
-        saveReminder() {
-            if (!this.reminderForm.recipient || !this.reminderForm.remind_at) {
-                alert('Please select a recipient and reminder time');
+        getInitials(name) {
+            if (!name) return '?';
+            const parts = name.trim().split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        },
+
+        isRecipientSelected(value) {
+            return this.reminderForm.selectedRecipients.some(r => r.value === value);
+        },
+
+        addRecipient(type, user) {
+            const value = `${type}-${user.id}`;
+
+            // Check if already selected
+            if (this.isRecipientSelected(value)) {
+                // If already selected, remove it (toggle behavior)
+                this.removeRecipient(value);
                 return;
             }
 
-            // Parse recipient (format: 'employee-123' or 'client-456')
-            const [type, id] = this.reminderForm.recipient.split('-');
-
-            const reminderData = {
-                recipient_type: type,
-                recipient_id: parseInt(id),
-                remind_at: this.reminderForm.remind_at,
-                message: this.reminderForm.message || null
-            };
-
-            const url = this.editingReminder
-                ? `/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/reminders/${this.editingReminder.id}`
-                : `/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/reminders`;
-
-            const method = this.editingReminder ? 'PUT' : 'POST';
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify(reminderData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.loadReminders();
-                    this.cancelReminderForm();
-                    alert(`✅ Reminder ${this.editingReminder ? 'updated' : 'created'} successfully!`);
-                } else {
-                    alert('❌ ' + (data.message || 'Failed to save reminder'));
-                }
-            })
-            .catch(error => {
-                console.error('Error saving reminder:', error);
-                alert('❌ Error saving reminder. Please try again.');
+            this.reminderForm.selectedRecipients.push({
+                value: value,
+                type: type,
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                initials: user.initials || this.getInitials(user.name)
             });
+
+            // Don't clear search or close dropdown - allow multi-select
+            // User can press Escape or click outside to close
+        },
+
+        removeRecipient(value) {
+            this.reminderForm.selectedRecipients = this.reminderForm.selectedRecipients.filter(r => r.value !== value);
+        },
+
+        saveReminder() {
+            if (this.reminderForm.selectedRecipients.length === 0 || !this.reminderForm.remind_at) {
+                alert('Please select at least one recipient and reminder time');
+                return;
+            }
+
+            // If editing, only allow single recipient (for now, update this reminder)
+            if (this.editingReminder) {
+                if (this.reminderForm.selectedRecipients.length !== 1) {
+                    alert('Please select exactly one recipient when editing');
+                    return;
+                }
+
+                const recipient = this.reminderForm.selectedRecipients[0];
+                const [type, id] = recipient.value.split('-');
+
+                const reminderData = {
+                    recipient_type: type,
+                    recipient_id: parseInt(id),
+                    remind_at: this.reminderForm.remind_at,
+                    message: this.reminderForm.message || null
+                };
+
+                fetch(`/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/reminders/${this.editingReminder.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(reminderData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.loadReminders();
+                        this.cancelReminderForm();
+                        window.showToast('success', 'Reminder updated successfully!');
+                    } else {
+                        window.showToast('error', data.message || 'Failed to update reminder');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating reminder:', error);
+                    window.showToast('error', 'Error updating reminder. Please try again.');
+                });
+                return;
+            }
+
+            // For creating, allow multiple recipients - create one reminder per recipient
+            const promises = this.reminderForm.selectedRecipients.map(recipient => {
+                const [type, id] = recipient.value.split('-');
+                const reminderData = {
+                    recipient_type: type,
+                    recipient_id: parseInt(id),
+                    remind_at: this.reminderForm.remind_at,
+                    message: this.reminderForm.message || null
+                };
+
+                return fetch(`/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/reminders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(reminderData)
+                });
+            });
+
+            Promise.all(promises)
+                .then(responses => Promise.all(responses.map(r => r.json())))
+                .then(results => {
+                    const successCount = results.filter(r => r.success).length;
+                    const failCount = results.filter(r => !r.success).length;
+
+                    if (failCount === 0) {
+                        window.showToast('success', `${successCount} reminder(s) created successfully!`);
+                        this.loadReminders();
+                        this.cancelReminderForm();
+                    } else {
+                        window.showToast('warning', `${successCount} created, ${failCount} failed.`);
+                        this.loadReminders();
+                        this.cancelReminderForm();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating reminders:', error);
+                    window.showToast('error', 'Error creating reminders. Please try again.');
+                });
         },
 
         editReminder(reminder) {
             this.editingReminder = reminder;
+
+            // Find the recipient in our lists to get full details
+            let recipientObj = null;
+            if (reminder.recipient_type === 'employee') {
+                recipientObj = this.reminderRecipients.employees?.find(e => e.id === reminder.recipient_id);
+            } else {
+                recipientObj = this.reminderRecipients.clients?.find(c => c.id === reminder.recipient_id);
+            }
+
             this.reminderForm = {
-                recipient: `${reminder.recipient_type}-${reminder.recipient_id}`,
-                remind_at: reminder.remind_at.replace(' ', 'T').substring(0, 16), // Convert to datetime-local format
+                selectedRecipients: recipientObj ? [{
+                    value: `${reminder.recipient_type}-${reminder.recipient_id}`,
+                    type: reminder.recipient_type,
+                    id: reminder.recipient_id,
+                    name: recipientObj.name || reminder.recipient_name,
+                    email: recipientObj.email || '',
+                    initials: recipientObj.initials || this.getInitials(reminder.recipient_name)
+                }] : [],
+                remind_at: reminder.remind_at.replace(' ', 'T').substring(0, 16),
                 message: reminder.message || ''
             };
             this.showAddReminderForm = true;
         },
 
         deleteReminder(reminderId) {
-            if (!confirm('Are you sure you want to delete this reminder?')) {
-                return;
-            }
+            this.deletingReminderId = reminderId;
+            this.showDeleteModal = true;
+        },
 
-            fetch(`/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/reminders/${reminderId}`, {
+        confirmDeleteReminder() {
+            if (!this.deletingReminderId) return;
+
+            fetch(`/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/reminders/${this.deletingReminderId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -2234,25 +2580,66 @@ document.addEventListener('alpine:init', () => {
             .then(data => {
                 if (data.success) {
                     this.loadReminders();
-                    alert('✅ Reminder deleted successfully!');
+                    window.showToast('success', 'Reminder deleted successfully!');
                 } else {
-                    alert('❌ ' + (data.message || 'Failed to delete reminder'));
+                    window.showToast('error', data.message || 'Failed to delete reminder');
                 }
+                this.showDeleteModal = false;
+                this.deletingReminderId = null;
             })
             .catch(error => {
                 console.error('Error deleting reminder:', error);
-                alert('❌ Error deleting reminder. Please try again.');
+                window.showToast('error', 'Error deleting reminder. Please try again.');
+                this.showDeleteModal = false;
+                this.deletingReminderId = null;
             });
+        },
+
+        cancelDeleteReminder() {
+            this.showDeleteModal = false;
+            this.deletingReminderId = null;
         },
 
         cancelReminderForm() {
             this.showAddReminderForm = false;
             this.editingReminder = null;
+            this.showRecipientDropdown = false;
+            this.recipientSearch = '';
+            this.focusedRecipientIndex = -1;
             this.reminderForm = {
-                recipient: '',
+                selectedRecipients: [],
                 remind_at: '',
                 message: ''
             };
+        },
+
+        // Keyboard navigation for recipient selection
+        focusNextRecipient() {
+            const allRecipients = [...this.filteredReminderEmployees, ...this.filteredReminderClients];
+            if (allRecipients.length === 0) return;
+
+            this.focusedRecipientIndex = (this.focusedRecipientIndex + 1) % allRecipients.length;
+        },
+
+        focusPrevRecipient() {
+            const allRecipients = [...this.filteredReminderEmployees, ...this.filteredReminderClients];
+            if (allRecipients.length === 0) return;
+
+            if (this.focusedRecipientIndex <= 0) {
+                this.focusedRecipientIndex = allRecipients.length - 1;
+            } else {
+                this.focusedRecipientIndex--;
+            }
+        },
+
+        selectFocusedRecipient() {
+            const allRecipients = [...this.filteredReminderEmployees, ...this.filteredReminderClients];
+            if (this.focusedRecipientIndex < 0 || this.focusedRecipientIndex >= allRecipients.length) return;
+
+            const recipient = allRecipients[this.focusedRecipientIndex];
+            const type = this.focusedRecipientIndex < this.filteredReminderEmployees.length ? 'employee' : 'client';
+
+            this.addRecipient(type, recipient);
         },
 
         editFromDetail() {
@@ -2414,4 +2801,112 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+</script>
+
+<!-- Toast Notification Component -->
+<div x-data="toastNotification()"
+     x-cloak
+     x-show="show"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 transform translate-y-2"
+     x-transition:enter-end="opacity-100 transform translate-y-0"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100 transform translate-y-0"
+     x-transition:leave-end="opacity-0 transform translate-y-2"
+     class="fixed top-4 right-4 z-[9999] max-w-sm w-full pointer-events-auto">
+    <div class="rounded-xl shadow-2xl border-2 overflow-hidden"
+         :class="{
+             'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-500/50': type === 'success',
+             'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border-red-500/50': type === 'error',
+             'bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border-yellow-500/50': type === 'warning',
+             'bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-500/50': type === 'info'
+         }">
+        <div class="p-4 flex items-start gap-3">
+            <!-- Icon -->
+            <div class="flex-shrink-0">
+                <svg x-show="type === 'success'" class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <svg x-show="type === 'error'" class="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <svg x-show="type === 'warning'" class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                <svg x-show="type === 'info'" class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <!-- Message -->
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold"
+                   :class="{
+                       'text-green-900 dark:text-green-100': type === 'success',
+                       'text-red-900 dark:text-red-100': type === 'error',
+                       'text-yellow-900 dark:text-yellow-100': type === 'warning',
+                       'text-blue-900 dark:text-blue-100': type === 'info'
+                   }"
+                   x-text="message"></p>
+            </div>
+            <!-- Close Button -->
+            <button @click="hide()" class="flex-shrink-0 rounded-lg p-1.5 inline-flex hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                    :class="{
+                        'text-green-600 dark:text-green-400': type === 'success',
+                        'text-red-600 dark:text-red-400': type === 'error',
+                        'text-yellow-600 dark:text-yellow-400': type === 'warning',
+                        'text-blue-600 dark:text-blue-400': type === 'info'
+                    }">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toast Notification Component
+function toastNotification() {
+    return {
+        show: false,
+        type: 'info',
+        message: '',
+        timeout: null,
+
+        showToast(type, message, duration = 5000) {
+            this.type = type;
+            this.message = message;
+            this.show = true;
+
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+
+            this.timeout = setTimeout(() => {
+                this.hide();
+            }, duration);
+        },
+
+        hide() {
+            this.show = false;
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+        }
+    }
+}
+
+// Global toast function
+window.showToast = function(type, message, duration = 5000) {
+    const toastEl = document.querySelector('[x-data*="toastNotification"]');
+
+    if (toastEl && toastEl.__x && toastEl.__x.$data && typeof toastEl.__x.$data.showToast === 'function') {
+        toastEl.__x.$data.showToast(type, message, duration);
+    } else if (toastEl && toastEl._x_dataStack && toastEl._x_dataStack[0] && typeof toastEl._x_dataStack[0].showToast === 'function') {
+        toastEl._x_dataStack[0].showToast(type, message, duration);
+    } else {
+        console.error('Toast component not found, fallback to alert');
+        alert(`${type.toUpperCase()}: ${message}`);
+    }
+};
 </script>

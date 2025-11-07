@@ -312,6 +312,16 @@ class ProjectController extends Controller
             $task->tags()->sync($tagIds);
         }
 
+        // Send notifications about task creation
+        $currentEmployee = Employee::where('user_id', auth()->id())->first();
+        if ($currentEmployee) {
+            $details = [
+                'priority' => $validated['priority'],
+                'additional_info' => isset($validated['assigned_to']) ? 'Assigned to employee' : 'No assignment yet'
+            ];
+            $this->notifyTaskAction($task, 'created', $currentEmployee, $details);
+        }
+
         $subTab = $request->input('current_view', 'list');
         return redirect()->route('projects.show', ['project' => $project->id, 'tab' => 'tasks', 'sub_tab' => $subTab])->with('status', 'Task created successfully!');
     }
@@ -334,6 +344,11 @@ class ProjectController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'required|string|max:50',
         ]);
+
+        // Track old values for status change detection
+        $oldStatus = $task->status;
+        $oldAssignedTo = $task->assigned_to;
+        $oldPriority = $task->priority;
 
         $task->update(collect($validated)->except(['checklist', 'tags'])->toArray());
 
@@ -380,12 +395,52 @@ class ProjectController extends Controller
             $task->tags()->sync($tagIds);
         }
 
+        // Send notifications
+        $currentEmployee = Employee::where('user_id', auth()->id())->first();
+        if ($currentEmployee) {
+            // Notify about status change if status changed
+            if ($oldStatus !== $validated['status']) {
+                $this->notifyStatusChange($task, $oldStatus, $validated['status'], $currentEmployee);
+            }
+
+            // Notify about assignment change
+            if ($oldAssignedTo !== $validated['assigned_to']) {
+                $action = $validated['assigned_to'] ? 'assigned' : 'unassigned';
+                $this->notifyTaskAction($task, $action, $currentEmployee);
+            }
+
+            // Notify about priority change
+            if ($oldPriority !== $validated['priority']) {
+                $details = [
+                    'old_priority' => $oldPriority,
+                    'new_priority' => $validated['priority'],
+                    'additional_info' => "Priority changed from {$oldPriority} to {$validated['priority']}"
+                ];
+                $this->notifyTaskAction($task, 'priority_changed', $currentEmployee, $details);
+            }
+
+            // General update notification (if none of the above fired)
+            if ($oldStatus === $validated['status'] &&
+                $oldAssignedTo === $validated['assigned_to'] &&
+                $oldPriority === $validated['priority']) {
+                $this->notifyTaskAction($task, 'updated', $currentEmployee);
+            }
+        }
+
         $subTab = $request->input('current_view', 'list');
         return redirect()->route('projects.show', ['project' => $project->id, 'tab' => 'tasks', 'sub_tab' => $subTab])->with('status', 'Task updated successfully!');
     }
 
     public function destroyTask(Request $request, Project $project, ProjectTask $task)
     {
+        // Get current employee for notifications
+        $currentEmployee = Employee::where('user_id', auth()->id())->first();
+
+        // Send notifications before deletion (need task data)
+        if ($currentEmployee) {
+            $this->notifyTaskAction($task, 'deleted', $currentEmployee);
+        }
+
         $task->delete();
         $subTab = $request->input('current_view', 'list');
         return redirect()->route('projects.show', ['project' => $project->id, 'tab' => 'tasks', 'sub_tab' => $subTab])->with('status', 'Task deleted successfully!');
@@ -1047,12 +1102,17 @@ class ProjectController extends Controller
         return response()->json([
             'success' => true,
             'reminders' => $reminders->map(function ($reminder) {
-                $recipient = $reminder->recipient();
-                $recipientName = $recipient
-                    ? ($reminder->recipient_type === 'employee'
-                        ? $recipient->first_name . ' ' . $recipient->last_name
-                        : $recipient->name)
-                    : 'Unknown';
+                // Use stored recipient name if available, otherwise fetch from relationship
+                $recipientName = $reminder->recipient_name;
+
+                if (!$recipientName) {
+                    $recipient = $reminder->recipient();
+                    $recipientName = $recipient
+                        ? ($reminder->recipient_type === 'employee'
+                            ? $recipient->first_name . ' ' . $recipient->last_name
+                            : $recipient->name)
+                        : 'Unknown';
+                }
 
                 return [
                     'id' => $reminder->id,
@@ -1076,7 +1136,7 @@ class ProjectController extends Controller
 
     public function storeTaskReminder(Request $request, Project $project, ProjectTask $task)
     {
-        $employee = auth()->user()->employee;
+        $employee = Employee::where('user_id', auth()->id())->first();
         if (!$employee) {
             return response()->json([
                 'success' => false,
@@ -1091,7 +1151,10 @@ class ProjectController extends Controller
             'message' => 'nullable|string|max:500',
         ]);
 
-        // Verify recipient exists
+        $recipientName = '';
+        $recipientEmail = '';
+
+        // Verify recipient exists and get their details
         if ($validated['recipient_type'] === 'employee') {
             $recipient = Employee::find($validated['recipient_id']);
             if (!$recipient) {
@@ -1100,14 +1163,18 @@ class ProjectController extends Controller
                     'message' => 'Employee not found'
                 ], 404);
             }
+            $recipientName = $recipient->first_name . ' ' . $recipient->last_name;
+            $recipientEmail = $recipient->email;
         } elseif ($validated['recipient_type'] === 'client') {
-            $recipient = \App\Models\UatUser::where('project_id', $project->id)
-                ->where('id', $validated['recipient_id'])
-                ->first();
-            if (!$recipient) {
+            // For clients, the recipient_id is the project ID
+            // Get client details from the project
+            if ($project->client_name && $project->client_email) {
+                $recipientName = $project->client_name;
+                $recipientEmail = $project->client_email;
+            } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Client user not found for this project'
+                    'message' => 'No client information found for this project'
                 ], 404);
             }
         }
@@ -1116,13 +1183,11 @@ class ProjectController extends Controller
             'created_by' => $employee->id,
             'recipient_type' => $validated['recipient_type'],
             'recipient_id' => $validated['recipient_id'],
+            'recipient_name' => $recipientName,
+            'recipient_email' => $recipientEmail,
             'remind_at' => $validated['remind_at'],
             'message' => $validated['message'],
         ]);
-
-        $recipientName = $validated['recipient_type'] === 'employee'
-            ? $recipient->first_name . ' ' . $recipient->last_name
-            : $recipient->name;
 
         return response()->json([
             'success' => true,
@@ -1147,7 +1212,7 @@ class ProjectController extends Controller
 
     public function updateTaskReminder(Request $request, Project $project, ProjectTask $task, $reminderId)
     {
-        $employee = auth()->user()->employee;
+        $employee = Employee::where('user_id', auth()->id())->first();
         if (!$employee) {
             return response()->json([
                 'success' => false,
@@ -1180,7 +1245,10 @@ class ProjectController extends Controller
             'message' => 'nullable|string|max:500',
         ]);
 
-        // Verify new recipient exists
+        $recipientName = '';
+        $recipientEmail = '';
+
+        // Verify new recipient exists and get their details
         if ($validated['recipient_type'] === 'employee') {
             $recipient = Employee::find($validated['recipient_id']);
             if (!$recipient) {
@@ -1189,23 +1257,29 @@ class ProjectController extends Controller
                     'message' => 'Employee not found'
                 ], 404);
             }
+            $recipientName = $recipient->first_name . ' ' . $recipient->last_name;
+            $recipientEmail = $recipient->email;
         } elseif ($validated['recipient_type'] === 'client') {
-            $recipient = \App\Models\UatUser::where('project_id', $project->id)
-                ->where('id', $validated['recipient_id'])
-                ->first();
-            if (!$recipient) {
+            // For clients, get details from the project
+            if ($project->client_name && $project->client_email) {
+                $recipientName = $project->client_name;
+                $recipientEmail = $project->client_email;
+            } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Client user not found for this project'
+                    'message' => 'No client information found for this project'
                 ], 404);
             }
         }
 
-        $reminder->update($validated);
-
-        $recipientName = $validated['recipient_type'] === 'employee'
-            ? $recipient->first_name . ' ' . $recipient->last_name
-            : $recipient->name;
+        $reminder->update([
+            'recipient_type' => $validated['recipient_type'],
+            'recipient_id' => $validated['recipient_id'],
+            'recipient_name' => $recipientName,
+            'recipient_email' => $recipientEmail,
+            'remind_at' => $validated['remind_at'],
+            'message' => $validated['message'],
+        ]);
 
         return response()->json([
             'success' => true,
@@ -1230,7 +1304,7 @@ class ProjectController extends Controller
 
     public function destroyTaskReminder(Project $project, ProjectTask $task, $reminderId)
     {
-        $employee = auth()->user()->employee;
+        $employee = Employee::where('user_id', auth()->id())->first();
         if (!$employee) {
             return response()->json([
                 'success' => false,
@@ -1271,17 +1345,19 @@ class ProjectController extends Controller
                 ];
             });
 
-        // Get all client users from the project (UAT users)
-        $clients = \App\Models\UatUser::where('project_id', $project->id)
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'type' => 'client',
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ];
-            });
+        // For clients, we'll use the project's client information if available
+        // UAT system is separate - UAT users are not related to regular project tasks
+        $clients = collect();
+
+        // If the project has client information, add the main client contact
+        if ($project->client_name && $project->client_email) {
+            $clients->push([
+                'type' => 'client',
+                'id' => $project->id, // Use project ID as unique identifier for the client
+                'name' => $project->client_name,
+                'email' => $project->client_email,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -1291,6 +1367,66 @@ class ProjectController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Notify about task status changes
+     */
+    private function notifyStatusChange(ProjectTask $task, $oldStatus, $newStatus, Employee $changedBy)
+    {
+        $recipients = $this->getTaskNotificationRecipients($task);
+
+        foreach ($recipients as $user) {
+            $user->notify(new \App\Notifications\TaskStatusChangedNotification(
+                $task,
+                $oldStatus,
+                $newStatus,
+                $changedBy
+            ));
+        }
+    }
+
+    /**
+     * Notify about general task actions
+     */
+    private function notifyTaskAction(ProjectTask $task, string $action, Employee $actor, array $details = [])
+    {
+        $recipients = $this->getTaskNotificationRecipients($task);
+
+        foreach ($recipients as $user) {
+            $user->notify(new \App\Notifications\TaskActionNotification(
+                $task,
+                $action,
+                $actor,
+                $details
+            ));
+        }
+    }
+
+    /**
+     * Get all users who should be notified about task changes
+     * Returns collection of User models
+     */
+    private function getTaskNotificationRecipients(ProjectTask $task)
+    {
+        $recipients = collect();
+
+        // Add assigned employee's user account (if exists)
+        if ($task->assigned_to) {
+            $assignedEmployee = Employee::find($task->assigned_to);
+            if ($assignedEmployee && $assignedEmployee->user) {
+                $recipients->push($assignedEmployee->user);
+            }
+        }
+
+        // Add all admin users (all users with employee records)
+        // In this system, all users in the admin portal are considered super admins
+        $adminUsers = \App\Models\User::whereHas('employee')->get();
+        $recipients = $recipients->merge($adminUsers);
+
+        // Remove duplicates by user ID
+        return $recipients->unique('id');
+    }
 }
+
 
 

@@ -46,16 +46,18 @@ class SendTaskReminders extends Command
 
         foreach ($pendingReminders as $reminder) {
             try {
-                $recipient = $reminder->recipient();
+                // Use stored recipient email if available, otherwise fetch from relationship
+                $recipientEmail = $reminder->recipient_email;
 
-                if (!$recipient) {
-                    $this->error("Recipient not found for reminder ID {$reminder->id}");
-                    $errorCount++;
-                    continue;
+                if (!$recipientEmail) {
+                    $recipient = $reminder->recipient();
+                    if (!$recipient) {
+                        $this->error("Recipient not found for reminder ID {$reminder->id}");
+                        $errorCount++;
+                        continue;
+                    }
+                    $recipientEmail = $recipient->email ?? null;
                 }
-
-                // Get recipient email
-                $recipientEmail = $recipient->email ?? null;
 
                 if (!$recipientEmail) {
                     $this->error("No email address for recipient in reminder ID {$reminder->id}");
@@ -67,8 +69,11 @@ class SendTaskReminders extends Command
                 Mail::to($recipientEmail)->send(new TaskReminderMail($reminder));
 
                 // Send in-app notification if recipient is an employee with a user account
-                if ($reminder->recipient_type === 'employee' && $recipient->user) {
-                    $recipient->user->notify(new \App\Notifications\TaskReminderNotification($reminder));
+                if ($reminder->recipient_type === 'employee') {
+                    $employee = \App\Models\Employee::find($reminder->recipient_id);
+                    if ($employee && $employee->user) {
+                        $employee->user->notify(new \App\Notifications\TaskReminderNotification($reminder));
+                    }
                 }
 
                 // Mark as sent
