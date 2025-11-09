@@ -88,7 +88,7 @@ class ProjectController extends Controller
                 $query->with(['checklists', 'tags', 'assignedTo', 'files.uploader', 'comments.employee'])->orderBy('order')->orderBy('created_at', 'desc');
             },
             'files' => function($query) {
-                $query->latest();
+                $query->with(['uploader', 'assignee'])->latest();
             },
             'discussions' => function($query) {
                 $query->whereNull('parent_id')->with('replies.user', 'user')->latest();
@@ -794,6 +794,12 @@ class ProjectController extends Controller
         // Broadcast the comment event
         event(new \App\Events\TaskCommentAdded($comment));
 
+        // Send notification to admins about new comment
+        $this->notifyTaskAction($task, 'comment_added', $employee, [
+            'comment_preview' => substr($validated['comment'], 0, 100),
+            'additional_info' => 'New comment on task'
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Comment added successfully',
@@ -811,41 +817,98 @@ class ProjectController extends Controller
         ]);
     }
 
+    public function destroyTaskComment(Request $request, Project $project, ProjectTask $task, ProjectTaskComment $comment)
+    {
+        // Get employee record for authenticated user
+        $employee = Employee::where('user_id', auth()->id())->first();
+
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No employee record found for this user',
+            ], 403);
+        }
+
+        // Check permission: Admin can delete any comment, users can only delete their own
+        $isAdmin = auth()->user()->hasRole('super-admin'); // All users are super-admin in this system
+        $isOwner = $comment->employee_id === $employee->id;
+
+        if (!$isAdmin && !$isOwner) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to delete this comment',
+            ], 403);
+        }
+
+        // Delete the comment (will cascade to replies and reactions)
+        $comment->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Comment deleted successfully',
+        ]);
+    }
+
     // ============ PROJECT FILES ============
 
     public function storeFile(Request $request, Project $project)
     {
         $validated = $request->validate([
-            'file' => 'required|file|max:10240', // 10MB max
+            'files' => 'required|array|max:10', // Max 10 files
+            'files.*' => 'required|file|max:51200|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,csv,zip,rar,7z,jpg,jpeg,png,gif,svg,webp,bmp,ico,mp3,mp4,avi,mov,wmv,flv,mkv,webm,wav,ogg,psd,ai,eps,indd,sketch,fig,json,xml,html,css,js,php,py,java,cpp,c,h,md,log', // 50MB max per file
             'description' => 'nullable|string',
-            'category' => 'nullable|string|max:255',
+            'category' => 'required|string|max:255',
             'assigned_to' => 'nullable|exists:employees,id',
+            'tags' => 'nullable|string', // JSON string
         ]);
 
-        $file = $request->file('file');
-        $path = $file->store('projects/' . $project->id . '/files', 'public');
+        $uploadedCount = 0;
 
-        ProjectFile::create([
-            'project_id' => $project->id,
-            'name' => $file->getClientOriginalName(),
-            'file_path' => $path,
-            'file_type' => $file->getMimeType(),
-            'file_size' => $file->getSize(),
-            'uploaded_by' => null, // Set to null since we're using User auth, not Employee
-            'assigned_to' => $validated['assigned_to'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'category' => $validated['category'] ?? null,
+        foreach ($request->file('files') as $file) {
+            $path = $file->store('projects/' . $project->id . '/files', 'public');
+
+            ProjectFile::create([
+                'project_id' => $project->id,
+                'name' => $file->getClientOriginalName(),
+                'file_path' => $path,
+                'file_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+                'uploaded_by' => null, // Set to null since we're using User auth, not Employee
+                'assigned_to' => $validated['assigned_to'] ?? null,
+                'description' => $validated['description'] ?? null,
+                'category' => $validated['category'],
+                'tags' => $validated['tags'] ?? null, // Store as JSON string
+            ]);
+
+            $uploadedCount++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $uploadedCount . ' file' . ($uploadedCount > 1 ? 's' : '') . ' uploaded successfully!'
         ]);
-
-        return redirect()->route('projects.show', ['project' => $project->id, 'tab' => 'files'])->with('status', 'File uploaded successfully!');
     }
 
     public function destroyFile(Project $project, ProjectFile $file)
     {
+        // Verify the file belongs to this project
+        if ($file->project_id !== $project->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File not found in this project'
+            ], 404);
+        }
+
+        // Delete the physical file
         Storage::disk('public')->delete($file->file_path);
+
+        // Delete the database record
         $file->delete();
 
-        return redirect()->route('projects.show', ['project' => $project->id, 'tab' => 'files'])->with('status', 'File deleted successfully!');
+        return response()->json([
+            'success' => true,
+            'message' => 'File deleted successfully!'
+        ]);
     }
 
     // ============ PROJECT DISCUSSIONS ============
@@ -1373,7 +1436,7 @@ class ProjectController extends Controller
      */
     private function notifyStatusChange(ProjectTask $task, $oldStatus, $newStatus, Employee $changedBy)
     {
-        $recipients = $this->getTaskNotificationRecipients($task);
+        $recipients = $this->getTaskNotificationRecipients($task, $changedBy);
 
         foreach ($recipients as $user) {
             $user->notify(new \App\Notifications\TaskStatusChangedNotification(
@@ -1390,7 +1453,7 @@ class ProjectController extends Controller
      */
     private function notifyTaskAction(ProjectTask $task, string $action, Employee $actor, array $details = [])
     {
-        $recipients = $this->getTaskNotificationRecipients($task);
+        $recipients = $this->getTaskNotificationRecipients($task, $actor);
 
         foreach ($recipients as $user) {
             $user->notify(new \App\Notifications\TaskActionNotification(
@@ -1406,7 +1469,7 @@ class ProjectController extends Controller
      * Get all users who should be notified about task changes
      * Returns collection of User models
      */
-    private function getTaskNotificationRecipients(ProjectTask $task)
+    private function getTaskNotificationRecipients(ProjectTask $task, Employee $excludeActor = null)
     {
         $recipients = collect();
 
@@ -1424,7 +1487,16 @@ class ProjectController extends Controller
         $recipients = $recipients->merge($adminUsers);
 
         // Remove duplicates by user ID
-        return $recipients->unique('id');
+        $recipients = $recipients->unique('id');
+
+        // Exclude the actor (person making the change) from notifications
+        if ($excludeActor && $excludeActor->user) {
+            $recipients = $recipients->reject(function($user) use ($excludeActor) {
+                return $user->id === $excludeActor->user->id;
+            });
+        }
+
+        return $recipients;
     }
 }
 

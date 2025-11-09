@@ -17,10 +17,12 @@ class ProjectFile extends Model
         'assigned_to',
         'description',
         'category',
+        'tags',
     ];
 
     protected $casts = [
         'file_size' => 'integer',
+        'tags' => 'array',
     ];
 
     public function project(): BelongsTo
@@ -28,9 +30,19 @@ class ProjectFile extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function uploader(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'uploaded_by');
+    }
+
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'uploaded_by');
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'assigned_to');
     }
 
     public function assignedTo(): BelongsTo

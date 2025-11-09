@@ -47,7 +47,7 @@
     </div>
 
     <!-- Navigation Links -->
-    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-hide">
         @if(Auth::guard('employee')->check())
             <!-- Employee Dashboard -->
             <a href="{{ route('employee.dashboard') }}"

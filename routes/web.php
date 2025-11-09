@@ -138,6 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Task Comments
     Route::get('/projects/{project}/tasks/{task}/comments', [ProjectController::class, 'getTaskComments'])->name('projects.tasks.comments.index')->middleware('permission:view-projects');
     Route::post('/projects/{project}/tasks/{task}/comments', [ProjectController::class, 'storeTaskComment'])->name('projects.tasks.comments.store')->middleware('permission:edit-projects');
+    Route::delete('/projects/{project}/tasks/{task}/comments/{comment}', [ProjectController::class, 'destroyTaskComment'])->name('projects.tasks.comments.destroy')->middleware('permission:view-projects');
 
     // Comment Replies
     Route::post('/projects/{project}/tasks/{task}/comments/{comment}/replies', [ProjectController::class, 'storeCommentReply'])->name('projects.tasks.comments.replies.store')->middleware('permission:edit-projects');

@@ -87,14 +87,7 @@
                         <!-- Modern Meta Information Grid -->
                         <div class="flex flex-wrap items-center gap-3">
                             <!-- Status Badge with Icon -->
-                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm
-                                @if($task->status === 'completed') bg-gradient-to-r from-green-500 to-emerald-600 text-white
-                                @elseif($task->status === 'live') bg-gradient-to-r from-indigo-500 to-blue-600 text-white
-                                @elseif($task->status === 'staging') bg-gradient-to-r from-purple-500 to-violet-600 text-white
-                                @elseif($task->status === 'awaiting-feedback') bg-gradient-to-r from-orange-500 to-amber-600 text-white
-                                @elseif($task->status === 'in-progress') bg-gradient-to-r from-blue-500 to-cyan-600 text-white
-                                @elseif($task->status === 'on-hold') bg-gradient-to-r from-yellow-500 to-yellow-600 text-white
-                                @else bg-gradient-to-r from-gray-500 to-slate-600 text-white @endif">
+                            <div class="inline-flex items-center gap-2 px-4 h-10 rounded-xl text-xs font-extrabold shadow-lg bg-gradient-to-r from-gray-900 to-black text-white">
                                 @if($task->status === 'completed')
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
@@ -112,8 +105,9 @@
                                         <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
                                     </svg>
                                 @elseif($task->status === 'in-progress')
-                                    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 @elseif($task->status === 'on-hold')
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -128,36 +122,30 @@
                             </div>
 
                             <!-- Priority Badge with Enhanced Styling -->
-                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold border-2 backdrop-blur-sm
-                                @if($task->priority === 4) bg-red-50/80 border-red-300 text-red-900 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300
-                                @elseif($task->priority === 3) bg-orange-50/80 border-orange-300 text-orange-900 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-300
-                                @elseif($task->priority === 2) bg-blue-50/80 border-blue-300 text-blue-900 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300
-                                @else bg-gray-50/80 border-gray-300 text-gray-900 dark:bg-gray-700/20 dark:border-gray-600 dark:text-gray-300 @endif">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"></path>
+                            <div class="inline-flex items-center gap-2 px-4 h-10 rounded-xl text-xs font-extrabold shadow-lg bg-gradient-to-r from-gray-900 to-black text-white">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"></path>
                                 </svg>
                                 <span class="uppercase tracking-wider">{{ $task->priority_label }}</span>
                             </div>
 
                             <!-- Assignee with Avatar -->
                             @if($task->assignee)
-                                <div class="inline-flex items-center gap-2.5 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 p-0.5">
-                                        <div class="w-full h-full rounded-full bg-gradient-to-br from-gray-900 to-black dark:from-gray-100 dark:to-white flex items-center justify-center text-white dark:text-black text-xs font-extrabold">
-                                            {{ substr($task->assignee->first_name, 0, 1) }}{{ substr($task->assignee->last_name, 0, 1) }}
-                                        </div>
+                                <div class="inline-flex items-center gap-2.5 px-3 h-10 bg-gradient-to-r from-gray-900 to-black rounded-xl shadow-lg">
+                                    <div class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-white text-xs font-extrabold">
+                                        {{ substr($task->assignee->first_name, 0, 1) }}{{ substr($task->assignee->last_name, 0, 1) }}
                                     </div>
-                                    <span class="text-xs font-bold text-gray-900 dark:text-white">{{ $task->assignee->first_name }} {{ $task->assignee->last_name }}</span>
+                                    <span class="text-xs font-bold text-white">{{ $task->assignee->first_name }} {{ $task->assignee->last_name }}</span>
                                 </div>
                             @endif
 
                             <!-- Due Date with Premium Styling -->
                             @if($task->due_date)
-                                <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                                    <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="inline-flex items-center gap-2.5 px-4 h-10 bg-gradient-to-r from-gray-900 to-black rounded-xl shadow-lg">
+                                    <svg class="w-4 h-4 flex-shrink-0 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
-                                    <span class="text-xs font-bold text-amber-900 dark:text-amber-300">{{ $task->due_date->format('M d, Y') }}</span>
+                                    <span class="text-xs font-bold text-white">{{ $task->due_date->format('M d, Y') }}</span>
                                 </div>
                             @endif
 
@@ -168,14 +156,14 @@
                                     $total = $task->checklists->count();
                                     $percentage = ($completed / $total) * 100;
                                 @endphp
-                                <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 border border-teal-200 dark:border-teal-800 rounded-xl">
-                                    <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="inline-flex items-center gap-2.5 px-4 h-10 bg-gradient-to-r from-gray-900 to-black rounded-xl shadow-lg">
+                                    <svg class="w-4 h-4 flex-shrink-0 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                                     </svg>
                                     <div class="flex items-center gap-2">
-                                        <span class="text-xs font-bold text-teal-900 dark:text-teal-300">{{ $completed }}/{{ $total }}</span>
-                                        <div class="w-12 h-1.5 bg-teal-200 dark:bg-teal-800 rounded-full overflow-hidden">
-                                            <div class="h-full bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full transition-all duration-300" style="width: {{ $percentage }}%"></div>
+                                        <span class="text-xs font-bold text-white">{{ $completed }}/{{ $total }}</span>
+                                        <div class="w-12 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                                            <div class="h-full bg-white rounded-full transition-all duration-300" style="width: {{ $percentage }}%"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -671,17 +659,8 @@
                 <div class="flex items-start justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex-1">
                         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3" x-text="viewingTask?.title"></h2>
-                        <div class="flex items-center gap-3">
-                            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm"
-                                  :class="{
-                                      'bg-gradient-to-r from-green-500 to-emerald-600 text-white': viewingTask?.status === 'completed',
-                                      'bg-gradient-to-r from-indigo-500 to-blue-600 text-white': viewingTask?.status === 'live',
-                                      'bg-gradient-to-r from-purple-500 to-violet-600 text-white': viewingTask?.status === 'staging',
-                                      'bg-gradient-to-r from-orange-500 to-amber-600 text-white': viewingTask?.status === 'awaiting-feedback',
-                                      'bg-gradient-to-r from-blue-500 to-cyan-600 text-white': viewingTask?.status === 'in-progress',
-                                      'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white': viewingTask?.status === 'on-hold',
-                                      'bg-gradient-to-r from-gray-500 to-slate-600 text-white': viewingTask?.status === 'todo'
-                                  }">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <span class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold shadow-lg bg-gradient-to-r from-gray-900 to-black text-white">
                                 <!-- Status Icons -->
                                 <template x-if="viewingTask?.status === 'completed'">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -704,8 +683,9 @@
                                     </svg>
                                 </template>
                                 <template x-if="viewingTask?.status === 'in-progress'">
-                                    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </template>
                                 <template x-if="viewingTask?.status === 'on-hold'">
@@ -720,14 +700,11 @@
                                 </template>
                                 <span x-text="viewingTask?.status ? viewingTask.status.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''"></span>
                             </span>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold"
-                                  :class="{
-                                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': viewingTask?.priority === 'critical',
-                                      'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': viewingTask?.priority === 'high',
-                                      'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': viewingTask?.priority === 'medium',
-                                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': viewingTask?.priority === 'low'
-                                  }"
-                                  x-text="viewingTask?.priority_label || ''">
+                            <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-extrabold shadow-lg bg-gradient-to-r from-gray-900 to-black text-white">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"></path>
+                                </svg>
+                                <span x-text="viewingTask?.priority_label || ''"></span>
                             </span>
                         </div>
                     </div>
@@ -749,41 +726,64 @@
                     </div>
 
                     <!-- Assignment & Due Date -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Assigned To</h3>
-                            <div x-show="viewingTask?.assigned_to || viewingTask?.assignedTo">
-                                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-black dark:from-gray-700 dark:to-gray-900 flex items-center justify-center text-white text-sm font-bold"
-                                         x-text="(viewingTask?.assignedTo || viewingTask?.assigned_to) ? ((viewingTask.assignedTo?.first_name || viewingTask.assigned_to?.first_name || '').charAt(0) + (viewingTask.assignedTo?.last_name || viewingTask.assigned_to?.last_name || '').charAt(0)) : ''">
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-gray-900 dark:text-white"
-                                             x-text="(viewingTask?.assignedTo || viewingTask?.assigned_to) ? ((viewingTask.assignedTo?.first_name || viewingTask.assigned_to?.first_name || '') + ' ' + (viewingTask.assignedTo?.last_name || viewingTask.assigned_to?.last_name || '')) : ''">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col h-full">
+                            <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Assigned To
+                            </h3>
+                            <div class="flex-1 flex items-center">
+                                <div x-show="viewingTask?.assigned_to || viewingTask?.assignedTo" class="w-full">
+                                    <div class="flex items-center gap-3 p-4 bg-gradient-to-br from-gray-900 to-black rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                                        <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white text-sm font-bold"
+                                             x-text="(viewingTask?.assignedTo || viewingTask?.assigned_to) ? ((viewingTask.assignedTo?.first_name || viewingTask.assigned_to?.first_name || '').charAt(0) + (viewingTask.assignedTo?.last_name || viewingTask.assigned_to?.last_name || '').charAt(0)) : ''">
                                         </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400"
-                                             x-text="viewingTask?.assignedTo?.email || viewingTask?.assigned_to?.email || ''">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-bold text-white truncate"
+                                                 x-text="(viewingTask?.assignedTo || viewingTask?.assigned_to) ? ((viewingTask.assignedTo?.first_name || viewingTask.assigned_to?.first_name || '') + ' ' + (viewingTask.assignedTo?.last_name || viewingTask.assigned_to?.last_name || '')) : ''">
+                                            </div>
+                                            <div class="text-xs text-gray-300 truncate"
+                                                 x-text="viewingTask?.assignedTo?.email || viewingTask?.assigned_to?.email || ''">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div x-show="!viewingTask?.assigned_to && !viewingTask?.assignedTo" class="text-sm text-gray-500 dark:text-gray-400 italic p-3">
-                                Unassigned
+                                <div x-show="!viewingTask?.assigned_to && !viewingTask?.assignedTo" class="w-full">
+                                    <div class="flex items-center justify-center h-[72px] text-sm text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-900/30 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
+                                        Unassigned
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Due Date</h3>
-                            <div x-show="viewingTask?.due_date" class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center gap-2 text-gray-900 dark:text-white">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                    </svg>
-                                    <span class="text-sm font-medium" x-text="viewingTask?.due_date_formatted || ''"></span>
+                        <div class="flex flex-col h-full">
+                            <h3 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Due Date
+                            </h3>
+                            <div class="flex-1 flex items-center">
+                                <div x-show="viewingTask?.due_date" class="w-full">
+                                    <div class="flex items-center gap-3 h-[72px] p-4 bg-gradient-to-br from-gray-900 to-black rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="text-xs text-gray-300 font-medium mb-0.5">Target Date</div>
+                                            <div class="text-sm font-bold text-white" x-text="viewingTask?.due_date_formatted || ''"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div x-show="!viewingTask?.due_date" class="text-sm text-gray-500 dark:text-gray-400 italic p-3">
-                                No due date
+                                <div x-show="!viewingTask?.due_date" class="w-full">
+                                    <div class="flex items-center justify-center h-[72px] text-sm text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-900/30 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
+                                        No due date set
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1012,7 +1012,7 @@
                             <template x-for="comment in comments" :key="comment.id">
                                 <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
                                     <!-- Main Comment -->
-                                    <div class="flex gap-3 p-3">
+                                    <div class="flex gap-3 p-3 group">
                                         <div class="flex-shrink-0">
                                             <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-800 to-black dark:from-gray-600 dark:to-gray-800 flex items-center justify-center text-white text-sm font-bold">
                                                 <span x-text="comment.employee.first_name.charAt(0) + comment.employee.last_name.charAt(0)"></span>
@@ -1023,7 +1023,19 @@
                                                 <p class="text-sm font-semibold text-gray-900 dark:text-white">
                                                     <span x-text="comment.employee.first_name + ' ' + comment.employee.last_name"></span>
                                                 </p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="comment.created_at_human || comment.created_at"></p>
+                                                <div class="flex items-center gap-2">
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400" x-text="comment.created_at_human || comment.created_at"></p>
+                                                    <!-- Delete Button (visible to admin or comment owner) -->
+                                                    <button
+                                                        x-show="canDeleteComment(comment)"
+                                                        @click="deleteComment(comment.id)"
+                                                        class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        title="Delete comment">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap mb-3" x-text="comment.comment"></p>
 
@@ -1138,13 +1150,13 @@
                     <div>
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                                 </svg>
                                 Reminders
-                                <span x-show="taskReminders.length > 0" class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-yellow-500 rounded-full" x-text="taskReminders.length"></span>
+                                <span x-show="taskReminders.length > 0" class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-gradient-to-r from-gray-900 to-black rounded-full" x-text="taskReminders.length"></span>
                             </h3>
-                            <button @click="showAddReminderForm = !showAddReminderForm" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-xs font-bold transition-colors">
+                            <button @click="showAddReminderForm = !showAddReminderForm" class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-gray-900 to-black hover:opacity-90 text-white rounded-full text-sm font-bold transition-all shadow-lg">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
@@ -1153,27 +1165,25 @@
                         </div>
 
                         <!-- Add/Edit Reminder Form -->
-                        <div x-show="showAddReminderForm || editingReminder" x-cloak class="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                        <div x-show="showAddReminderForm || editingReminder" x-cloak class="mb-4 bg-gradient-to-br from-gray-900 to-black border-2 border-gray-700 rounded-xl p-4 shadow-lg">
                             <div class="space-y-3">
                                 <!-- Recipient Selection -->
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Remind Who? (Select multiple)</label>
+                                    <label class="block text-xs font-semibold text-white mb-2">Remind Who? (Select multiple)</label>
 
                                     <!-- Selected Recipients -->
                                     <div x-show="reminderForm.selectedRecipients.length > 0" class="flex flex-wrap gap-2 mb-2">
                                         <template x-for="recipient in reminderForm.selectedRecipients" :key="recipient.value">
-                                            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border-2 border-yellow-400 dark:border-yellow-500 rounded-lg">
+                                            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 border-2 border-white/20 rounded-lg">
                                                 <!-- Avatar -->
-                                                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                                                     :class="recipient.type === 'employee' ? 'bg-gradient-to-br from-blue-500 to-blue-700' : 'bg-gradient-to-br from-purple-500 to-purple-700'">
+                                                <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">
                                                     <span x-text="recipient.initials"></span>
                                                 </div>
-                                                <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="recipient.name"></span>
-                                                <span class="text-xs px-1.5 py-0.5 rounded-full font-semibold"
-                                                      :class="recipient.type === 'employee' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400' : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400'"
+                                                <span class="text-sm font-semibold text-white" x-text="recipient.name"></span>
+                                                <span class="text-xs px-1.5 py-0.5 rounded-full font-semibold bg-white/20 text-white"
                                                       x-text="recipient.type === 'employee' ? 'Team' : 'Client'">
                                                 </span>
-                                                <button @click="removeRecipient(recipient.value)" type="button" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                                                <button @click="removeRecipient(recipient.value)" type="button" class="text-red-400 hover:text-red-300">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                     </svg>
@@ -1329,32 +1339,32 @@
                                     </div>
 
                                     <!-- Helper Text -->
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">You can select multiple recipients to send the same reminder to all of them</p>
+                                    <p class="mt-1 text-xs text-gray-300">You can select multiple recipients to send the same reminder to all of them</p>
                                 </div>
 
                                 <!-- Date/Time Selection -->
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Remind When?</label>
-                                    <input type="datetime-local" x-model="reminderForm.remind_at" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400">
+                                    <label class="block text-xs font-semibold text-white mb-2">Remind When?</label>
+                                    <input type="datetime-local" x-model="reminderForm.remind_at" class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg text-sm focus:ring-2 focus:ring-white/40 focus:border-white/40">
                                 </div>
 
                                 <!-- Optional Message -->
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Message (Optional)</label>
-                                    <textarea x-model="reminderForm.message" rows="2" placeholder="Add a note for the reminder..." class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400 resize-none"></textarea>
+                                    <label class="block text-xs font-semibold text-white mb-2">Message (Optional)</label>
+                                    <textarea x-model="reminderForm.message" rows="2" placeholder="Add a note for the reminder..." class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-gray-400 rounded-lg text-sm focus:ring-2 focus:ring-white/40 focus:border-white/40 resize-none"></textarea>
                                 </div>
 
                                 <!-- Form Actions -->
                                 <div class="flex items-center justify-end gap-2">
-                                    <button @click="cancelReminderForm()" class="px-4 py-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                                    <button @click="cancelReminderForm()" class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white hover:bg-white/10 rounded-full transition-all">
                                         Cancel
                                     </button>
-                                    <button @click="saveReminder()" :disabled="reminderForm.selectedRecipients.length === 0 || !reminderForm.remind_at" class="inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-lg text-sm font-bold transition-colors disabled:cursor-not-allowed">
+                                    <button @click="saveReminder()" :disabled="reminderForm.selectedRecipients.length === 0 || !reminderForm.remind_at" class="inline-flex items-center gap-2 px-6 py-2.5 bg-white hover:bg-gray-100 disabled:bg-white/20 text-black disabled:text-gray-500 rounded-full text-sm font-bold transition-all disabled:cursor-not-allowed shadow-lg">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>
                                         <span x-text="editingReminder ? 'Update' : 'Save'"></span> Reminder
-                                        <span x-show="!editingReminder && reminderForm.selectedRecipients.length > 1" class="ml-1 px-1.5 py-0.5 bg-yellow-600 rounded-full text-xs" x-text="'(' + reminderForm.selectedRecipients.length + ')'"></span>
+                                        <span x-show="!editingReminder && reminderForm.selectedRecipients.length > 1" class="ml-1 px-1.5 py-0.5 bg-black/20 rounded-full text-xs" x-text="'(' + reminderForm.selectedRecipients.length + ')'"></span>
                                     </button>
                                 </div>
                             </div>
@@ -1363,11 +1373,11 @@
                         <!-- Reminders List -->
                         <div class="space-y-2">
                             <template x-for="reminder in taskReminders" :key="reminder.id">
-                                <div class="relative group bg-white dark:bg-gray-800 border-2 rounded-lg p-3 transition-all"
-                                     :class="reminder.is_sent ? 'border-gray-300 dark:border-gray-600 opacity-60' : 'border-yellow-300 dark:border-yellow-600'">
+                                <div class="relative group bg-gradient-to-br from-gray-900 to-black border-2 border-gray-700 rounded-xl p-4 transition-all shadow-lg"
+                                     :class="reminder.is_sent ? 'opacity-60' : ''">
                                     <!-- Sent Badge -->
                                     <div x-show="reminder.is_sent" class="absolute top-2 right-2">
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-full text-xs font-bold">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 text-white rounded-full text-xs font-bold">
                                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                             </svg>
@@ -1379,12 +1389,11 @@
                                         <div class="flex-1 min-w-0">
                                             <!-- Recipient & Time -->
                                             <div class="flex items-center gap-2 mb-2">
-                                                <svg class="w-4 h-4 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                                                 </svg>
-                                                <span class="text-sm font-bold text-gray-900 dark:text-white" x-text="reminder.recipient_name"></span>
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
-                                                      :class="reminder.recipient_type === 'employee' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400' : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400'"
+                                                <span class="text-sm font-bold text-white" x-text="reminder.recipient_name"></span>
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white"
                                                       x-text="reminder.recipient_type === 'employee' ? 'Team' : 'Client'">
                                                 </span>
                                             </div>
@@ -1394,19 +1403,19 @@
                                                 <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
-                                                <span class="text-xs text-gray-600 dark:text-gray-400">
+                                                <span class="text-xs text-gray-300">
                                                     <span x-text="reminder.remind_at_human"></span>
-                                                    <span class="text-gray-400 dark:text-gray-500">(<span x-text="reminder.remind_at"></span>)</span>
+                                                    <span class="text-gray-500">(<span x-text="reminder.remind_at"></span>)</span>
                                                 </span>
                                             </div>
 
                                             <!-- Message -->
-                                            <div x-show="reminder.message" class="mt-2 px-3 py-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                <p class="text-xs text-gray-700 dark:text-gray-300" x-text="reminder.message"></p>
+                                            <div x-show="reminder.message" class="mt-2 px-3 py-2 bg-white/10 rounded-lg border border-white/20">
+                                                <p class="text-xs text-gray-300" x-text="reminder.message"></p>
                                             </div>
 
                                             <!-- Created By & Time -->
-                                            <div class="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <div class="mt-2 flex items-center gap-2 text-xs text-gray-400">
                                                 <span>Set by <span class="font-semibold" x-text="reminder.created_by.name"></span></span>
                                                 <span>•</span>
                                                 <span x-text="reminder.created_at"></span>
@@ -1418,12 +1427,12 @@
 
                                         <!-- Actions (only for non-sent reminders created by current user) -->
                                         <div x-show="!reminder.is_sent && reminder.created_by.id === {{ auth()->user()->employee?->id ?? 'null' }}" class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button @click="editReminder(reminder)" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors">
+                                            <button @click="editReminder(reminder)" class="p-1.5 text-white hover:bg-white/10 rounded transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                 </svg>
                                             </button>
-                                            <button @click="deleteReminder(reminder.id)" class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">
+                                            <button @click="deleteReminder(reminder.id)" class="p-1.5 text-red-400 hover:bg-red-900/20 rounded transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                 </svg>
@@ -1658,6 +1667,102 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Comment Confirmation Modal -->
+    <div x-show="showDeleteCommentModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         @click.self="cancelDeleteComment()">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md border-2 border-gray-200 dark:border-gray-700"
+                 @click.stop
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100">
+
+                <!-- Icon -->
+                <div class="flex items-center justify-center pt-8 pb-4">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="px-8 pb-8 text-center">
+                    <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-3">
+                        Delete Comment?
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        Are you sure you want to delete this comment? This action cannot be undone and will also delete all replies and reactions.
+                    </p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-3 p-6 bg-gray-50 dark:bg-gray-900/50 rounded-b-2xl border-t border-gray-200 dark:border-gray-700">
+                    <button @click="cancelDeleteComment()"
+                            class="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 font-extrabold hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                        Cancel
+                    </button>
+                    <button @click="confirmDeleteComment()"
+                            class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-extrabold hover:shadow-lg hover:scale-105 transition-all">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete File Confirmation Modal -->
+    <div x-show="showDeleteFileModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         @click.self="cancelDeleteFile()">
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md border-2 border-gray-200 dark:border-gray-700"
+                 @click.stop
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100">
+
+                <!-- Icon -->
+                <div class="flex items-center justify-center pt-8 pb-4">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="px-8 pb-8 text-center">
+                    <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-3">
+                        Delete File?
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        Are you sure you want to delete this file? This action cannot be undone and the file will be permanently removed.
+                    </p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-3 p-6 bg-gray-50 dark:bg-gray-900/50 rounded-b-2xl border-t border-gray-200 dark:border-gray-700">
+                    <button @click="cancelDeleteFile()"
+                            class="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 font-extrabold hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                        Cancel
+                    </button>
+                    <button @click="confirmDeleteFile()"
+                            class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-extrabold hover:shadow-lg hover:scale-105 transition-all">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -1772,6 +1877,10 @@ document.addEventListener('alpine:init', () => {
         focusedRecipientIndex: -1,
         showDeleteModal: false,
         deletingReminderId: null,
+        showDeleteCommentModal: false,
+        deletingCommentId: null,
+        showDeleteFileModal: false,
+        deletingFileId: null,
         reminderForm: {
             selectedRecipients: [],
             remind_at: '',
@@ -2036,22 +2145,43 @@ document.addEventListener('alpine:init', () => {
             });
         },
 
+        // Show delete file modal
         deleteFile(fileId) {
-            if (!this.viewingTask || !this.viewingTask.id) return;
-            if (!confirm('Are you sure you want to delete this file?')) return;
+            this.deletingFileId = fileId;
+            this.showDeleteFileModal = true;
+        },
 
-            fetch(`/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/files/${fileId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
+        // Confirm delete file
+        async confirmDeleteFile() {
+            if (!this.viewingTask || !this.viewingTask.id || !this.deletingFileId) return;
+
+            try {
+                const response = await fetch(`/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/files/${this.deletingFileId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                    }
+                });
+
+                const data = await response.json();
+
                 if (data.success) {
-                    this.taskFiles = this.taskFiles.filter(f => f.id !== fileId);
+                    this.taskFiles = this.taskFiles.filter(f => f.id !== this.deletingFileId);
+                    window.showToast('success', 'File deleted successfully');
+                    this.cancelDeleteFile();
+                } else {
+                    window.showToast('error', data.message || 'Failed to delete file');
                 }
-            });
+            } catch (error) {
+                console.error('Error deleting file:', error);
+                window.showToast('error', 'An error occurred while deleting the file');
+            }
+        },
+
+        // Cancel delete file
+        cancelDeleteFile() {
+            this.showDeleteFileModal = false;
+            this.deletingFileId = null;
         },
 
         openFilePreview(file) {
@@ -2354,6 +2484,61 @@ document.addEventListener('alpine:init', () => {
             return comment.reactions.some(r =>
                 r.reaction_type === reactionType && r.employee_id === currentEmployeeId
             );
+        },
+
+        // Check if current user can delete comment (admin or owner)
+        canDeleteComment(comment) {
+            const currentEmployeeId = {{ auth()->user()->employee ? auth()->user()->employee->id : 'null' }};
+            if (!currentEmployeeId) return false;
+
+            // In this system, all users are super-admin, so anyone can delete any comment
+            // But we'll still check if they're the owner for UI clarity
+            const isOwner = comment.employee.id === currentEmployeeId;
+            const isAdmin = true; // All users in admin portal are admins
+
+            return isAdmin || isOwner;
+        },
+
+        // Delete comment
+        // Show delete comment modal
+        deleteComment(commentId) {
+            this.deletingCommentId = commentId;
+            this.showDeleteCommentModal = true;
+        },
+
+        // Confirm delete comment
+        async confirmDeleteComment() {
+            if (!this.deletingCommentId) return;
+
+            try {
+                const response = await fetch(`/projects/{{ $project->id }}/tasks/${this.viewingTask.id}/comments/${this.deletingCommentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Remove comment from the list
+                    this.comments = this.comments.filter(c => c.id !== this.deletingCommentId);
+                    window.showToast('success', 'Comment deleted successfully');
+                    this.cancelDeleteComment();
+                } else {
+                    window.showToast('error', data.message || 'Failed to delete comment');
+                }
+            } catch (error) {
+                console.error('Error deleting comment:', error);
+                window.showToast('error', 'An error occurred while deleting the comment');
+            }
+        },
+
+        // Cancel delete comment
+        cancelDeleteComment() {
+            this.showDeleteCommentModal = false;
+            this.deletingCommentId = null;
         },
 
         subscribeToComments() {
