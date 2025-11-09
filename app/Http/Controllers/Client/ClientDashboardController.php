@@ -10,20 +10,32 @@ class ClientDashboardController extends Controller
 {
     public function index()
     {
-        $clientUser = Auth::guard('client')->user();
-        $client = $clientUser->client()->with('projects')->first();
+        $client = Auth::guard('client')->user();
 
-        // Check if user is a team member with specific project assignments
-        $teamMember = $client->teamMembers()->where('client_user_id', $clientUser->id)->first();
+        // Check if this client is a team member for another client
+        $teamMember = \App\Models\ClientTeamMember::where('team_member_client_id', $client->id)->first();
 
-        if ($teamMember && $teamMember->projects()->count() > 0) {
-            // Team member with specific projects - only show assigned projects
-            $projects = $teamMember->projects;
+        if ($teamMember) {
+            // This is a team member - get parent client and assigned projects
+            $parentClient = $teamMember->client;
+
+            // Get assigned projects through project_members table
+            $projectIds = \App\Models\ProjectMember::where('client_team_member_id', $teamMember->id)
+                ->pluck('project_id');
+
+            if ($projectIds->isNotEmpty()) {
+                // Team member with specific projects - only show assigned projects
+                $projects = \App\Models\Project::whereIn('id', $projectIds)->get();
+            } else {
+                // Team member with no specific assignments - show all parent client's projects
+                $projects = $parentClient->projects;
+            }
+
+            return view('client.dashboard', compact('client', 'projects', 'teamMember', 'parentClient'));
         } else {
-            // Main client or team member with all access - show all projects
+            // This is a main client - show their own projects
             $projects = $client->projects;
+            return view('client.dashboard', compact('client', 'projects'));
         }
-
-        return view('client.dashboard', compact('client', 'projects', 'teamMember'));
     }
 }

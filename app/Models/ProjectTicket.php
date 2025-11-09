@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProjectTicket extends Model
 {
@@ -37,6 +38,11 @@ class ProjectTicket extends Model
     public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'assigned_to');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(TicketComment::class, 'ticket_id');
     }
 
     public function getStatusColorAttribute(): string

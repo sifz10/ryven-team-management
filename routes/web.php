@@ -25,7 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('client.login');
 });
 
 // Employee Authentication Routes
@@ -174,6 +174,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/projects/{project}/tickets', [ProjectController::class, 'storeTicket'])->name('projects.tickets.store')->middleware('permission:create-projects');
     Route::put('/projects/{project}/tickets/{ticket}', [ProjectController::class, 'updateTicket'])->name('projects.tickets.update')->middleware('permission:edit-projects');
     Route::delete('/projects/{project}/tickets/{ticket}', [ProjectController::class, 'destroyTicket'])->name('projects.tickets.destroy')->middleware('permission:delete-projects');
+
+    // Standalone Ticket Management System
+    Route::get('/tickets', [App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index')->middleware('permission:view-projects');
+    Route::get('/tickets/create', [App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create')->middleware('permission:create-projects');
+    Route::post('/tickets', [App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store')->middleware('permission:create-projects');
+    Route::get('/tickets/{ticket}', [App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show')->middleware('permission:view-projects');
+    Route::get('/tickets/{ticket}/comments', [App\Http\Controllers\TicketController::class, 'getComments'])->name('tickets.comments.index')->middleware('permission:view-projects');
+    Route::post('/tickets/{ticket}/comments', [App\Http\Controllers\TicketController::class, 'storeComment'])->name('tickets.comments.store')->middleware('permission:view-projects');
+    Route::put('/tickets/{ticket}', [App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update')->middleware('permission:edit-projects');
+    Route::delete('/tickets/{ticket}', [App\Http\Controllers\TicketController::class, 'destroy'])->name('tickets.destroy')->middleware('permission:delete-projects');
+
+    // Ticket Notifications
+    Route::get('/tickets/notifications/unread', [App\Http\Controllers\TicketController::class, 'getUnreadNotifications'])->name('tickets.notifications.unread');
+    Route::post('/tickets/notifications/{notification}/read', [App\Http\Controllers\TicketController::class, 'markNotificationRead'])->name('tickets.notifications.read');
+    Route::post('/tickets/notifications/mark-all-read', [App\Http\Controllers\TicketController::class, 'markAllNotificationsRead'])->name('tickets.notifications.mark-all-read');
 
     // Legacy project routes
     Route::get('/projects/{project}/today-work', [ProjectController::class, 'todayWork'])->name('projects.today-work')->middleware('permission:view-projects');
@@ -503,14 +518,19 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// Client Portal Routes
+// Client Portal Routes (Main Login at /login)
+Route::middleware('guest:client')->group(function () {
+    Route::get('/login', [App\Http\Controllers\Client\ClientAuthController::class, 'showLogin'])
+        ->name('client.login');
+    Route::post('/login', [App\Http\Controllers\Client\ClientAuthController::class, 'login'])
+        ->name('client.login.post');
+    Route::post('/login/send-otp', [App\Http\Controllers\Client\ClientAuthController::class, 'sendOtp'])
+        ->name('client.login.send-otp');
+});
+
 Route::prefix('client')->name('client.')->group(function () {
     // Guest routes (not authenticated)
     Route::middleware('guest:client')->group(function () {
-        Route::get('/login', [App\Http\Controllers\Client\ClientAuthController::class, 'showLogin'])
-            ->name('login');
-        Route::post('/login', [App\Http\Controllers\Client\ClientAuthController::class, 'login'])
-            ->name('login.post');
 
         // Team member invitation acceptance
         Route::get('/team/accept/{token}', [App\Http\Controllers\Client\ClientAuthController::class, 'acceptInvitation'])
@@ -529,6 +549,44 @@ Route::prefix('client')->name('client.')->group(function () {
 
         Route::get('/dashboard', [App\Http\Controllers\Client\ClientDashboardController::class, 'index'])
             ->name('dashboard');
+
+        // Projects - Full CRUD with limitations
+        Route::resource('projects', App\Http\Controllers\Client\ClientProjectController::class);
+
+        // Project Team Members
+        Route::post('/projects/{project}/members', [App\Http\Controllers\Client\ClientProjectController::class, 'addMember'])
+            ->name('projects.members.add');
+        Route::put('/projects/{project}/members/{member}', [App\Http\Controllers\Client\ClientProjectController::class, 'updateMember'])
+            ->name('projects.members.update');
+        Route::delete('/projects/{project}/members/{member}', [App\Http\Controllers\Client\ClientProjectController::class, 'removeMember'])
+            ->name('projects.members.remove');
+
+        // Team Members Management
+        Route::get('/team', [App\Http\Controllers\Client\ClientTeamController::class, 'index'])
+            ->name('team.index');
+        Route::get('/team/create', [App\Http\Controllers\Client\ClientTeamController::class, 'create'])
+            ->name('team.create');
+        Route::post('/team', [App\Http\Controllers\Client\ClientTeamController::class, 'store'])
+            ->name('team.store');
+        Route::post('/team/{teamMember}/resend', [App\Http\Controllers\Client\ClientTeamController::class, 'resendInvitation'])
+            ->name('team.resend');
+        Route::delete('/team/{teamMember}', [App\Http\Controllers\Client\ClientTeamController::class, 'destroy'])
+            ->name('team.destroy');
+
+        // Invoices
+        Route::get('/invoices', function () {
+            return view('client.invoices.index');
+        })->name('invoices.index');
+
+        // Tickets/Support
+        Route::get('/tickets', function () {
+            return view('client.tickets.index');
+        })->name('tickets.index');
+
+        // Profile
+        Route::get('/profile', function () {
+            return view('client.profile');
+        })->name('profile');
     });
 });
 

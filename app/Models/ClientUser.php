@@ -17,6 +17,8 @@ class ClientUser extends Authenticatable
         'must_change_password',
         'email_verified_at',
         'last_login_at',
+        'otp_code',
+        'otp_expires_at',
     ];
 
     protected $hidden = [
@@ -28,6 +30,7 @@ class ClientUser extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'otp_expires_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'must_change_password' => 'boolean',

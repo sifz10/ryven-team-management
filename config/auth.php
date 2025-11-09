@@ -48,7 +48,7 @@ return [
 
         'client' => [
             'driver' => 'session',
-            'provider' => 'client_users',
+            'provider' => 'clients',
         ],
     ],
 
@@ -80,9 +80,9 @@ return [
             'model' => App\Models\Employee::class,
         ],
 
-        'client_users' => [
+        'clients' => [
             'driver' => 'eloquent',
-            'model' => App\Models\ClientUser::class,
+            'model' => App\Models\Client::class,
         ],
 
         // 'users' => [

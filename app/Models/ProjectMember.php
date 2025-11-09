@@ -10,6 +10,7 @@ class ProjectMember extends Model
     protected $fillable = [
         'project_id',
         'employee_id',
+        'client_team_member_id',
         'client_member_name',
         'client_member_email',
         'member_type',
@@ -29,5 +30,10 @@ class ProjectMember extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function clientTeamMember(): BelongsTo
+    {
+        return $this->belongsTo(ClientTeamMember::class, 'client_team_member_id');
     }
 }

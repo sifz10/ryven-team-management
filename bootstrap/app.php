@@ -24,6 +24,32 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'client.must.change.password' => \App\Http\Middleware\ClientMustChangePassword::class,
         ]);
+
+        // Configure authentication redirects for different guards
+        $middleware->redirectGuestsTo(function ($request) {
+            if ($request->is('client') || $request->is('client/*')) {
+                return route('client.login');
+            }
+            if ($request->is('employee') || $request->is('employee/*')) {
+                return route('employee.login');
+            }
+            return route('login'); // Default to client login
+        });
+
+        // Configure where to redirect authenticated users trying to access guest routes
+        $middleware->redirectUsersTo(function ($request) {
+            // Check which guard is authenticated
+            if (auth()->guard('client')->check()) {
+                return route('client.dashboard');
+            }
+            if (auth()->guard('employee')->check()) {
+                return route('employee.dashboard');
+            }
+            if (auth()->guard('web')->check()) {
+                return route('dashboard');
+            }
+            return route('client.dashboard'); // Default to client dashboard
+        });
     })
     ->withSchedule(function (Schedule $schedule): void {
         // Generate daily checklists every day at midnight
