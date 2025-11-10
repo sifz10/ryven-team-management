@@ -6,20 +6,10 @@
     <title>{{ $job->title }} - Join Our Team</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes pulse-slow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .float-animation { animation: float 3s ease-in-out infinite; }
-        .pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }
         .slide-in { animation: slideIn 0.6s ease-out forwards; }
         .stagger-1 { animation-delay: 0.1s; }
         .stagger-2 { animation-delay: 0.2s; }
@@ -33,10 +23,10 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <!-- Logo Image -->
-                    <img src="{{ asset('black-logo.png') }}" alt="Company Logo" class="h-12 w-auto float-animation dark:invert">
+                    <img src="{{ asset('black-logo.png') }}" alt="Company Logo" class="h-12 w-auto dark:invert">
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="px-4 py-2 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full text-sm font-semibold shadow-lg pulse-slow">
+                    <span class="px-4 py-2 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full text-sm font-semibold shadow-lg">
                         ✨ Now Hiring
                     </span>
                 </div>
@@ -306,15 +296,48 @@
 
                         <!-- Screening Questions -->
                         @if($job->questions->count() > 0)
-                            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                <h3 class="text-sm font-semibold text-black dark:text-white mb-4">Screening Questions</h3>
-                                <div class="space-y-4">
-                                    @foreach($job->questions as $question)
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <div class="border-t border-gray-200 dark:border-gray-700 pt-6" x-data="{ expanded: false }">
+                                <button type="button" @click="expanded = !expanded"
+                                        class="w-full flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 group">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-black dark:bg-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <svg class="w-5 h-5 text-white dark:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <h3 class="text-base font-bold text-black dark:text-white flex items-center gap-2">
+                                                Screening Questions
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-black dark:bg-white text-white dark:text-black text-xs font-semibold">
+                                                    {{ $job->questions->count() }}
+                                                </span>
+                                            </h3>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                                                <span x-show="!expanded">Click to expand and answer questions</span>
+                                                <span x-show="expanded" x-cloak>Click to collapse</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <svg class="w-6 h-6 text-gray-600 dark:text-gray-400 transition-transform duration-200"
+                                         :class="expanded ? 'rotate-180' : ''"
+                                         fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+
+                                <div x-show="expanded"
+                                     x-collapse
+                                     x-cloak
+                                     class="mt-4 space-y-4 pl-1">
+                                    @foreach($job->questions as $index => $question)
+                                        <div class="p-4 bg-white dark:bg-gray-800 border-l-4 border-black dark:border-white rounded-r-xl shadow-sm hover:shadow-md transition-shadow">
+                                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold mr-2">
+                                                    {{ $index + 1 }}
+                                                </span>
                                                 {{ $question->question }}
                                                 @if($question->is_required)
-                                                    <span class="text-red-500">*</span>
+                                                    <span class="text-red-500 ml-1">*</span>
                                                 @endif
                                             </label>
 
@@ -323,18 +346,20 @@
                                                        name="answers[{{ $question->id }}]"
                                                        value="{{ old('answers.' . $question->id) }}"
                                                        {{ $question->is_required ? 'required' : '' }}
-                                                       class="w-full px-4 py-2.5 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all @error('answers.' . $question->id) border-red-500 dark:border-red-500 animate-shake @else border-gray-300 dark:border-gray-600 @enderror">
+                                                       placeholder="Type your answer here..."
+                                                       class="w-full px-4 py-2.5 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all @error('answers.' . $question->id) border-red-500 dark:border-red-500 @else border-gray-300 dark:border-gray-600 @enderror">
                                                 @error('answers.' . $question->id)
-                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                    <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p>
                                                 @enderror
 
                                             @elseif($question->type === 'textarea')
                                                 <textarea name="answers[{{ $question->id }}]"
                                                           rows="3"
                                                           {{ $question->is_required ? 'required' : '' }}
-                                                          class="w-full px-4 py-2.5 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all resize-none @error('answers.' . $question->id) border-red-500 dark:border-red-500 animate-shake @else border-gray-300 dark:border-gray-600 @enderror">{{ old('answers.' . $question->id) }}</textarea>
+                                                          placeholder="Provide a detailed answer..."
+                                                          class="w-full px-4 py-2.5 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all resize-none @error('answers.' . $question->id) border-red-500 dark:border-red-500 @else border-gray-300 dark:border-gray-600 @enderror">{{ old('answers.' . $question->id) }}</textarea>
                                                 @error('answers.' . $question->id)
-                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                    <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p>
                                                 @enderror
 
                                             @elseif($question->type === 'file')
@@ -342,9 +367,10 @@
                                                        name="answers[{{ $question->id }}]"
                                                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                                        {{ $question->is_required ? 'required' : '' }}
-                                                       class="w-full px-4 py-2.5 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all @error('answers.' . $question->id) border-red-500 dark:border-red-500 animate-shake @else border-gray-300 dark:border-gray-600 @enderror">
+                                                       class="w-full px-4 py-2.5 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white dark:file:bg-white dark:file:text-black hover:file:opacity-80 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all @error('answers.' . $question->id) border-red-500 dark:border-red-500 @else border-gray-300 dark:border-gray-600 @enderror">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">PDF, DOC, DOCX, JPG, PNG • Max 10MB</p>
                                                 @error('answers.' . $question->id)
-                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                    <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p>
                                                 @enderror
 
                                             @elseif($question->type === 'video')
@@ -352,28 +378,28 @@
                                                        name="answers[{{ $question->id }}]"
                                                        accept="video/*"
                                                        {{ $question->is_required ? 'required' : '' }}
-                                                       class="w-full px-4 py-2.5 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all @error('answers.' . $question->id) border-red-500 dark:border-red-500 animate-shake @else border-gray-300 dark:border-gray-600 @enderror">
-                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Max 50MB</p>
+                                                       class="w-full px-4 py-2.5 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white dark:file:bg-white dark:file:text-black hover:file:opacity-80 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white transition-all @error('answers.' . $question->id) border-red-500 dark:border-red-500 @else border-gray-300 dark:border-gray-600 @enderror">
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">Video formats • Max 50MB</p>
                                                 @error('answers.' . $question->id)
-                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                    <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p>
                                                 @enderror
 
                                             @elseif($question->type === 'multiple_choice' && $question->options)
                                                 <div class="space-y-2 @error('answers.' . $question->id) animate-shake @enderror">
                                                     @foreach($question->options as $option)
-                                                        <label class="flex items-center gap-2 cursor-pointer">
+                                                        <label class="flex items-center gap-3 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-black dark:hover:border-white hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-all">
                                                             <input type="radio"
                                                                    name="answers[{{ $question->id }}]"
                                                                    value="{{ $option }}"
                                                                    {{ old('answers.' . $question->id) == $option ? 'checked' : '' }}
                                                                    {{ $question->is_required ? 'required' : '' }}
                                                                    class="w-4 h-4 text-black dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-black dark:focus:ring-white">
-                                                            <span class="text-sm text-gray-700 dark:text-gray-300">{{ $option }}</span>
+                                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $option }}</span>
                                                         </label>
                                                     @endforeach
                                                 </div>
                                                 @error('answers.' . $question->id)
-                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                    <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p>
                                                 @enderror
                                             @endif
                                         </div>
