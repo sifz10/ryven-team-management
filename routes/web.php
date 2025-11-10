@@ -625,4 +625,37 @@ Route::prefix('client')->name('client.')->group(function () {
     });
 });
 
+// Public Job Board Routes (no authentication required)
+Route::prefix('jobs')->name('jobs.')->group(function () {
+    Route::get('/', [App\Http\Controllers\PublicJobController::class, 'index'])->name('index');
+    Route::get('/{slug}', [App\Http\Controllers\PublicJobController::class, 'show'])->name('show');
+    Route::post('/{slug}/apply', [App\Http\Controllers\PublicJobController::class, 'apply'])->name('apply');
+    Route::get('/application/{applicationId}/success', [App\Http\Controllers\PublicJobController::class, 'success'])->name('success');
+    Route::get('/test/{testId}', [App\Http\Controllers\PublicJobController::class, 'viewTest'])->name('test.view');
+    Route::post('/test/{testId}/submit', [App\Http\Controllers\PublicJobController::class, 'submitTest'])->name('test.submit');
+});
+
+// Admin Job Management Routes (require admin authentication)
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    // Job Posts
+    Route::resource('jobs', App\Http\Controllers\Admin\JobPostController::class);
+    Route::post('/jobs/{job}/duplicate', [App\Http\Controllers\Admin\JobPostController::class, 'duplicate'])->name('jobs.duplicate');
+
+    // Job Applications
+    Route::resource('applications', App\Http\Controllers\Admin\JobApplicationController::class)->only(['index', 'show', 'destroy']);
+    Route::put('/applications/{application}/status', [App\Http\Controllers\Admin\JobApplicationController::class, 'updateStatus'])->name('applications.update-status');
+    Route::post('/applications/{application}/ai-screening', [App\Http\Controllers\Admin\JobApplicationController::class, 'runAIScreening'])->name('applications.ai-screening');
+    Route::post('/applications/batch-ai-screening', [App\Http\Controllers\Admin\JobApplicationController::class, 'batchAIScreening'])->name('applications.batch-ai-screening');
+    Route::post('/applications/{application}/talent-pool', [App\Http\Controllers\Admin\JobApplicationController::class, 'addToTalentPool'])->name('applications.talent-pool');
+    Route::post('/applications/{application}/interview', [App\Http\Controllers\Admin\JobApplicationController::class, 'sendInterview'])->name('applications.send-interview');
+    Route::post('/applications/{application}/test', [App\Http\Controllers\Admin\JobApplicationController::class, 'sendTest'])->name('applications.send-test');
+    Route::get('/applications/{application}/resume', [App\Http\Controllers\Admin\JobApplicationController::class, 'downloadResume'])->name('applications.download-resume');
+
+    // Talent Pool
+    Route::get('/talent-pool', [App\Http\Controllers\Admin\TalentPoolController::class, 'index'])->name('talent-pool.index');
+    Route::get('/talent-pool/{talentPool}', [App\Http\Controllers\Admin\TalentPoolController::class, 'show'])->name('talent-pool.show');
+    Route::put('/talent-pool/{talentPool}', [App\Http\Controllers\Admin\TalentPoolController::class, 'update'])->name('talent-pool.update');
+    Route::delete('/talent-pool/{talentPool}', [App\Http\Controllers\Admin\TalentPoolController::class, 'destroy'])->name('talent-pool.destroy');
+});
+
 require __DIR__.'/auth.php';

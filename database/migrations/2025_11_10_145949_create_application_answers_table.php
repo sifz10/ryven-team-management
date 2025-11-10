@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('application_answers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('job_application_id')->constrained()->onDelete('cascade');
+            $table->foreignId('job_question_id')->constrained()->onDelete('cascade');
+            $table->text('answer_text')->nullable();
+            $table->string('answer_file_path')->nullable(); // For video/file uploads
+            $table->string('answer_file_type')->nullable(); // video, document, etc.
             $table->timestamps();
         });
     }
