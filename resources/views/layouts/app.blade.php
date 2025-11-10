@@ -165,6 +165,11 @@
             @if (session('status'))
                 <x-toast type="success" :message="session('status')" />
             @endif
+            @if (session('success'))
+                <div class="mt-2">
+                    <x-toast type="success" :message="session('success')" />
+                </div>
+            @endif
             @if (session('error'))
                 <div class="mt-2">
                     <x-toast type="error" :message="session('error')" />

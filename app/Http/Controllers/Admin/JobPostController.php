@@ -244,4 +244,84 @@ class JobPostController extends Controller
         return redirect()->route('admin.jobs.edit', $newJob)
             ->with('success', 'Job post duplicated successfully!');
     }
+
+    public function bulkUpload(JobPost $job)
+    {
+        return view('admin.jobs.bulk-upload', compact('job'));
+    }
+
+    public function processBulkUpload(Request $request, JobPost $job)
+    {
+        $request->validate([
+            'resumes' => 'required|array|min:1',
+            'resumes.*' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ]);
+
+        $results = [
+            'best_match' => [],
+            'good_to_go' => [],
+            'not_good_fit' => [],
+            'errors' => [],
+        ];
+
+        $aiScreeningService = app(\App\Services\AIScreeningService::class);
+
+        foreach ($request->file('resumes') as $resume) {
+            try {
+                $fileName = $resume->getClientOriginalName();
+
+                // Store resume in private storage (same as regular applications)
+                $path = $resume->store('resumes');
+
+                // Extract name from filename
+                $nameFromFile = pathinfo($fileName, PATHINFO_FILENAME);
+                $nameParts = explode(' ', str_replace(['_', '-'], ' ', $nameFromFile), 2);
+                $firstName = $nameParts[0];
+                $lastName = isset($nameParts[1]) ? $nameParts[1] : 'N/A';
+
+                // Create application record
+                $application = \App\Models\JobApplication::create([
+                    'job_post_id' => $job->id,
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'email' => 'bulk-upload-' . Str::random(10) . '@temp.com',
+                    'phone' => 'N/A',
+                    'resume_path' => $path,
+                    'resume_original_name' => $fileName,
+                    'application_status' => 'pending',
+                    'ai_status' => 'pending',
+                ]);
+
+                // AI Screening
+                if ($job->ai_screening_enabled) {
+                    $screening = $aiScreeningService->screenApplication($application);
+
+                    // Format analysis text from details
+                    $analysisText = isset($screening['details']['summary'])
+                        ? $screening['details']['summary']
+                        : json_encode($screening['details']);
+
+                    $results[$screening['status']][] = [
+                        'application' => $application,
+                        'score' => $screening['score'],
+                        'analysis' => $analysisText,
+                    ];
+                } else {
+                    $results['good_to_go'][] = [
+                        'application' => $application,
+                        'score' => null,
+                        'analysis' => 'AI screening disabled for this job',
+                    ];
+                }
+
+            } catch (\Exception $e) {
+                $results['errors'][] = [
+                    'filename' => $fileName ?? 'Unknown',
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return view('admin.jobs.bulk-results', compact('job', 'results'));
+    }
 }

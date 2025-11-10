@@ -640,16 +640,20 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Job Posts
     Route::resource('jobs', App\Http\Controllers\Admin\JobPostController::class);
     Route::post('/jobs/{job}/duplicate', [App\Http\Controllers\Admin\JobPostController::class, 'duplicate'])->name('jobs.duplicate');
+    Route::get('/jobs/{job}/bulk-upload', [App\Http\Controllers\Admin\JobPostController::class, 'bulkUpload'])->name('jobs.bulk-upload');
+    Route::post('/jobs/{job}/bulk-upload', [App\Http\Controllers\Admin\JobPostController::class, 'processBulkUpload'])->name('jobs.bulk-upload.process');
 
     // Job Applications
     Route::resource('applications', App\Http\Controllers\Admin\JobApplicationController::class)->only(['index', 'show', 'destroy']);
     Route::put('/applications/{application}/status', [App\Http\Controllers\Admin\JobApplicationController::class, 'updateStatus'])->name('applications.update-status');
     Route::post('/applications/{application}/ai-screening', [App\Http\Controllers\Admin\JobApplicationController::class, 'runAIScreening'])->name('applications.ai-screening');
+    Route::post('/applications/{application}/retry-ai-screening', [App\Http\Controllers\Admin\JobApplicationController::class, 'retryAIScreening'])->name('applications.retry-ai-screening');
     Route::post('/applications/batch-ai-screening', [App\Http\Controllers\Admin\JobApplicationController::class, 'batchAIScreening'])->name('applications.batch-ai-screening');
     Route::post('/applications/{application}/talent-pool', [App\Http\Controllers\Admin\JobApplicationController::class, 'addToTalentPool'])->name('applications.talent-pool');
     Route::post('/applications/{application}/interview', [App\Http\Controllers\Admin\JobApplicationController::class, 'sendInterview'])->name('applications.send-interview');
     Route::post('/applications/{application}/test', [App\Http\Controllers\Admin\JobApplicationController::class, 'sendTest'])->name('applications.send-test');
-    Route::get('/applications/{application}/resume', [App\Http\Controllers\Admin\JobApplicationController::class, 'downloadResume'])->name('applications.download-resume');
+    Route::get('/applications/{application}/resume/view', [App\Http\Controllers\Admin\JobApplicationController::class, 'viewResume'])->name('applications.view-resume');
+    Route::get('/applications/{application}/resume/download', [App\Http\Controllers\Admin\JobApplicationController::class, 'downloadResume'])->name('applications.download-resume');
 
     // Talent Pool
     Route::get('/talent-pool', [App\Http\Controllers\Admin\TalentPoolController::class, 'index'])->name('talent-pool.index');

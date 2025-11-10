@@ -39,7 +39,7 @@ class JobPost extends Model
         'salary_max' => 'decimal:2',
         'application_deadline' => 'date',
         'ai_screening_enabled' => 'boolean',
-        'ai_screening_criteria' => 'array',
+        // ai_screening_criteria left as text - can be string or JSON
     ];
 
     protected static function boot()

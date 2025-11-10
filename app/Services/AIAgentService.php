@@ -8,16 +8,21 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
+// Job Management Service
+use App\Services\AIJobManagementService;
+
 class AIAgentService
 {
     private string $apiKey;
     private array $tools;
     private array $conversationHistory = [];
+    private AIJobManagementService $jobService;
 
-    public function __construct()
+    public function __construct(AIJobManagementService $jobService)
     {
         $this->apiKey = config('services.openai.api_key');
         $this->tools = $this->defineTools();
+        $this->jobService = $jobService;
     }
 
     /**
@@ -156,6 +161,18 @@ class AIAgentService
             'get_employee_activity_logs' => $this->getEmployeeActivityLogs($arguments),
             'manage_employee_access' => $this->manageEmployeeAccess($arguments),
             'get_employee_github_activity' => $this->getEmployeeGitHubActivity($arguments),
+            // Job Management Functions
+            'get_job_analytics' => $this->getJobAnalytics($arguments),
+            'list_job_posts' => $this->listJobPosts($arguments),
+            'create_job_post' => $this->createJobPost($arguments),
+            'update_job_post' => $this->updateJobPost($arguments),
+            'delete_job_post' => $this->deleteJobPost($arguments),
+            'search_applications' => $this->searchApplications($arguments),
+            'get_application_details' => $this->getApplicationDetails($arguments),
+            'update_application_status' => $this->updateApplicationStatus($arguments),
+            'delete_application' => $this->deleteApplication($arguments),
+            'add_to_talent_pool' => $this->addToTalentPool($arguments),
+            'get_talent_pool' => $this->getTalentPool($arguments),
             default => ['error' => 'Unknown function: ' . $functionName]
         };
     }
@@ -926,6 +943,317 @@ class AIAgentService
                         'required' => ['employee_id']
                     ]
                 ]
+            ],
+            // Job Management Tools
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_job_analytics',
+                    'description' => 'Get comprehensive analytics and statistics for job postings and applications',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'job_post_id' => [
+                                'type' => 'integer',
+                                'description' => 'Get analytics for specific job post (optional, omit for all jobs)'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'list_job_posts',
+                    'description' => 'Get all job postings with details and application counts',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'status' => [
+                                'type' => 'string',
+                                'enum' => ['draft', 'active', 'closed'],
+                                'description' => 'Filter by job status (optional)'
+                            ],
+                            'department' => [
+                                'type' => 'string',
+                                'description' => 'Filter by department (optional)'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'create_job_post',
+                    'description' => 'Create a new job posting',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'title' => [
+                                'type' => 'string',
+                                'description' => 'Job title'
+                            ],
+                            'department' => [
+                                'type' => 'string',
+                                'description' => 'Department name (optional)'
+                            ],
+                            'location' => [
+                                'type' => 'string',
+                                'description' => 'Job location (optional)'
+                            ],
+                            'job_type' => [
+                                'type' => 'string',
+                                'enum' => ['full-time', 'part-time', 'contract', 'internship'],
+                                'description' => 'Job type (optional, default: full-time)'
+                            ],
+                            'experience_level' => [
+                                'type' => 'string',
+                                'enum' => ['entry', 'junior', 'mid', 'senior', 'lead', 'executive'],
+                                'description' => 'Required experience level (optional)'
+                            ],
+                            'salary_range' => [
+                                'type' => 'string',
+                                'description' => 'Salary range (e.g., "$50,000 - $70,000") (optional)'
+                            ],
+                            'description' => [
+                                'type' => 'string',
+                                'description' => 'Job description'
+                            ],
+                            'requirements' => [
+                                'type' => 'string',
+                                'description' => 'Job requirements (optional)'
+                            ],
+                            'responsibilities' => [
+                                'type' => 'string',
+                                'description' => 'Job responsibilities (optional)'
+                            ],
+                            'benefits' => [
+                                'type' => 'string',
+                                'description' => 'Benefits offered (optional)'
+                            ],
+                            'status' => [
+                                'type' => 'string',
+                                'enum' => ['draft', 'active', 'closed'],
+                                'description' => 'Initial status (optional, default: draft)'
+                            ],
+                            'deadline' => [
+                                'type' => 'string',
+                                'description' => 'Application deadline (YYYY-MM-DD format) (optional)'
+                            ]
+                        ],
+                        'required' => ['title', 'description']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'update_job_post',
+                    'description' => 'Update an existing job posting',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'job_post_id' => [
+                                'type' => 'integer',
+                                'description' => 'Job post ID to update'
+                            ],
+                            'title' => [
+                                'type' => 'string',
+                                'description' => 'New job title (optional)'
+                            ],
+                            'status' => [
+                                'type' => 'string',
+                                'enum' => ['draft', 'active', 'closed'],
+                                'description' => 'Update status (optional)'
+                            ],
+                            'description' => [
+                                'type' => 'string',
+                                'description' => 'Updated description (optional)'
+                            ],
+                            'deadline' => [
+                                'type' => 'string',
+                                'description' => 'New deadline (YYYY-MM-DD) (optional)'
+                            ]
+                        ],
+                        'required' => ['job_post_id']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'delete_job_post',
+                    'description' => 'Delete a job posting and all its applications',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'job_post_id' => [
+                                'type' => 'integer',
+                                'description' => 'Job post ID to delete'
+                            ]
+                        ],
+                        'required' => ['job_post_id']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'search_applications',
+                    'description' => 'Search and filter job applications',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'job_post_id' => [
+                                'type' => 'integer',
+                                'description' => 'Filter by job post ID (optional)'
+                            ],
+                            'status' => [
+                                'type' => 'string',
+                                'enum' => ['pending', 'reviewing', 'shortlisted', 'interview', 'offer', 'rejected', 'hired'],
+                                'description' => 'Filter by application status (optional)'
+                            ],
+                            'ai_status' => [
+                                'type' => 'string',
+                                'enum' => ['pending', 'best_match', 'good_to_go', 'not_good_fit'],
+                                'description' => 'Filter by AI screening status (optional)'
+                            ],
+                            'search' => [
+                                'type' => 'string',
+                                'description' => 'Search by name or email (optional)'
+                            ],
+                            'min_experience' => [
+                                'type' => 'integer',
+                                'description' => 'Minimum years of experience (optional)'
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_application_details',
+                    'description' => 'Get detailed information about a specific job application including AI analysis, resume, answers, and tests',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'application_id' => [
+                                'type' => 'integer',
+                                'description' => 'Application ID'
+                            ]
+                        ],
+                        'required' => ['application_id']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'update_application_status',
+                    'description' => 'Update the status of a job application (e.g., move to interview, reject, hire)',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'application_id' => [
+                                'type' => 'integer',
+                                'description' => 'Application ID'
+                            ],
+                            'status' => [
+                                'type' => 'string',
+                                'enum' => ['pending', 'reviewing', 'shortlisted', 'interview', 'offer', 'rejected', 'hired'],
+                                'description' => 'New status'
+                            ],
+                            'notes' => [
+                                'type' => 'string',
+                                'description' => 'Admin notes about the status change (optional)'
+                            ]
+                        ],
+                        'required' => ['application_id', 'status']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'delete_application',
+                    'description' => 'Delete a job application and all related data',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'application_id' => [
+                                'type' => 'integer',
+                                'description' => 'Application ID to delete'
+                            ]
+                        ],
+                        'required' => ['application_id']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'add_to_talent_pool',
+                    'description' => 'Add a candidate to the talent pool for future opportunities',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'application_id' => [
+                                'type' => 'integer',
+                                'description' => 'Application ID to add to talent pool'
+                            ],
+                            'skills' => [
+                                'type' => 'array',
+                                'items' => [
+                                    'type' => 'string'
+                                ],
+                                'description' => 'Candidate skills (optional)'
+                            ],
+                            'experience_level' => [
+                                'type' => 'string',
+                                'enum' => ['entry', 'junior', 'mid', 'senior', 'lead', 'executive'],
+                                'description' => 'Experience level (optional)'
+                            ],
+                            'status' => [
+                                'type' => 'string',
+                                'enum' => ['potential', 'contacted', 'interested', 'hired'],
+                                'description' => 'Talent pool status (optional, default: potential)'
+                            ],
+                            'notes' => [
+                                'type' => 'string',
+                                'description' => 'Notes about the candidate (optional)'
+                            ]
+                        ],
+                        'required' => ['application_id']
+                    ]
+                ]
+            ],
+            [
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_talent_pool',
+                    'description' => 'Get candidates from the talent pool with optional filters',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'status' => [
+                                'type' => 'string',
+                                'enum' => ['potential', 'contacted', 'interested', 'hired'],
+                                'description' => 'Filter by status (optional)'
+                            ],
+                            'experience_level' => [
+                                'type' => 'string',
+                                'enum' => ['entry', 'junior', 'mid', 'senior', 'lead', 'executive'],
+                                'description' => 'Filter by experience level (optional)'
+                            ],
+                            'search' => [
+                                'type' => 'string',
+                                'description' => 'Search by name or email (optional)'
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ];
     }
@@ -1001,6 +1329,19 @@ Your capabilities include:
 - Send custom emails to employees or any email address
 - Interactive email creation workflow: ask recipient, subject, generate draft, get approval, and send
 - Support for different tones: formal, casual, friendly, professional
+
+**Job Posting & Recruitment (NEW):**
+- Create, view, update, and delete job postings
+- Manage job requirements, descriptions, and screening questions
+- Track application statistics and analytics (total applications, best matches, interviews, hires)
+- Search and filter job applications by status, AI screening results, experience level
+- View detailed application information including resume, AI analysis, screening answers, and tests
+- Update application status (pending, reviewing, shortlisted, interview, offer, rejected, hired)
+- Delete applications with all related files and data
+- Add candidates to talent pool for future opportunities
+- View and manage talent pool candidates with filters (status, experience, skills)
+- Get comprehensive job analytics: applications by status, AI screening stats, department-wise breakdown
+- Support for full recruitment lifecycle: posting → screening → interviewing → hiring
 
 **Platform Insights:**
 - Get overall platform statistics (employees, projects, invoices, etc.)
@@ -2534,6 +2875,133 @@ When users ask questions, use the appropriate tools to fetch real-time data. Be 
         } catch (\Exception $e) {
             Log::error('Error getting employee GitHub activity: ' . $e->getMessage());
             return ['error' => 'Failed to get GitHub activity: ' . $e->getMessage()];
+        }
+    }
+
+    // ===================================
+    // Job Management Methods
+    // ===================================
+
+    private function getJobAnalytics(array $args): array
+    {
+        try {
+            $jobPostId = $args['job_post_id'] ?? null;
+            return $this->jobService->getJobPostAnalytics($jobPostId);
+        } catch (\Exception $e) {
+            Log::error('Error getting job analytics: ' . $e->getMessage());
+            return ['error' => 'Failed to get job analytics: ' . $e->getMessage()];
+        }
+    }
+
+    private function listJobPosts(array $args): array
+    {
+        try {
+            $filters = [
+                'status' => $args['status'] ?? null,
+                'department' => $args['department'] ?? null
+            ];
+            return $this->jobService->getAllJobPosts(array_filter($filters));
+        } catch (\Exception $e) {
+            Log::error('Error listing job posts: ' . $e->getMessage());
+            return ['error' => 'Failed to list job posts: ' . $e->getMessage()];
+        }
+    }
+
+    private function createJobPost(array $args): array
+    {
+        try {
+            return $this->jobService->createJobPost($args);
+        } catch (\Exception $e) {
+            Log::error('Error creating job post: ' . $e->getMessage());
+            return ['error' => 'Failed to create job post: ' . $e->getMessage()];
+        }
+    }
+
+    private function updateJobPost(array $args): array
+    {
+        try {
+            $jobPostId = $args['job_post_id'];
+            unset($args['job_post_id']);
+            return $this->jobService->updateJobPost($jobPostId, $args);
+        } catch (\Exception $e) {
+            Log::error('Error updating job post: ' . $e->getMessage());
+            return ['error' => 'Failed to update job post: ' . $e->getMessage()];
+        }
+    }
+
+    private function deleteJobPost(array $args): array
+    {
+        try {
+            return $this->jobService->deleteJobPost($args['job_post_id']);
+        } catch (\Exception $e) {
+            Log::error('Error deleting job post: ' . $e->getMessage());
+            return ['error' => 'Failed to delete job post: ' . $e->getMessage()];
+        }
+    }
+
+    private function searchApplications(array $args): array
+    {
+        try {
+            return $this->jobService->searchApplications($args);
+        } catch (\Exception $e) {
+            Log::error('Error searching applications: ' . $e->getMessage());
+            return ['error' => 'Failed to search applications: ' . $e->getMessage()];
+        }
+    }
+
+    private function getApplicationDetails(array $args): array
+    {
+        try {
+            return $this->jobService->getApplicationDetails($args['application_id']);
+        } catch (\Exception $e) {
+            Log::error('Error getting application details: ' . $e->getMessage());
+            return ['error' => 'Failed to get application details: ' . $e->getMessage()];
+        }
+    }
+
+    private function updateApplicationStatus(array $args): array
+    {
+        try {
+            return $this->jobService->updateApplicationStatus(
+                $args['application_id'],
+                $args['status'],
+                $args['notes'] ?? null
+            );
+        } catch (\Exception $e) {
+            Log::error('Error updating application status: ' . $e->getMessage());
+            return ['error' => 'Failed to update application status: ' . $e->getMessage()];
+        }
+    }
+
+    private function deleteApplication(array $args): array
+    {
+        try {
+            return $this->jobService->deleteApplication($args['application_id']);
+        } catch (\Exception $e) {
+            Log::error('Error deleting application: ' . $e->getMessage());
+            return ['error' => 'Failed to delete application: ' . $e->getMessage()];
+        }
+    }
+
+    private function addToTalentPool(array $args): array
+    {
+        try {
+            $applicationId = $args['application_id'];
+            unset($args['application_id']);
+            return $this->jobService->addToTalentPool($applicationId, $args);
+        } catch (\Exception $e) {
+            Log::error('Error adding to talent pool: ' . $e->getMessage());
+            return ['error' => 'Failed to add to talent pool: ' . $e->getMessage()];
+        }
+    }
+
+    private function getTalentPool(array $args): array
+    {
+        try {
+            return $this->jobService->getTalentPoolCandidates($args);
+        } catch (\Exception $e) {
+            Log::error('Error getting talent pool: ' . $e->getMessage());
+            return ['error' => 'Failed to get talent pool: ' . $e->getMessage()];
         }
     }
 }

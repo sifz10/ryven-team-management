@@ -186,6 +186,30 @@
 <?php unset($__componentOriginal7cfab914afdd05940201ca0b2cbc009b); ?>
 <?php endif; ?>
             <?php endif; ?>
+            <?php if(session('success')): ?>
+                <div class="mt-2">
+                    <?php if (isset($component)) { $__componentOriginal7cfab914afdd05940201ca0b2cbc009b = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal7cfab914afdd05940201ca0b2cbc009b = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.toast','data' => ['type' => 'success','message' => session('success')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('toast'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['type' => 'success','message' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(session('success'))]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal7cfab914afdd05940201ca0b2cbc009b)): ?>
+<?php $attributes = $__attributesOriginal7cfab914afdd05940201ca0b2cbc009b; ?>
+<?php unset($__attributesOriginal7cfab914afdd05940201ca0b2cbc009b); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal7cfab914afdd05940201ca0b2cbc009b)): ?>
+<?php $component = $__componentOriginal7cfab914afdd05940201ca0b2cbc009b; ?>
+<?php unset($__componentOriginal7cfab914afdd05940201ca0b2cbc009b); ?>
+<?php endif; ?>
+                </div>
+            <?php endif; ?>
             <?php if(session('error')): ?>
                 <div class="mt-2">
                     <?php if (isset($component)) { $__componentOriginal7cfab914afdd05940201ca0b2cbc009b = $component; } ?>

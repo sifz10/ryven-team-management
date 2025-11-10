@@ -91,19 +91,19 @@ class PublicJobController extends Controller
             'cover_letter' => 'nullable|string|max:5000',
             'resume' => 'required|file|mimes:pdf,doc,docx|max:10240', // 10MB
             'answers' => 'nullable|array',
-            'answers.*.answer_text' => 'nullable|string',
-            'answers.*.answer_file' => 'nullable|file|max:102400', // 100MB for videos
         ]);
 
         // Validate required questions
         foreach ($job->questions as $question) {
             if ($question->is_required) {
-                $answer = $request->input("answers.{$question->id}.answer_text");
-                $answerFile = $request->file("answers.{$question->id}.answer_file");
+                // Support both direct answers and nested structure
+                $answer = $request->input("answers.{$question->id}");
+                $answerText = is_string($answer) ? $answer : ($request->input("answers.{$question->id}.answer_text") ?? '');
+                $answerFile = $request->file("answers.{$question->id}") ?? $request->file("answers.{$question->id}.answer_file");
 
-                if (empty($answer) && !$answerFile) {
+                if (empty($answerText) && !$answerFile) {
                     $validator->after(function ($validator) use ($question) {
-                        $validator->errors()->add("answers.{$question->id}", "The question '{$question->question}' is required.");
+                        $validator->errors()->add("answers.{$question->id}", "This question is required.");
                     });
                 }
             }
@@ -122,8 +122,8 @@ class PublicJobController extends Controller
             return back()->with('error', 'You have already applied for this position.');
         }
 
-        // Upload resume
-        $resumePath = $request->file('resume')->store('resumes', 'public');
+        // Upload resume to the local disk (not public) for security
+        $resumePath = $request->file('resume')->store('resumes');
         $resumeOriginalName = $request->file('resume')->getClientOriginalName();
 
         // Create application
@@ -147,9 +147,21 @@ class PublicJobController extends Controller
             foreach ($request->input('answers', []) as $questionId => $answerData) {
                 $answerFilePath = null;
                 $answerFileType = null;
+                $answerText = null;
 
-                // Handle file upload (video/document)
-                if ($request->hasFile("answers.{$questionId}.answer_file")) {
+                // Handle both direct string answers and nested structure
+                if (is_string($answerData)) {
+                    $answerText = $answerData;
+                } else if (is_array($answerData)) {
+                    $answerText = $answerData['answer_text'] ?? null;
+                }
+
+                // Handle file upload (video/document) - support both direct and nested
+                if ($request->hasFile("answers.{$questionId}")) {
+                    $file = $request->file("answers.{$questionId}");
+                    $answerFilePath = $file->store('application_answers', 'public');
+                    $answerFileType = $file->getMimeType();
+                } else if ($request->hasFile("answers.{$questionId}.answer_file")) {
                     $file = $request->file("answers.{$questionId}.answer_file");
                     $answerFilePath = $file->store('application_answers', 'public');
                     $answerFileType = $file->getMimeType();
@@ -158,7 +170,7 @@ class PublicJobController extends Controller
                 ApplicationAnswer::create([
                     'job_application_id' => $application->id,
                     'job_question_id' => $questionId,
-                    'answer_text' => $answerData['answer_text'] ?? null,
+                    'answer_text' => $answerText,
                     'answer_file_path' => $answerFilePath,
                     'answer_file_type' => $answerFileType,
                 ]);

@@ -1,4 +1,13 @@
-<x-app-layout>
+<?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
+<?php $component = App\View\Components\AppLayout::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('app-layout'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\App\View\Components\AppLayout::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
     <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <!-- Page Header -->
         <div class="sticky top-0 z-10 backdrop-blur-lg bg-white/80 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
@@ -28,7 +37,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-2xl font-bold text-black dark:text-white">{{ $stats['total'] }}</p>
+                            <p class="text-2xl font-bold text-black dark:text-white"><?php echo e($stats['total']); ?></p>
                             <p class="text-xs text-gray-600 dark:text-gray-400">Total</p>
                         </div>
                     </div>
@@ -42,7 +51,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-2xl font-bold text-black dark:text-white">{{ $stats['potential'] }}</p>
+                            <p class="text-2xl font-bold text-black dark:text-white"><?php echo e($stats['potential']); ?></p>
                             <p class="text-xs text-gray-600 dark:text-gray-400">Potential</p>
                         </div>
                     </div>
@@ -56,7 +65,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-2xl font-bold text-black dark:text-white">{{ $stats['contacted'] }}</p>
+                            <p class="text-2xl font-bold text-black dark:text-white"><?php echo e($stats['contacted']); ?></p>
                             <p class="text-xs text-gray-600 dark:text-gray-400">Contacted</p>
                         </div>
                     </div>
@@ -70,7 +79,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-2xl font-bold text-black dark:text-white">{{ $stats['interested'] }}</p>
+                            <p class="text-2xl font-bold text-black dark:text-white"><?php echo e($stats['interested']); ?></p>
                             <p class="text-xs text-gray-600 dark:text-gray-400">Interested</p>
                         </div>
                     </div>
@@ -84,7 +93,7 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-2xl font-bold text-black dark:text-white">{{ $stats['hired'] }}</p>
+                            <p class="text-2xl font-bold text-black dark:text-white"><?php echo e($stats['hired']); ?></p>
                             <p class="text-xs text-gray-600 dark:text-gray-400">Hired</p>
                         </div>
                     </div>
@@ -93,7 +102,7 @@
 
             <!-- Filters -->
             <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6 shadow-sm">
-                <form method="GET" action="{{ route('admin.talent-pool.index') }}" class="space-y-4">
+                <form method="GET" action="<?php echo e(route('admin.talent-pool.index')); ?>" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
@@ -103,7 +112,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                     </svg>
                                 </div>
-                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Name or email..." class="pl-10 w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700/50 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white transition-shadow">
+                                <input type="text" name="search" value="<?php echo e(request('search')); ?>" placeholder="Name or email..." class="pl-10 w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700/50 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white transition-shadow">
                             </div>
                         </div>
 
@@ -111,11 +120,11 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
                             <select name="status" class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700/50 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white transition-shadow">
                                 <option value="">All Statuses</option>
-                                <option value="potential" {{ request('status') == 'potential' ? 'selected' : '' }}>Potential</option>
-                                <option value="contacted" {{ request('status') == 'contacted' ? 'selected' : '' }}>Contacted</option>
-                                <option value="interested" {{ request('status') == 'interested' ? 'selected' : '' }}>Interested</option>
-                                <option value="hired" {{ request('status') == 'hired' ? 'selected' : '' }}>Hired</option>
-                                <option value="not_interested" {{ request('status') == 'not_interested' ? 'selected' : '' }}>Not Interested</option>
+                                <option value="potential" <?php echo e(request('status') == 'potential' ? 'selected' : ''); ?>>Potential</option>
+                                <option value="contacted" <?php echo e(request('status') == 'contacted' ? 'selected' : ''); ?>>Contacted</option>
+                                <option value="interested" <?php echo e(request('status') == 'interested' ? 'selected' : ''); ?>>Interested</option>
+                                <option value="hired" <?php echo e(request('status') == 'hired' ? 'selected' : ''); ?>>Hired</option>
+                                <option value="not_interested" <?php echo e(request('status') == 'not_interested' ? 'selected' : ''); ?>>Not Interested</option>
                             </select>
                         </div>
 
@@ -123,126 +132,203 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Experience Level</label>
                             <select name="experience_level" class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700/50 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-white transition-shadow">
                                 <option value="">All Levels</option>
-                                <option value="entry" {{ request('experience_level') == 'entry' ? 'selected' : '' }}>Entry</option>
-                                <option value="junior" {{ request('experience_level') == 'junior' ? 'selected' : '' }}>Junior</option>
-                                <option value="mid" {{ request('experience_level') == 'mid' ? 'selected' : '' }}>Mid-Level</option>
-                                <option value="senior" {{ request('experience_level') == 'senior' ? 'selected' : '' }}>Senior</option>
-                                <option value="lead" {{ request('experience_level') == 'lead' ? 'selected' : '' }}>Lead</option>
+                                <option value="entry" <?php echo e(request('experience_level') == 'entry' ? 'selected' : ''); ?>>Entry</option>
+                                <option value="junior" <?php echo e(request('experience_level') == 'junior' ? 'selected' : ''); ?>>Junior</option>
+                                <option value="mid" <?php echo e(request('experience_level') == 'mid' ? 'selected' : ''); ?>>Mid-Level</option>
+                                <option value="senior" <?php echo e(request('experience_level') == 'senior' ? 'selected' : ''); ?>>Senior</option>
+                                <option value="lead" <?php echo e(request('experience_level') == 'lead' ? 'selected' : ''); ?>>Lead</option>
                             </select>
                         </div>
 
                         <div class="flex items-end gap-2">
-                            <x-black-button type="submit" class="flex-1 justify-center">
+                            <?php if (isset($component)) { $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.black-button','data' => ['type' => 'submit','class' => 'flex-1 justify-center']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('black-button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['type' => 'submit','class' => 'flex-1 justify-center']); ?>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                                 </svg>
                                 Filter
-                            </x-black-button>
-                            @if(request()->hasAny(['search', 'status', 'experience_level']))
-                                <x-black-button variant="outline" href="{{ route('admin.talent-pool.index') }}" class="justify-center">
+                             <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
+<?php $attributes = $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783; ?>
+<?php unset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
+<?php $component = $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783; ?>
+<?php unset($__componentOriginaldf9bc64087ea57ded106e8b72ce8d783); ?>
+<?php endif; ?>
+                            <?php if(request()->hasAny(['search', 'status', 'experience_level'])): ?>
+                                <?php if (isset($component)) { $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.black-button','data' => ['variant' => 'outline','href' => ''.e(route('admin.talent-pool.index')).'','class' => 'justify-center']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('black-button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['variant' => 'outline','href' => ''.e(route('admin.talent-pool.index')).'','class' => 'justify-center']); ?>
                                     Clear
-                                </x-black-button>
-                            @endif
+                                 <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
+<?php $attributes = $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783; ?>
+<?php unset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
+<?php $component = $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783; ?>
+<?php unset($__componentOriginaldf9bc64087ea57ded106e8b72ce8d783); ?>
+<?php endif; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </form>
             </div>
 
             <!-- Talent List -->
-            @if($talents->count() > 0)
+            <?php if($talents->count() > 0): ?>
                 <div class="space-y-4">
-                    @foreach($talents as $talent)
+                    <?php $__currentLoopData = $talents; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $talent): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-all">
                             <div class="flex flex-col md:flex-row md:items-center gap-4">
                                 <!-- Avatar & Name -->
                                 <div class="flex items-center gap-4 flex-1">
                                     <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-purple-500/20">
-                                        {{ substr($talent->first_name, 0, 1) }}{{ substr($talent->last_name, 0, 1) }}
+                                        <?php echo e(substr($talent->first_name, 0, 1)); ?><?php echo e(substr($talent->last_name, 0, 1)); ?>
+
                                     </div>
                                     <div class="flex-1">
-                                        <h3 class="font-bold text-black dark:text-white text-lg">{{ $talent->full_name }}</h3>
+                                        <h3 class="font-bold text-black dark:text-white text-lg"><?php echo e($talent->full_name); ?></h3>
                                         <div class="flex flex-wrap items-center gap-3 mt-1">
-                                            <a href="mailto:{{ $talent->email }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                                {{ $talent->email }}
+                                            <a href="mailto:<?php echo e($talent->email); ?>" class="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                                <?php echo e($talent->email); ?>
+
                                             </a>
-                                            @if($talent->phone)
+                                            <?php if($talent->phone): ?>
                                                 <span class="text-sm text-gray-400">•</span>
-                                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ $talent->phone }}</span>
-                                            @endif
+                                                <span class="text-sm text-gray-600 dark:text-gray-400"><?php echo e($talent->phone); ?></span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Status & Experience -->
                                 <div class="flex items-center gap-3">
-                                    @if($talent->experience_level)
+                                    <?php if($talent->experience_level): ?>
                                         <span class="px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium capitalize">
-                                            {{ $talent->experience_level }}
-                                        </span>
-                                    @endif
+                                            <?php echo e($talent->experience_level); ?>
 
-                                    @if($talent->status === 'potential')
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if($talent->status === 'potential'): ?>
                                         <span class="px-3 py-1 bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/30 dark:to-amber-900/30 text-yellow-800 dark:text-yellow-200 rounded-md text-xs font-medium">
                                             Potential
                                         </span>
-                                    @elseif($talent->status === 'contacted')
+                                    <?php elseif($talent->status === 'contacted'): ?>
                                         <span class="px-3 py-1 bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 text-blue-800 dark:text-blue-200 rounded-md text-xs font-medium">
                                             Contacted
                                         </span>
-                                    @elseif($talent->status === 'interested')
+                                    <?php elseif($talent->status === 'interested'): ?>
                                         <span class="px-3 py-1 bg-gradient-to-r from-teal-100 to-cyan-100 dark:from-teal-900/30 dark:to-cyan-900/30 text-teal-800 dark:text-teal-200 rounded-md text-xs font-medium">
                                             Interested
                                         </span>
-                                    @elseif($talent->status === 'hired')
+                                    <?php elseif($talent->status === 'hired'): ?>
                                         <span class="px-3 py-1 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-800 dark:text-green-200 rounded-md text-xs font-medium">
                                             Hired
                                         </span>
-                                    @elseif($talent->status === 'not_interested')
+                                    <?php elseif($talent->status === 'not_interested'): ?>
                                         <span class="px-3 py-1 bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 text-red-800 dark:text-red-200 rounded-md text-xs font-medium">
                                             Not Interested
                                         </span>
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
 
                                 <!-- Actions -->
                                 <div class="flex items-center gap-2">
-                                    @if($talent->application)
-                                        <x-black-button variant="outline" href="{{ route('admin.applications.show', $talent->application) }}" class="text-xs">
+                                    <?php if($talent->application): ?>
+                                        <?php if (isset($component)) { $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.black-button','data' => ['variant' => 'outline','href' => ''.e(route('admin.applications.show', $talent->application)).'','class' => 'text-xs']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('black-button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['variant' => 'outline','href' => ''.e(route('admin.applications.show', $talent->application)).'','class' => 'text-xs']); ?>
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                             </svg>
                                             Application
-                                        </x-black-button>
-                                    @endif
-                                    <x-black-button href="{{ route('admin.talent-pool.show', $talent) }}" class="text-xs">
+                                         <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
+<?php $attributes = $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783; ?>
+<?php unset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
+<?php $component = $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783; ?>
+<?php unset($__componentOriginaldf9bc64087ea57ded106e8b72ce8d783); ?>
+<?php endif; ?>
+                                    <?php endif; ?>
+                                    <?php if (isset($component)) { $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.black-button','data' => ['href' => ''.e(route('admin.talent-pool.show', $talent)).'','class' => 'text-xs']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('black-button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['href' => ''.e(route('admin.talent-pool.show', $talent)).'','class' => 'text-xs']); ?>
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
                                         View
-                                    </x-black-button>
+                                     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
+<?php $attributes = $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783; ?>
+<?php unset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
+<?php $component = $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783; ?>
+<?php unset($__componentOriginaldf9bc64087ea57ded106e8b72ce8d783); ?>
+<?php endif; ?>
                                 </div>
                             </div>
 
                             <!-- Skills -->
-                            @if($talent->skills && count($talent->skills) > 0)
+                            <?php if($talent->skills && count($talent->skills) > 0): ?>
                                 <div class="mt-4 flex flex-wrap gap-2">
-                                    @foreach($talent->skills as $skill)
+                                    <?php $__currentLoopData = $talent->skills; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $skill): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <span class="px-2.5 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-800 dark:text-indigo-200 rounded-md text-xs font-medium">
-                                            {{ $skill }}
+                                            <?php echo e($skill); ?>
+
                                         </span>
-                                    @endforeach
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
 
                 <!-- Pagination -->
                 <div class="mt-6">
-                    {{ $talents->links() }}
+                    <?php echo e($talents->links()); ?>
+
                 </div>
-            @else
+            <?php else: ?>
                 <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-12">
                     <div class="text-center">
                         <div class="w-20 h-20 mx-auto rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center mb-4">
@@ -252,15 +338,25 @@
                         </div>
                         <p class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Talents Found</p>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            @if(request()->hasAny(['search', 'status', 'experience_level']))
+                            <?php if(request()->hasAny(['search', 'status', 'experience_level'])): ?>
                                 Try adjusting your filters to find more candidates.
-                            @else
+                            <?php else: ?>
                                 Start adding promising candidates to your talent pool from job applications.
-                            @endif
+                            <?php endif; ?>
                         </p>
                     </div>
                 </div>
-            @endif
+            <?php endif; ?>
         </div>
     </div>
-</x-app-layout>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $attributes = $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $component = $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
+<?php /**PATH F:\Project\salary\resources\views/admin/talent-pool/index.blade.php ENDPATH**/ ?>

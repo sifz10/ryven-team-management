@@ -6,6 +6,7 @@ use App\Models\JobApplication;
 use App\Models\JobPost;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser as PdfParser;
 
 class AIScreeningService
@@ -26,9 +27,16 @@ class AIScreeningService
         try {
             // Extract text from resume if not already extracted
             if (!$application->resume_text) {
+                Log::info("Extracting resume text for application {$application->id}");
                 $resumeText = $this->extractTextFromResume($application->resume_path);
                 $application->resume_text = $resumeText;
                 $application->save();
+                Log::info("Resume text extracted successfully. Length: " . strlen($resumeText));
+            }
+
+            // Validate resume text
+            if (empty(trim($application->resume_text))) {
+                throw new \Exception("Resume text is empty. Cannot perform AI screening.");
             }
 
             // Get job post details
@@ -36,9 +44,11 @@ class AIScreeningService
 
             // Prepare prompt for AI
             $prompt = $this->buildScreeningPrompt($jobPost, $application);
+            Log::info("AI screening prompt prepared for application {$application->id}");
 
             // Call OpenAI API
             $response = $this->callOpenAI($prompt);
+            Log::info("OpenAI API response received for application {$application->id}");
 
             // Parse AI response
             $analysis = $this->parseAIResponse($response);
@@ -50,23 +60,62 @@ class AIScreeningService
                 'ai_analysis' => $analysis['details'],
             ]);
 
+            Log::info("AI screening completed successfully for application {$application->id}", [
+                'status' => $analysis['status'],
+                'score' => $analysis['score']
+            ]);
+
             return $analysis;
 
         } catch (\Exception $e) {
-            Log::error('AI Screening Error: ' . $e->getMessage());
+            $errorMessage = $e->getMessage();
+            Log::error("AI Screening Error for application {$application->id}: {$errorMessage}", [
+                'application_id' => $application->id,
+                'resume_path' => $application->resume_path,
+                'error' => $errorMessage,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Determine specific error type for better user feedback
+            $errorDetails = [
+                'error' => $errorMessage,
+                'error_type' => $this->categorizeError($e)
+            ];
 
             // Fallback: mark as pending for manual review
             $application->update([
                 'ai_status' => 'pending',
                 'ai_match_score' => null,
-                'ai_analysis' => ['error' => 'AI screening failed. Please review manually.'],
+                'ai_analysis' => $errorDetails,
             ]);
 
             return [
                 'status' => 'pending',
                 'score' => 0,
-                'details' => ['error' => 'AI screening failed'],
+                'details' => $errorDetails,
             ];
+        }
+    }
+
+    /**
+     * Categorize error for better user feedback
+     */
+    protected function categorizeError(\Exception $e): string
+    {
+        $message = $e->getMessage();
+
+        if (str_contains($message, 'not found')) {
+            return 'file_not_found';
+        } elseif (str_contains($message, 'image-only') || str_contains($message, 'empty')) {
+            return 'extraction_failed';
+        } elseif (str_contains($message, 'API key')) {
+            return 'api_not_configured';
+        } elseif (str_contains($message, 'API request failed')) {
+            return 'api_error';
+        } elseif (str_contains($message, 'Unsupported file format')) {
+            return 'unsupported_format';
+        } else {
+            return 'unknown_error';
         }
     }
 
@@ -76,20 +125,50 @@ class AIScreeningService
     protected function extractTextFromResume(string $path): string
     {
         try {
-            $fullPath = storage_path('app/' . $path);
-
-            if (!file_exists($fullPath)) {
-                return '';
+            // Use Storage facade to get the correct path
+            if (!Storage::exists($path)) {
+                Log::warning("Resume file not found in storage", [
+                    'path' => $path
+                ]);
+                throw new \Exception("Resume file not found. Please ensure the file was uploaded correctly.");
             }
 
-            $parser = new PdfParser();
-            $pdf = $parser->parseFile($fullPath);
-            $text = $pdf->getText();
+            // Get the full path from Storage
+            $fullPath = Storage::path($path);
 
-            return $text;
+            // Check file extension
+            $extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+
+            if ($extension === 'pdf') {
+                $parser = new PdfParser();
+                $pdf = $parser->parseFile($fullPath);
+                $text = $pdf->getText();
+
+                if (empty(trim($text))) {
+                    Log::warning("PDF appears to be empty or image-only", [
+                        'path' => $path,
+                        'full_path' => $fullPath
+                    ]);
+                    throw new \Exception("Could not extract text from PDF. It may be an image-only or corrupted file.");
+                }
+
+                Log::info("Successfully extracted text from resume", [
+                    'path' => $path,
+                    'text_length' => strlen($text)
+                ]);
+
+                return $text;
+            } else {
+                Log::warning("Unsupported file format: {$extension}");
+                throw new \Exception("Unsupported file format: {$extension}. Only PDF files are supported for AI screening.");
+            }
+
         } catch (\Exception $e) {
-            Log::error('Resume text extraction error: ' . $e->getMessage());
-            return '';
+            Log::error('Resume text extraction error: ' . $e->getMessage(), [
+                'path' => $path,
+                'error' => $e->getMessage()
+            ]);
+            throw $e; // Re-throw to be caught by the main screening method
         }
     }
 
@@ -98,7 +177,7 @@ class AIScreeningService
      */
     protected function buildScreeningPrompt(JobPost $jobPost, JobApplication $application): string
     {
-        $criteria = $jobPost->ai_screening_criteria ?? [];
+        $criteria = $jobPost->ai_screening_criteria;
 
         $prompt = "You are an expert HR recruiter analyzing job applications. Please evaluate this candidate's resume against the job requirements.\n\n";
 
@@ -115,10 +194,22 @@ class AIScreeningService
             $prompt .= "\nRESPONSIBILITIES:\n{$jobPost->responsibilities}\n";
         }
 
-        if (!empty($criteria)) {
+        // Handle criteria - can be string or array
+        if ($criteria) {
             $prompt .= "\nSPECIFIC SCREENING CRITERIA:\n";
-            foreach ($criteria as $key => $value) {
-                $prompt .= "- {$key}: {$value}\n";
+
+            if (is_string($criteria)) {
+                // If it's a string, just add it as-is
+                $prompt .= $criteria . "\n";
+            } elseif (is_array($criteria)) {
+                // If it's an array, iterate over it
+                foreach ($criteria as $key => $value) {
+                    if (is_numeric($key)) {
+                        $prompt .= "- {$value}\n";
+                    } else {
+                        $prompt .= "- {$key}: {$value}\n";
+                    }
+                }
             }
         }
 
@@ -167,10 +258,18 @@ class AIScreeningService
             throw new \Exception('OpenAI API key not configured');
         }
 
-        $response = Http::withHeaders([
+        // Prepare HTTP client - disable SSL verification in local environment (Windows)
+        $httpClient = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->openaiApiKey,
             'Content-Type' => 'application/json',
-        ])->timeout(60)->post('https://api.openai.com/v1/chat/completions', [
+        ])->timeout(60);
+
+        // Disable SSL verification in local/development environment only
+        if (app()->environment('local')) {
+            $httpClient = $httpClient->withoutVerifying();
+        }
+
+        $response = $httpClient->post('https://api.openai.com/v1/chat/completions', [
             'model' => $this->model,
             'messages' => [
                 [

@@ -11,6 +11,7 @@ use App\Services\AIScreeningService;
 use App\Mail\InterviewInvitationMail;
 use App\Mail\TestAssignmentMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -72,11 +73,13 @@ class JobApplicationController extends Controller
             'admin_notes' => 'nullable|string',
         ]);
 
+        $employee = Auth::user()->employee;
+
         $application->update([
             'application_status' => $validated['application_status'],
             'admin_notes' => $validated['admin_notes'] ?? $application->admin_notes,
             'reviewed_at' => now(),
-            'reviewed_by' => auth()->user()->employee->id,
+            'reviewed_by' => $employee ? $employee->id : null,
         ]);
 
         return back()->with('success', 'Application status updated successfully!');
@@ -111,6 +114,12 @@ class JobApplicationController extends Controller
             return back()->with('error', 'Already added to talent pool.');
         }
 
+        // Get the authenticated user's employee ID
+        $employee = Auth::user()->employee;
+        if (!$employee) {
+            return back()->with('error', 'You must be linked to an employee record to add talents to the pool.');
+        }
+
         TalentPool::create([
             'job_application_id' => $application->id,
             'first_name' => $application->first_name,
@@ -120,10 +129,10 @@ class JobApplicationController extends Controller
             'linkedin_url' => $application->linkedin_url,
             'portfolio_url' => $application->portfolio_url,
             'skills' => $application->ai_analysis['strengths'] ?? [],
-            'experience_level' => $application->jobPost->experience_level,
+            'experience_level' => $application->jobPost->experience_level ?? 'mid',
             'resume_path' => $application->resume_path,
             'source' => 'job_application',
-            'added_by' => auth()->user()->employee->id,
+            'added_by' => $employee->id,
         ]);
 
         $application->update(['added_to_talent_pool' => true]);
@@ -172,6 +181,8 @@ class JobApplicationController extends Controller
             $testFilePath = $request->file('test_file')->store('tests', 'public');
         }
 
+        $employee = Auth::user()->employee;
+
         $test = ApplicationTest::create([
             'job_application_id' => $application->id,
             'test_title' => $validated['test_title'],
@@ -181,7 +192,7 @@ class JobApplicationController extends Controller
             'deadline' => $validated['deadline'] ?? null,
             'status' => 'sent',
             'sent_at' => now(),
-            'sent_by' => auth()->user()->employee->id,
+            'sent_by' => $employee ? $employee->id : null,
         ]);
 
         // Send email
@@ -200,6 +211,44 @@ class JobApplicationController extends Controller
         }
     }
 
+    public function retryAIScreening(JobApplication $application)
+    {
+        try {
+            // Reset AI status
+            $application->update([
+                'ai_status' => 'pending',
+                'ai_match_score' => null,
+                'ai_analysis' => null,
+                'resume_text' => null, // Force re-extraction
+            ]);
+
+            // Retry screening
+            $result = $this->aiScreeningService->screenApplication($application);
+
+            if ($result['status'] === 'pending' && isset($result['details']['error'])) {
+                return back()->with('warning', 'AI screening failed again: ' . $result['details']['error']);
+            }
+
+            return back()->with('success', 'AI screening completed successfully!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to retry AI screening: ' . $e->getMessage());
+        }
+    }
+
+    public function viewResume(JobApplication $application)
+    {
+        if (!Storage::exists($application->resume_path)) {
+            abort(404, 'Resume file not found.');
+        }
+
+        $file = Storage::get($application->resume_path);
+        $mimeType = Storage::mimeType($application->resume_path);
+
+        return response($file, 200)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', 'inline; filename="' . $application->resume_original_name . '"');
+    }
+
     public function downloadResume(JobApplication $application)
     {
         if (!Storage::exists($application->resume_path)) {
@@ -211,14 +260,45 @@ class JobApplicationController extends Controller
 
     public function destroy(JobApplication $application)
     {
-        // Delete resume file
+        $jobPostId = $application->job_post_id;
+
+        // Delete resume file if exists
         if ($application->resume_path && Storage::exists($application->resume_path)) {
             Storage::delete($application->resume_path);
         }
 
+        // Delete answer video/file attachments if they exist
+        foreach ($application->answers as $answer) {
+            if ($answer->video_path && Storage::exists($answer->video_path)) {
+                Storage::delete($answer->video_path);
+            }
+            if ($answer->file_path && Storage::exists($answer->file_path)) {
+                Storage::delete($answer->file_path);
+            }
+        }
+
+        // Delete test files if they exist
+        foreach ($application->tests as $test) {
+            if ($test->test_file_path && Storage::exists($test->test_file_path)) {
+                Storage::delete($test->test_file_path);
+            }
+            if ($test->submission_file_path && Storage::exists($test->submission_file_path)) {
+                Storage::delete($test->submission_file_path);
+            }
+        }
+
+        // Delete related talent pool entry if exists
+        if ($application->added_to_talent_pool) {
+            TalentPool::where('job_application_id', $application->id)->delete();
+        }
+
+        // Store applicant name for success message
+        $applicantName = $application->first_name . ' ' . $application->last_name;
+
+        // Delete the application (cascade will delete answers and tests)
         $application->delete();
 
-        return redirect()->route('admin.applications.index')
-            ->with('success', 'Application deleted successfully!');
+        return redirect()->route('admin.applications.index', ['job_post' => $jobPostId])
+            ->with('success', "Application from {$applicantName} has been permanently deleted.");
     }
 }
