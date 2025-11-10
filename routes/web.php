@@ -561,7 +561,42 @@ Route::prefix('client')->name('client.')->group(function () {
         Route::delete('/projects/{project}/members/{member}', [App\Http\Controllers\Client\ClientProjectController::class, 'removeMember'])
             ->name('projects.members.remove');
 
-        // Team Members Management
+        // Project Files
+        Route::post('/projects/{project}/files', [App\Http\Controllers\Client\ClientProjectController::class, 'storeFile'])
+            ->name('projects.files.store');
+        Route::delete('/projects/{project}/files/{file}', [App\Http\Controllers\Client\ClientProjectController::class, 'destroyFile'])
+            ->name('projects.files.destroy');
+
+        // Project Task Details
+        Route::get('/projects/{project}/tasks/{task}', [App\Http\Controllers\Client\ClientProjectController::class, 'showTask'])
+            ->name('projects.tasks.show');
+        Route::get('/projects/{project}/tasks/{task}/files', [App\Http\Controllers\Client\ClientProjectController::class, 'getTaskFiles'])
+            ->name('projects.tasks.files');
+        Route::post('/projects/{project}/tasks/{task}/files', [App\Http\Controllers\Client\ClientProjectController::class, 'uploadTaskFile'])
+            ->name('projects.tasks.files.upload');
+        Route::delete('/projects/{project}/tasks/{task}/files/{file}', [App\Http\Controllers\Client\ClientProjectController::class, 'deleteTaskFile'])
+            ->name('projects.tasks.files.delete');
+        Route::get('/projects/{project}/tasks/{task}/comments', [App\Http\Controllers\Client\ClientProjectController::class, 'getTaskComments'])
+            ->name('projects.tasks.comments');
+        Route::post('/projects/{project}/tasks/{task}/comments', [App\Http\Controllers\Client\ClientProjectController::class, 'storeTaskComment'])
+            ->name('projects.tasks.comments.store');
+
+        // Comment Replies
+        Route::post('/projects/{project}/tasks/{task}/comments/{comment}/replies', [App\Http\Controllers\Client\ClientProjectController::class, 'storeCommentReply'])
+            ->name('projects.tasks.comments.replies.store');
+
+        // Comment Reactions
+        Route::post('/projects/{project}/tasks/{task}/comments/{comment}/reactions', [App\Http\Controllers\Client\ClientProjectController::class, 'toggleCommentReaction'])
+            ->name('projects.tasks.comments.reactions.toggle');
+
+        // Mention Autocomplete
+        Route::get('/projects/{project}/employees/mention', [App\Http\Controllers\Client\ClientProjectController::class, 'getEmployeesForMention'])
+            ->name('projects.employees.mention');
+
+        Route::get('/projects/{project}/tasks/{task}/reminders', [App\Http\Controllers\Client\ClientProjectController::class, 'getTaskReminders'])
+            ->name('projects.tasks.reminders');
+        Route::post('/tasks/{task}/checklist/{checklist}/toggle', [App\Http\Controllers\Client\ClientProjectController::class, 'toggleChecklist'])
+            ->name('tasks.checklist.toggle');        // Team Members Management
         Route::get('/team', [App\Http\Controllers\Client\ClientTeamController::class, 'index'])
             ->name('team.index');
         Route::get('/team/create', [App\Http\Controllers\Client\ClientTeamController::class, 'create'])

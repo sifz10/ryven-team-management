@@ -11,6 +11,8 @@ class ProjectTaskCommentReaction extends Model
         'comment_id',
         'employee_id',
         'reaction_type',
+        'reacted_by_client',
+        'reacted_by_client_id',
     ];
 
     public function comment(): BelongsTo

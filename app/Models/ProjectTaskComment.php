@@ -12,6 +12,8 @@ class ProjectTaskComment extends Model
         'project_task_id',
         'employee_id',
         'comment',
+        'commented_by_client',
+        'client_name',
     ];
 
     protected $with = ['employee', 'replies.employee', 'reactions.employee'];

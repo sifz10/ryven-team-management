@@ -11,6 +11,8 @@ class ProjectTaskCommentReply extends Model
         'comment_id',
         'employee_id',
         'reply',
+        'replied_by_client',
+        'client_name',
     ];
 
     protected $appends = ['created_at_human'];

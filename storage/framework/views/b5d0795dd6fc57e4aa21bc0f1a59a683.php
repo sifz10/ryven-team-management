@@ -121,11 +121,13 @@
                         <p class="text-xs text-gray-600 dark:text-gray-400">Tasks</p>
                         <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1"><?php echo e($project->tasks_count); ?></p>
                     </div>
-                    <?php if($project->budget): ?>
-                    <div>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Budget</p>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1"><?php echo e($project->currency); ?> <?php echo e(number_format($project->budget, 2)); ?></p>
-                    </div>
+                    <?php if(!isset($isTeamMember) || !$isTeamMember): ?>
+                        <?php if($project->budget): ?>
+                        <div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Budget</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white mt-1"><?php echo e($project->currency); ?> <?php echo e(number_format($project->budget, 2)); ?></p>
+                        </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
 
