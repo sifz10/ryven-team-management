@@ -8,7 +8,7 @@
 <?php $attributes = $attributes->except(\App\View\Components\AppLayout::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes([]); ?>
-    <div x-data="{ showDeleteModal: false }" class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div x-data="{ showDeleteModal: false, showTestModal: false }" class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <!-- Page Header -->
         <div class="sticky top-0 z-10 backdrop-blur-lg bg-white/80 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -424,16 +424,16 @@
                     <?php endif; ?>
 
                     <!-- Screening Answers -->
-                    <?php if($application->answers->count() > 0): ?>
-                        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow">
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                                    </svg>
-                                </div>
-                                <h2 class="text-lg font-bold text-black dark:text-white">Screening Answers</h2>
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                </svg>
                             </div>
+                            <h2 class="text-lg font-bold text-black dark:text-white">Screening Answers</h2>
+                        </div>
+                        <?php if($application->answers->count() > 0): ?>
                             <div class="space-y-5">
                                 <?php $__currentLoopData = $application->answers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $answer): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 rounded-xl p-5 last:mb-0">
@@ -442,25 +442,119 @@
                                                 <?php echo e($loop->iteration); ?>
 
                                             </div>
-                                            <p class="text-sm font-semibold text-gray-900 dark:text-white flex-1"><?php echo e($answer->question->question_text); ?></p>
+                                            <p class="text-sm font-semibold text-gray-900 dark:text-white flex-1"><?php echo e($answer->question->question); ?></p>
                                         </div>
-                                        <?php if($answer->answer_type === 'text'): ?>
+                                        <?php if($answer->answer_text): ?>
                                             <p class="text-sm text-gray-700 dark:text-gray-300 ml-10 leading-relaxed"><?php echo e($answer->answer_text); ?></p>
-                                        <?php elseif($answer->answer_type === 'video' && $answer->video_path): ?>
-                                            <div class="ml-10">
-                                                <video controls class="w-full max-w-md rounded-xl shadow-lg">
-                                                    <source src="<?php echo e(asset('storage/' . $answer->video_path)); ?>" type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
+                                        <?php endif; ?>
+                                        <?php if($answer->answer_file_path): ?>
+                                            <div class="ml-10 mt-3">
+                                                <?php if($answer->answer_file_type === 'video'): ?>
+                                                    <video controls class="w-full max-w-md rounded-xl shadow-lg">
+                                                        <source src="<?php echo e(asset('storage/' . $answer->answer_file_path)); ?>" type="video/mp4">
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                <?php else: ?>
+                                                    <a href="<?php echo e(asset('storage/' . $answer->answer_file_path)); ?>" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                        </svg>
+                                                        Download File
+                                                    </a>
+                                                <?php endif; ?>
                                             </div>
-                                        <?php elseif($answer->answer_type === 'file' && $answer->file_path): ?>
-                                            <div class="ml-10">
-                                                <a href="<?php echo e(asset('storage/' . $answer->file_path)); ?>" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="flex flex-col items-center justify-center py-8 text-center">
+                                <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+                                    <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                    </svg>
+                                </div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">No Screening Answers</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-500">The applicant has not provided any screening answers yet.</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Tests & Submissions -->
+                    <?php if($application->tests->count() > 0): ?>
+                        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <h2 class="text-lg font-bold text-black dark:text-white">Tests & Submissions</h2>
+                            </div>
+                            <div class="space-y-4">
+                                <?php $__currentLoopData = $application->tests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $test): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+                                        <div class="flex items-start justify-between mb-3">
+                                            <div class="flex-1">
+                                                <h3 class="font-semibold text-gray-900 dark:text-white mb-1"><?php echo e($test->test_title); ?></h3>
+                                                <p class="text-xs text-gray-600 dark:text-gray-400">Sent <?php echo e($test->sent_at->diffForHumans()); ?></p>
+                                            </div>
+                                            <?php if($test->status === 'sent'): ?>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                                    Pending
+                                                </span>
+                                            <?php elseif($test->status === 'submitted'): ?>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                    Submitted
+                                                </span>
+                                            <?php elseif($test->status === 'reviewed'): ?>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                    Reviewed
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400 mb-3">
+                                            <div>
+                                                <span class="font-medium">Deadline:</span> <?php echo e($test->deadline->format('M j, g:i A')); ?>
+
+                                            </div>
+                                            <?php if($test->submitted_at): ?>
+                                                <div>
+                                                    <span class="font-medium">Submitted:</span> <?php echo e($test->submitted_at->format('M j, g:i A')); ?>
+
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <?php if($test->submission_file_path): ?>
+                                            <div class="space-y-2">
+                                                <div class="flex items-center gap-2">
+                                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                    </svg>
+                                                    <span class="text-xs text-gray-700 dark:text-gray-300 font-medium"><?php echo e($test->submission_original_name); ?></span>
+                                                </div>
+                                                <a href="<?php echo e(asset('storage/' . $test->submission_file_path)); ?>" download="<?php echo e($test->submission_original_name); ?>"
+                                                   class="inline-flex items-center gap-2 px-3 py-1.5 bg-black hover:bg-gray-800 text-white rounded-full text-xs font-medium transition-all">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                                     </svg>
-                                                    Download File
+                                                    Download Submission
                                                 </a>
+                                                <?php if($test->submission_notes): ?>
+                                                    <div class="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-xs text-blue-900 dark:text-blue-300">
+                                                        <strong>Notes:</strong> <?php echo e($test->submission_notes); ?>
+
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                <span>Waiting for submission...</span>
                                             </div>
                                         <?php endif; ?>
                                     </div>
@@ -526,18 +620,18 @@
 <?php endif; ?>
                             <?php if (isset($component)) { $__componentOriginaldf9bc64087ea57ded106e8b72ce8d783 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.black-button','data' => ['variant' => 'outline','class' => 'w-full justify-center']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.black-button','data' => ['variant' => 'outline','class' => 'w-full justify-center','@click' => 'showTestModal = true']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('black-button'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['variant' => 'outline','class' => 'w-full justify-center']); ?>
+<?php $component->withAttributes(['variant' => 'outline','class' => 'w-full justify-center','@click' => 'showTestModal = true']); ?>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                Send Test
+                                Generate & Send Test
                              <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginaldf9bc64087ea57ded106e8b72ce8d783)): ?>
@@ -868,7 +962,249 @@
                 </div>
             </div>
         </div>
+
+        <!-- Generate Test Modal -->
+        <div x-show="showTestModal"
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @keydown.escape.window="showTestModal = false"
+             class="fixed inset-0 z-50 overflow-y-auto"
+             aria-labelledby="modal-title"
+             role="dialog"
+             aria-modal="true">
+
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showTestModal = false"></div>
+
+            <!-- Modal Content -->
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div x-show="showTestModal"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden">
+
+                    <!-- Modal Header -->
+                    <div class="bg-black dark:bg-black px-8 py-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Generate & Send Test</h3>
+                                    <p class="text-gray-300 text-sm mt-1">For <?php echo e($application->full_name); ?></p>
+                                </div>
+                            </div>
+                            <button @click="showTestModal = false" class="text-white/80 hover:text-white transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <form action="<?php echo e(route('admin.applications.tests.store', $application)); ?>" method="POST" enctype="multipart/form-data" class="p-8 space-y-6" x-data="testGenerator()">
+                        <?php echo csrf_field(); ?>
+
+                        <!-- AI Generation Section -->
+                        <div class="bg-black dark:bg-black rounded-xl p-4 border border-white">
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold text-white mb-2">AI-Powered Test Generation</h4>
+                                    <p class="text-xs text-gray-300 mb-3">Let AI create a comprehensive test based on the job requirements</p>
+                                    <button type="button" @click="generateTest()" :disabled="generating"
+                                            class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-black text-white hover:bg-gray-800 disabled:bg-gray-600 disabled:opacity-50 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
+                                        <svg x-show="!generating" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        </svg>
+                                        <svg x-show="generating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span x-text="generating ? 'Generating...' : 'Generate Test with AI'"></span>
+                                    </button>
+                                    <p x-show="error" x-text="error" class="text-xs text-red-300 mt-2"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test Title -->
+                        <div>
+                            <label class="block text-sm font-semibold text-black dark:text-white mb-2">
+                                Test Title <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="test_title" x-model="title" required
+                                   class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-black dark:text-white focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                   placeholder="e.g., React Development Assignment">
+                        </div>
+
+                        <!-- Test Description -->
+                        <div>
+                            <label class="block text-sm font-semibold text-black dark:text-white mb-2">
+                                Description
+                            </label>
+                            <textarea name="test_description" x-model="description" rows="3"
+                                      class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-black dark:text-white focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                                      placeholder="Brief overview of what the test covers"></textarea>
+                        </div>
+
+                        <!-- Test Instructions -->
+                        <div>
+                            <label class="block text-sm font-semibold text-black dark:text-white mb-2">
+                                Instructions <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="test_instructions" x-model="instructions" rows="8" required
+                                      class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-black dark:text-white focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                                      placeholder="Detailed instructions for the candidate on how to complete the test"></textarea>
+                        </div>
+
+                        <!-- Deadline -->
+                        <div>
+                            <label class="block text-sm font-semibold text-black dark:text-white mb-2">
+                                Deadline <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" name="deadline" required
+                                   min="<?php echo e(now()->format('Y-m-d\TH:i')); ?>"
+                                   class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl text-black dark:text-white focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+                        </div>
+
+                        <!-- Test File (Optional) -->
+                        <div>
+                            <label class="block text-sm font-semibold text-black dark:text-white mb-2">
+                                Test File (Optional)
+                            </label>
+                            <div class="relative">
+                                <input type="file" name="test_file" id="test_file" accept=".pdf,.doc,.docx,.zip"
+                                       class="hidden"
+                                       onchange="document.getElementById('test-file-name').textContent = this.files[0]?.name || 'No file chosen'">
+                                <label for="test_file" class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 transition-all group">
+                                    <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Click to upload test document</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">PDF, DOC, DOCX, ZIP (Max 10MB)</p>
+                                        <p id="test-file-name" class="text-xs text-blue-600 dark:text-blue-400 mt-1 font-semibold">No file chosen</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center gap-3 pt-4">
+                            <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                Send Test to Candidate
+                            </button>
+                            <button type="button" @click="showTestModal = false" class="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold transition-all">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <?php $__env->startPush('scripts'); ?>
+    <script>
+        function testGenerator() {
+            return {
+                title: '',
+                description: '',
+                instructions: '',
+                generating: false,
+                error: '',
+
+                async generateTest() {
+                    this.generating = true;
+                    this.error = '';
+
+                    try {
+                        // Get CSRF token
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                        if (!csrfToken) {
+                            console.error('CSRF token not found');
+                            this.error = 'Security token missing. Please refresh the page.';
+                            this.generating = false;
+                            return;
+                        }
+
+                        const response = await fetch('<?php echo e(route('admin.applications.tests.generate', $application)); ?>', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                test_type: 'Technical Assessment'
+                            })
+                        });
+
+                        // Check if response is ok
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({ message: 'Server error' }));
+                            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.title = data.data.title;
+                            this.description = data.data.description;
+                            this.instructions = data.data.instructions;
+
+                            // Show success feedback
+                            this.showNotification('Test generated successfully!', 'success');
+                        } else {
+                            this.error = data.message || 'Failed to generate test';
+                        }
+                    } catch (error) {
+                        console.error('Error generating test:', error);
+                        this.error = error.message || 'An error occurred while generating the test';
+                    } finally {
+                        this.generating = false;
+                    }
+                },
+
+                showNotification(message, type) {
+                    // Simple notification - you can enhance this
+                    const notification = document.createElement('div');
+                    notification.className = `fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg z-50 ${
+                        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                    } text-white`;
+                    notification.textContent = message;
+                    document.body.appendChild(notification);
+
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 3000);
+                }
+            };
+        }
+    </script>
+    <?php $__env->stopPush(); ?>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>

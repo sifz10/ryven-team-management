@@ -8,6 +8,8 @@ use App\Models\JobQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class JobPostController extends Controller
 {
@@ -265,6 +267,7 @@ class JobPostController extends Controller
         ];
 
         $aiScreeningService = app(\App\Services\AIScreeningService::class);
+        $resumeParserService = app(\App\Services\ResumeParserService::class);
 
         foreach ($request->file('resumes') as $resume) {
             try {
@@ -273,21 +276,62 @@ class JobPostController extends Controller
                 // Store resume in private storage (same as regular applications)
                 $path = $resume->store('resumes');
 
-                // Extract name from filename
+                // Extract text from resume for parsing
+                $resumeText = null;
+                try {
+                    // Extract text directly using PDF parser
+                    if (Storage::exists($path)) {
+                        $fullPath = Storage::path($path);
+                        $extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+
+                        if ($extension === 'pdf') {
+                            $parser = new \Smalot\PdfParser\Parser();
+                            $pdf = $parser->parseFile($fullPath);
+                            $resumeText = $pdf->getText();
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // If text extraction fails, continue with filename-based info
+                    Log::info("Failed to extract text from resume: " . $e->getMessage());
+                }
+
+                // Extract contact info from resume text
+                $contactInfo = ['email' => null, 'phone' => null];
+                if ($resumeText) {
+                    $contactInfo = $resumeParserService->extractContactInfo($resumeText);
+                }
+
+                // Extract name from filename as fallback
                 $nameFromFile = pathinfo($fileName, PATHINFO_FILENAME);
                 $nameParts = explode(' ', str_replace(['_', '-'], ' ', $nameFromFile), 2);
                 $firstName = $nameParts[0];
                 $lastName = isset($nameParts[1]) ? $nameParts[1] : 'N/A';
+
+                // Try to extract name from resume text if available
+                if ($resumeText) {
+                    $extractedName = $resumeParserService->extractName($resumeText);
+                    if ($extractedName['first_name']) {
+                        $firstName = $extractedName['first_name'];
+                        $lastName = $extractedName['last_name'] ?? 'N/A';
+                    }
+                }
+
+                // Use extracted email or generate temp email
+                $email = $contactInfo['email'] ?? 'bulk-upload-' . Str::random(10) . '@temp.com';
+
+                // Use extracted phone or N/A
+                $phone = $contactInfo['phone'] ?? 'N/A';
 
                 // Create application record
                 $application = \App\Models\JobApplication::create([
                     'job_post_id' => $job->id,
                     'first_name' => $firstName,
                     'last_name' => $lastName,
-                    'email' => 'bulk-upload-' . Str::random(10) . '@temp.com',
-                    'phone' => 'N/A',
+                    'email' => $email,
+                    'phone' => $phone,
                     'resume_path' => $path,
                     'resume_original_name' => $fileName,
+                    'resume_text' => $resumeText, // Store extracted text
                     'application_status' => 'pending',
                     'ai_status' => 'pending',
                 ]);

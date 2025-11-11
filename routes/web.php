@@ -72,6 +72,13 @@ Route::post('/uat/public/{token}/test-cases/{testCase}/status', [UatPublicContro
 // GitHub Webhook (no authentication required)
 Route::post('/webhook/github', [GitHubWebhookController::class, 'handle'])->name('webhook.github');
 
+// Test Submission Routes (no authentication required)
+Route::prefix('test-submission')->name('test.submission.')->group(function () {
+    Route::get('/{token}', [App\Http\Controllers\TestSubmissionController::class, 'show'])->name('show');
+    Route::post('/{token}', [App\Http\Controllers\TestSubmissionController::class, 'submit'])->name('submit');
+    Route::get('/{token}/download', [App\Http\Controllers\TestSubmissionController::class, 'downloadTest'])->name('download');
+});
+
 // GitHub Activities API (for AJAX load more)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/employees/{employee}/github/activities', [GitHubWebhookController::class, 'loadActivities'])->name('github.activities.load');
@@ -654,6 +661,16 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('/applications/{application}/test', [App\Http\Controllers\Admin\JobApplicationController::class, 'sendTest'])->name('applications.send-test');
     Route::get('/applications/{application}/resume/view', [App\Http\Controllers\Admin\JobApplicationController::class, 'viewResume'])->name('applications.view-resume');
     Route::get('/applications/{application}/resume/download', [App\Http\Controllers\Admin\JobApplicationController::class, 'downloadResume'])->name('applications.download-resume');
+
+    // Application Tests
+    Route::post('/applications/{application}/tests/generate', [App\Http\Controllers\Admin\ApplicationTestController::class, 'generateWithAI'])->name('applications.tests.generate');
+    Route::post('/applications/{application}/tests', [App\Http\Controllers\Admin\ApplicationTestController::class, 'store'])->name('applications.tests.store');
+    Route::put('/applications/{application}/tests/{test}', [App\Http\Controllers\Admin\ApplicationTestController::class, 'update'])->name('applications.tests.update');
+    Route::post('/applications/{application}/tests/{test}/send', [App\Http\Controllers\Admin\ApplicationTestController::class, 'sendEmail'])->name('applications.tests.send');
+
+    // Test Analytics
+    Route::get('/analytics/tests', [App\Http\Controllers\Admin\TestAnalyticsController::class, 'index'])->name('analytics.tests');
+    Route::get('/analytics/tests/export', [App\Http\Controllers\Admin\TestAnalyticsController::class, 'export'])->name('analytics.tests.export');
 
     // Talent Pool
     Route::get('/talent-pool', [App\Http\Controllers\Admin\TalentPoolController::class, 'index'])->name('talent-pool.index');

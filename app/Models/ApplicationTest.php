@@ -11,12 +11,14 @@ class ApplicationTest extends Model
 
     protected $fillable = [
         'job_application_id',
+        'submission_token',
         'test_title',
         'test_description',
         'test_instructions',
         'test_file_path',
         'submission_file_path',
         'submission_original_name',
+        'submission_notes',
         'status',
         'sent_at',
         'submitted_at',
@@ -53,6 +55,21 @@ class ApplicationTest extends Model
         return $this->deadline && $this->deadline < now() && $this->status === 'sent';
     }
 
+    public function isExpired()
+    {
+        return $this->deadline && $this->deadline < now();
+    }
+
+    public function canSubmit()
+    {
+        return $this->status === 'sent' && !$this->isExpired();
+    }
+
+    public function getSubmissionUrlAttribute()
+    {
+        return route('test.submission.show', $this->submission_token);
+    }
+
     public function scopeSubmitted($query)
     {
         return $query->where('status', 'submitted');
@@ -61,5 +78,16 @@ class ApplicationTest extends Model
     public function scopePending($query)
     {
         return $query->where('status', 'sent');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($test) {
+            if (empty($test->submission_token)) {
+                $test->submission_token = bin2hex(random_bytes(32));
+            }
+        });
     }
 }
