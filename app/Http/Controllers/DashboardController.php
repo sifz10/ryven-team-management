@@ -83,14 +83,20 @@ class DashboardController extends Controller
         $paymentHistory = $this->getPaymentHistoryChart();
         
         // 8. Top Performers (Most Achievements)
-        $topPerformers = EmployeePayment::with('employee')
-            ->selectRaw('employee_payments.*, COUNT(*) as achievement_count')
+        $topPerformersData = EmployeePayment::selectRaw('employee_id, COUNT(*) as achievement_count')
             ->where('activity_type', 'achievement')
             ->where('paid_at', '>=', now()->subMonths(3))
-            ->groupBy('employee_payments.id')
+            ->groupBy('employee_id')
             ->orderByDesc('achievement_count')
             ->limit(5)
             ->get();
+        
+        $topPerformers = Employee::whereIn('id', $topPerformersData->pluck('employee_id'))->get()
+            ->map(function($employee) use ($topPerformersData) {
+                $achievementCount = $topPerformersData->firstWhere('employee_id', $employee->id)?->achievement_count ?? 0;
+                $employee->achievement_count = $achievementCount;
+                return $employee;
+            });
         
         // 9. Recent Activity Timeline
         $recentActivities = EmployeePayment::with('employee')
