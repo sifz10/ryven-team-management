@@ -26,12 +26,14 @@ class EmployeePaymentController extends Controller
 		$activity = EmployeePayment::create($validated);
 		$activity->refresh(); // Refresh to ensure all casts are applied
 
-		// Send email notification
-		try {
-			Mail::to('kazi.sifat1999@gmail.com')->send(new ActivityCreated($employee, $activity));
-		} catch (\Exception $e) {
-			// Log the error but don't fail the request
-			logger()->error('Failed to send activity notification email: ' . $e->getMessage());
+		// Send email notification for warnings
+		if ($activity->activity_type === 'warning' && $employee->email) {
+			try {
+				Mail::to($employee->email)->send(new ActivityCreated($employee, $activity));
+			} catch (\Exception $e) {
+				// Log the error but don't fail the request
+				logger()->error('Failed to send warning notification email: ' . $e->getMessage());
+			}
 		}
 
 		return redirect()->route('employees.show', ['employee' => $employee, 'tab' => 'timeline'])->with('status', 'Activity added successfully');
