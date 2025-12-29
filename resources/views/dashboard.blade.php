@@ -142,7 +142,7 @@
                 <div class="p-5">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @forelse($topPerformers->take(4) as $index => $performer)
-                            <a href="{{ route('employees.show', $performer->employee) }}" class="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all group">
+                            <a href="{{ route('employees.show', $performer) }}" class="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all group">
                                 <div class="flex-shrink-0">
                                     @php
                                         $rankColors = [
@@ -157,11 +157,11 @@
                                     </div>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    @if($performer->employee)
+                                    @if($performer)
                                         <div class="font-bold text-gray-900 dark:text-white truncate group-hover:text-black dark:group-hover:text-gray-200">
-                                            {{ $performer->employee->first_name }} {{ $performer->employee->last_name }}
+                                            {{ $performer->first_name }} {{ $performer->last_name }}
                                         </div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $performer->employee->position ?? 'No position' }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $performer->position ?? 'No position' }}</div>
                                     @endif
                                 </div>
                                 <div class="text-right flex-shrink-0">
