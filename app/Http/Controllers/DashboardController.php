@@ -84,10 +84,10 @@ class DashboardController extends Controller
         
         // 8. Top Performers (Most Achievements)
         $topPerformers = EmployeePayment::with('employee')
-            ->select('employee_id', DB::raw('COUNT(*) as achievement_count'))
+            ->selectRaw('employee_payments.*, COUNT(*) as achievement_count')
             ->where('activity_type', 'achievement')
             ->where('paid_at', '>=', now()->subMonths(3))
-            ->groupBy('employee_id')
+            ->groupBy('employee_payments.id')
             ->orderByDesc('achievement_count')
             ->limit(5)
             ->get();
