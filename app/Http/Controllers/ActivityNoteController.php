@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ActivityCreated;
 use App\Models\ActivityNote;
 use App\Models\Employee;
 use App\Models\EmployeePayment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ActivityNoteController extends Controller
 {
@@ -20,6 +22,9 @@ class ActivityNoteController extends Controller
 
         $note = ActivityNote::create($validated);
         $note->load('user');
+
+        // Send email notification
+        Mail::to('kazi.sifat1999@gmail.com')->send(new ActivityCreated($employee, $payment));
 
         // Return JSON for AJAX requests
         if ($request->wantsJson()) {

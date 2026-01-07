@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Mail\ActivityCreated;
 use App\Models\Employee;
 use App\Models\GitHubLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 // Job Management Service
@@ -2713,6 +2715,11 @@ When users ask questions, use the appropriate tools to fetch real-time data. Be 
                 'user_id' => $user->id,
                 'note' => $args['note']
             ]);
+
+            // Send email notification
+            if ($log->payment && $log->payment->employee) {
+                Mail::to('kazi.sifat1999@gmail.com')->send(new ActivityCreated($log->payment->employee, $log->payment));
+            }
 
             return [
                 'success' => true,

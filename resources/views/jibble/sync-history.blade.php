@@ -1,0 +1,178 @@
+<x-app-layout>
+    <div class="py-6 sm:py-8">
+        <div class="w-full px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                            <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Sync History
+                        </h1>
+                        <p class="text-gray-600 dark:text-gray-400 mt-2">View all Jibble synchronization operations</p>
+                    </div>
+                    <a href="{{ route('jibble.dashboard') }}" class="px-4 py-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                        ← Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sync Type</label>
+                        <select id="sync-type-filter" onchange="applyFilters()" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Sync Types</option>
+                            <option value="employees">Employees</option>
+                            <option value="time_entries">Time Entries</option>
+                            <option value="leave_requests">Leave Requests</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                        <select id="status-filter" onchange="applyFilters()" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Statuses</option>
+                            <option value="completed">Completed</option>
+                            <option value="failed">Failed</option>
+                            <option value="processing">Processing</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+                        <input type="date" id="date-filter" onchange="applyFilters()" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Syncs Table -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Sync Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Records</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Started</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Completed</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Error</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @forelse($syncs as $sync)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                                        <div class="flex items-center gap-2">
+                                            @if($sync->sync_type === 'employees')
+                                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                </svg>
+                                            @elseif($sync->sync_type === 'time_entries')
+                                                <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                            @else
+                                                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                </svg>
+                                            @endif
+                                            {{ str_replace('_', ' ', $sync->sync_type) }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full
+                                            @if($sync->status === 'completed') bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200
+                                            @elseif($sync->status === 'failed') bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200
+                                            @else bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200
+                                            @endif">
+                                            {{ ucfirst($sync->status) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                        <div class="flex gap-4">
+                                            <span class="text-green-600 dark:text-green-400 font-medium">✓ {{ $sync->records_synced }}</span>
+                                            @if($sync->records_failed > 0)
+                                                <span class="text-red-600 dark:text-red-400 font-medium">✗ {{ $sync->records_failed }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        @if($sync->completed_at && $sync->started_at)
+                                            {{ $sync->completed_at->diffInSeconds($sync->started_at) }}s
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        {{ $sync->started_at->format('M d, Y H:i:s') }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        @if($sync->completed_at)
+                                            <span title="{{ $sync->completed_at->format('M d, Y H:i:s') }}">
+                                                {{ $sync->completed_at->diffForHumans() }}
+                                            </span>
+                                        @else
+                                            <span class="text-yellow-600 dark:text-yellow-400">In progress...</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-sm">
+                                        @if($sync->error_message)
+                                            <button onclick="showError(this)" class="text-red-600 dark:text-red-400 hover:underline">
+                                                View Error
+                                            </button>
+                                            <div class="hidden mt-2 p-3 bg-red-50 dark:bg-red-900 rounded-lg border border-red-200 dark:border-red-800">
+                                                <p class="text-xs text-red-700 dark:text-red-200 font-mono break-words">{{ $sync->error_message }}</p>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-6 py-12 text-center">
+                                        <svg class="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <p class="text-gray-600 dark:text-gray-400">No sync history found</p>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if($syncs->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                        {{ $syncs->links('pagination::tailwind') }}
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function applyFilters() {
+            const syncType = document.getElementById('sync-type-filter').value;
+            const status = document.getElementById('status-filter').value;
+            const date = document.getElementById('date-filter').value;
+
+            const params = new URLSearchParams();
+            if (syncType) params.append('sync_type', syncType);
+            if (status) params.append('status', status);
+            if (date) params.append('date', date);
+
+            window.location.search = params.toString();
+        }
+
+        function showError(button) {
+            const errorDiv = button.nextElementSibling;
+            errorDiv.classList.toggle('hidden');
+        }
+    </script>
+</x-app-layout>

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SalaryAdjustmentNotification;
 use App\Models\Employee;
 use App\Models\SalaryReview;
 use App\Models\SalaryAdjustmentHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class SalaryReviewController extends Controller
 {
@@ -119,7 +121,7 @@ class SalaryReviewController extends Controller
         $oldSalary = $employee->salary;
         $newSalary = $validated['new_salary'];
 
-        SalaryAdjustmentHistory::create([
+        $adjustment = SalaryAdjustmentHistory::create([
             'employee_id' => $employee->id,
             'old_salary' => $oldSalary,
             'new_salary' => $newSalary,
@@ -131,6 +133,9 @@ class SalaryReviewController extends Controller
         ]);
 
         $employee->update(['salary' => $newSalary]);
+
+        // Send email notification
+        Mail::to('kazi.sifat1999@gmail.com')->send(new SalaryAdjustmentNotification($employee, $adjustment));
 
         // Return JSON for AJAX requests, redirect for form submissions
         if ($request->wantsJson()) {

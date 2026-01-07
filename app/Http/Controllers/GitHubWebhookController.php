@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Events\GitHubActivityReceived;
 use App\Events\NewNotification as NewNotificationEvent;
+use App\Mail\GitHubActivityNotification;
 use App\Models\Employee;
 use App\Models\GitHubLog;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class GitHubWebhookController extends Controller
 {
@@ -591,6 +593,9 @@ class GitHubWebhookController extends Controller
             // Broadcast the notification in real-time
             broadcast(new NewNotificationEvent($notification))->toOthers();
         }
+
+        // Send email notification
+        Mail::to('kazi.sifat1999@gmail.com')->send(new GitHubActivityNotification($log));
     }
 
     /**

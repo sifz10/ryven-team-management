@@ -30,6 +30,10 @@ class Employee extends Authenticatable
         'discontinued_at',
         'is_active',
         'user_id',
+        'jibble_id',
+        'jibble_email',
+        'jibble_data',
+        'jibble_synced_at',
     ];
 
     protected $hidden = [
@@ -43,6 +47,8 @@ class Employee extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'jibble_data' => 'array',
+        'jibble_synced_at' => 'datetime',
     ];
 
     public function payments()

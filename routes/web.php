@@ -690,4 +690,17 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::delete('/talent-pool/{talentPool}', [App\Http\Controllers\Admin\TalentPoolController::class, 'destroy'])->name('talent-pool.destroy');
 });
 
+// Jibble Integration Routes
+Route::middleware(['auth', 'verified'])->prefix('jibble')->name('jibble.')->group(function () {
+    Route::get('dashboard', [App\Http\Controllers\JibbleController::class, 'dashboard'])->name('dashboard');
+    Route::get('sync-history', [App\Http\Controllers\JibbleController::class, 'syncHistory'])->name('sync-history');
+    Route::get('time-entries', [App\Http\Controllers\JibbleController::class, 'timeEntries'])->name('time-entries');
+    Route::get('leave-requests', [App\Http\Controllers\JibbleController::class, 'leaveRequests'])->name('leave-requests');
+    
+    Route::post('test-connection', [App\Http\Controllers\JibbleController::class, 'testConnection'])->name('test-connection');
+    Route::post('sync-employees', [App\Http\Controllers\JibbleController::class, 'syncEmployees'])->name('sync-employees');
+    Route::post('sync-time-entries', [App\Http\Controllers\JibbleController::class, 'syncTimeEntries'])->name('sync-time-entries');
+    Route::post('sync-leave-requests', [App\Http\Controllers\JibbleController::class, 'syncLeaveRequests'])->name('sync-leave-requests');
+});
+
 require __DIR__.'/auth.php';
