@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('review_cycles')) {
+            return; // Table already exists, skip creation
+        }
+
         Schema::create('review_cycles', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Q1 2025 Review, Annual 2025, etc.

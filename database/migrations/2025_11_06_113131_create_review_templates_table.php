@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('review_templates')) {
+            return; // Table already exists, skip creation
+        }
+
         Schema::create('review_templates', function (Blueprint $table) {
             $table->id();
             $table->string('name');

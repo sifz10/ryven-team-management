@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('review_feedbacks')) {
+            return; // Table already exists, skip creation
+        }
+
         Schema::create('review_feedbacks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('performance_review_id')->constrained()->cascadeOnDelete();
