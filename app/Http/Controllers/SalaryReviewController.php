@@ -113,7 +113,7 @@ class SalaryReviewController extends Controller
         $validated = $request->validate([
             'new_salary' => ['required', 'numeric', 'min:0'],
             'reason' => ['required', 'string', 'max:1000'],
-            'type' => ['required', 'in:promotion,demotion,adjustment,manual'],
+            'type' => ['required', 'in:promotion,demotion,adjustment,manual,bonus'],
         ]);
 
         $oldSalary = $employee->salary;
@@ -131,6 +131,18 @@ class SalaryReviewController extends Controller
         ]);
 
         $employee->update(['salary' => $newSalary]);
+
+        // Return JSON for AJAX requests, redirect for form submissions
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Salary adjusted successfully!',
+                'old_salary' => $oldSalary,
+                'new_salary' => $newSalary,
+                'adjustment_amount' => $newSalary - $oldSalary,
+                'type' => $validated['type'],
+            ]);
+        }
 
         return back()->with('success', 'Salary adjusted successfully!');
     }

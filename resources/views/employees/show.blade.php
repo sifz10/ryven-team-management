@@ -61,8 +61,8 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
-        <div x-data="{ tab: getInitialTab() }" class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 sm:py-8">
+        <div x-data="{ tab: getInitialTab(), openAdjustmentModal: false }" class="w-full px-4 sm:px-6 lg:px-8">
             <!-- Employee Info Card -->
             <div class="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
                 <div class="p-6">
@@ -217,6 +217,188 @@
                 </div>
                         </div>
 
+            <!-- Salary Adjustment Modal -->
+            <div x-show="openAdjustmentModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-y-auto p-4 sm:p-0" @click.self="openAdjustmentModal = false" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all my-auto" x-transition:enter="ease-out duration-200" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100">
+                    <div class="p-6 sm:p-8 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Quick Salary Adjustment
+                                </h3>
+                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Make instant salary modifications with complete audit trail</p>
+                            </div>
+                            <button @click="openAdjustmentModal = false" class="flex-shrink-0 ml-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form @submit.prevent="submitAdjustment()" x-data="{
+                        adjustmentType: 'adjustment',
+                        newSalary: {{ $employee->salary ?? 0 }},
+                        reason: '',
+                        submitting: false,
+                        currentSalary: {{ $employee->salary ?? 0 }},
+                        difference: 0,
+
+                        updateDifference() {
+                            this.difference = this.newSalary - this.currentSalary;
+                        },
+
+                        async submitAdjustment() {
+                            if (!this.newSalary || !this.reason.trim()) {
+                                alert('Please fill in all fields');
+                                return;
+                            }
+
+                            this.submitting = true;
+
+                            try {
+                                const response = await fetch('{{ route('employees.adjust-salary', $employee) }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                    },
+                                    body: JSON.stringify({
+                                        new_salary: parseFloat(this.newSalary),
+                                        type: this.adjustmentType,
+                                        reason: this.reason
+                                    })
+                                });
+
+                                const data = await response.json();
+
+                                if (data.success) {
+                                    showToast('✓ Salary adjusted successfully!', 'success');
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 1500);
+                                } else {
+                                    showToast(data.message || 'Failed to adjust salary', 'error');
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                                showToast('An error occurred', 'error');
+                            } finally {
+                                this.submitting = false;
+                            }
+                        }
+                    }" class="p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+                        <!-- Current Salary Info Card -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-4 sm:p-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <p class="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-1">💰 Current Monthly Salary</p>
+                                    <p class="text-3xl sm:text-4xl font-bold text-blue-900 dark:text-blue-100">{{ number_format($employee->salary ?? 0, 2) }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-1">Currency</p>
+                                    <p class="text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $employee->currency ?? 'USD' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Fields Grid -->
+                        <div class="space-y-4 sm:space-y-5">
+                            <!-- Adjustment Type & New Salary Row -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                                <!-- Adjustment Type -->
+                                <div>
+                                    <label for="adj_type" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Adjustment Type</label>
+                                    <select x-model="adjustmentType" id="adj_type" class="w-full border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-lg px-3 sm:px-4 py-2.5 text-sm font-medium focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition">
+                                        <option value="adjustment">💰 Manual Adjustment</option>
+                                        <option value="promotion">📈 Promotion</option>
+                                        <option value="demotion">📉 Demotion</option>
+                                        <option value="bonus">🎁 Bonus</option>
+                                    </select>
+                                </div>
+
+                                <!-- New Salary -->
+                                <div>
+                                    <label for="new_salary" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">New Monthly Salary</label>
+                                    <input 
+                                        x-model.number="newSalary" 
+                                        @input="updateDifference()"
+                                        id="new_salary" 
+                                        type="number" 
+                                        step="0.01" 
+                                        min="0"
+                                        class="w-full border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-lg px-3 sm:px-4 py-2.5 text-sm font-medium focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition" 
+                                        placeholder="0.00"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Salary Difference Display -->
+                            <div x-show="difference !== 0" x-cloak class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 sm:p-5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8L5.257 19.757M5 7H3m2 0a2 2 0 100-4 2 2 0 000 4zm0 0v8"></path>
+                                        </svg>
+                                        <span x-text="difference > 0 ? 'Salary Increase' : 'Salary Decrease'"></span>
+                                    </span>
+                                    <div class="text-right">
+                                        <div class="text-2xl sm:text-3xl font-bold" :class="difference > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                                            <span x-text="difference > 0 ? '+' : ''"></span><span x-text="difference.toFixed(2)"></span>
+                                        </div>
+                                        <div class="text-xs font-semibold text-gray-600 dark:text-gray-400">{{ $employee->currency ?? 'USD' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reason Field -->
+                            <div>
+                                <label for="adj_reason" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">Reason for Adjustment</label>
+                                <textarea 
+                                    x-model="reason" 
+                                    id="adj_reason" 
+                                    rows="4"
+                                    class="w-full border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-white rounded-lg px-3 sm:px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition resize-none"
+                                    placeholder="e.g., Performance improvement, promotion to senior role, cost of living adjustment, market rate adjustment..."
+                                    required
+                                ></textarea>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Provide clear documentation for audit trail</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col-reverse sm:flex-row items-center gap-3 sm:gap-4 pt-4 border-t-2 border-gray-200 dark:border-gray-700">
+                            <button 
+                                type="button" 
+                                @click="openAdjustmentModal = false"
+                                class="w-full sm:flex-1 px-4 sm:px-6 py-3 sm:py-3.5 text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit"
+                                :disabled="submitting"
+                                class="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white rounded-lg font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                <svg x-show="!submitting" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <svg x-show="submitting" class="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span x-text="submitting ? 'Adjusting...' : 'Confirm Adjustment'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Overview Tab -->
             <div x-cloak x-show="tab==='overview'" x-transition.opacity class="space-y-6">
                 <!-- Filter Section -->
@@ -276,18 +458,33 @@
                         <div class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($totalPaid, 2) }}</div>
                         <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $currencyCode }}</div>
                     </div>
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">
-                                <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
+                <!-- Salary Summary with History Link -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">
+                            <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
                         </div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Monthly Salary</div>
-                        <div class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($monthlySalary, 2) }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $currencyCode }}</div>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('employees.salary-history', $employee) }}" class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                History
+                            </a>
+                            <button @click="openAdjustmentModal = true" class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Adjust
+                            </button>
+                        </div>
                     </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Monthly Salary</div>
+                    <div class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ number_format($monthlySalary, 2) }}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $currencyCode }}</div>
+                </div>
                     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
                         <div class="flex items-center justify-between mb-4">
                             <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-xl">

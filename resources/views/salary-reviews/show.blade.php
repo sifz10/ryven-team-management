@@ -1,39 +1,47 @@
-@extends('layouts.app')
-
-@section('title', 'Salary Review - ' . $salaryReview->employee->first_name . ' ' . $salaryReview->employee->last_name)
-
-@section('content')
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-6xl mx-auto">
-            <!-- Header -->
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <a href="{{ route('salary-reviews.index') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-2 mb-4">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                        Back
-                    </a>
-                    <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Salary Review</h1>
-                    <p class="mt-2 text-gray-600 dark:text-gray-400">
-                        {{ $salaryReview->employee->first_name }} {{ $salaryReview->employee->last_name }}
-                    </p>
-                </div>
-                @if($salaryReview->status === 'pending')
-                    <a href="{{ route('salary-reviews.edit', $salaryReview) }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                        Review Salary
-                    </a>
-                @endif
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                    Salary Review Details
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {{ $salaryReview->employee->first_name }} {{ $salaryReview->employee->last_name }}
+                </p>
             </div>
+            @if($salaryReview->status === 'pending')
+                <a href="{{ route('salary-reviews.edit', $salaryReview) }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Review Salary
+                </a>
+            @endif
+        </div>
+    </x-slot>
 
-            <div class="grid grid-cols-3 gap-6 mb-8">
+    <!-- Page Content -->
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <!-- Employee Info -->
                 <div class="col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Employee Details</h3>
+                    
+                    <div class="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                        <a href="{{ route('employees.show', $salaryReview->employee) }}" class="inline-flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition group">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
+                                {{ substr($salaryReview->employee->first_name, 0, 1) }}{{ substr($salaryReview->employee->last_name, 0, 1) }}
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                                    {{ $salaryReview->employee->first_name }} {{ $salaryReview->employee->last_name }}
+                                </p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                                    View full profile →
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+                    
                     <dl class="space-y-4">
                         <div>
                             <dt class="text-sm text-gray-600 dark:text-gray-400">Position</dt>
@@ -242,5 +250,4 @@
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

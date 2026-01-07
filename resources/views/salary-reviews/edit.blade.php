@@ -1,9 +1,19 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                    Complete Salary Review
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {{ $salaryReview->employee->first_name }} {{ $salaryReview->employee->last_name }}
+                </p>
+            </div>
+        </div>
+    </x-slot>
 
-@section('title', 'Review Salary - ' . $salaryReview->employee->first_name . ' ' . $salaryReview->employee->last_name)
-
-@section('content')
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Page Content -->
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <div class="py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-4xl mx-auto">
             <!-- Header -->
@@ -176,4 +186,5 @@ salaryInput.addEventListener('input', function() {
     );
 });
 </script>
-@endsection
+    </div>
+</x-app-layout>

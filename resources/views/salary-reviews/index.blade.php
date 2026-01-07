@@ -1,9 +1,17 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="font-semibold text-xl sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                    Salary Reviews
+                </h2>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Manage 6-month salary reviews and adjustments</p>
+            </div>
+        </div>
+    </x-slot>
 
-@section('title', 'Salary Reviews')
-
-@section('content')
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Page Content -->
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <div class="py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
             <!-- Header -->
@@ -143,5 +151,4 @@
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>
