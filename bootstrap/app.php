@@ -54,6 +54,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         // Generate daily checklists every day at midnight
         $schedule->command('checklists:generate-daily')->daily();
+        
+        // Send salary review reminders daily for reviews due within 5 days
+        $schedule->command('salary-reviews:send-reminders')->daily()->at('09:00');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -20,6 +20,7 @@ use App\Http\Controllers\ReviewCycleController;
 use App\Http\Controllers\PerformanceReviewController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\SkillController;
+use App\Http\Controllers\SalaryReviewController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -327,6 +328,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy')->middleware('permission:manage-attendance');
     Route::post('attendance/bulk-populate', [AttendanceController::class, 'bulkPopulate'])->name('attendance.bulk-populate')->middleware('permission:approve-attendance');
     Route::post('attendance/monthly-adjustment', [AttendanceController::class, 'saveMonthlyAdjustment'])->name('attendance.monthly-adjustment')->middleware('permission:approve-attendance');
+
+    // Salary Review routes
+    Route::resource('salary-reviews', SalaryReviewController::class)->middleware([
+        'index' => 'permission:view-employees',
+        'show' => 'permission:view-employees',
+        'edit' => 'permission:manage-employees',
+        'update' => 'permission:manage-employees',
+    ]);
+    Route::get('employees/{employee}/salary-history', [SalaryReviewController::class, 'employeeSalaryHistory'])->name('employees.salary-history')->middleware('permission:view-employees');
+    Route::post('employees/{employee}/adjust-salary', [SalaryReviewController::class, 'adjustSalary'])->name('employees.adjust-salary')->middleware('permission:manage-employees');
 
     // Checklist routes
     Route::post('employees/{employee}/checklists/templates', [ChecklistController::class, 'storeTemplate'])->name('employees.checklists.templates.store')->middleware('permission:create-checklists');

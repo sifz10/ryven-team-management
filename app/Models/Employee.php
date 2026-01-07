@@ -95,6 +95,16 @@ class Employee extends Authenticatable
         return $this->hasMany(PerformanceReview::class);
     }
 
+    public function salaryReviews(): HasMany
+    {
+        return $this->hasMany(SalaryReview::class)->orderByDesc('review_date');
+    }
+
+    public function salaryAdjustmentHistory(): HasMany
+    {
+        return $this->hasMany(SalaryAdjustmentHistory::class)->orderByDesc('created_at');
+    }
+
     public function goals(): HasMany
     {
         return $this->hasMany(Goal::class);
