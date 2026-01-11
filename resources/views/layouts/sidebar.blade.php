@@ -221,6 +221,34 @@
             <span x-show="!sidebarCollapsed" class="font-medium">UAT Testing</span>
         </a>
 
+        <!-- Chatbot -->
+        @if(Auth::guard('web')->check())
+            <a href="{{ route('admin.chatbot.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('admin.chatbot.*')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'Chatbot' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">Chatbot</span>
+            </a>
+
+            <!-- Chatbot Widgets -->
+            <a href="{{ route('admin.chatbot.widgets.index') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group
+                      {{ request()->routeIs('admin.chatbot.widgets.*')
+                         ? 'bg-black text-white dark:bg-white dark:text-black'
+                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+               x-tooltip="sidebarCollapsed ? 'Widgets' : ''">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                </svg>
+                <span x-show="!sidebarCollapsed" class="font-medium">Chat Widgets</span>
+            </a>
+        @endif
+
         <!-- GitHub Logs -->
         <a href="{{ route('github.logs') }}"
            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group

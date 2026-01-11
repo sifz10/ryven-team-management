@@ -21,6 +21,8 @@ use App\Http\Controllers\PerformanceReviewController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\SalaryReviewController;
+use App\Http\Controllers\ChatbotApiController;
+use App\Http\Controllers\Admin\ChatbotController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -59,6 +61,11 @@ Route::get('/checklist/{token}', [ChecklistController::class, 'publicView'])->na
 Route::get('/checklist/{token}/item/{item}/toggle', [ChecklistController::class, 'publicToggleItem'])->name('checklist.public.toggle');
 Route::post('/checklist/{token}/work', [ChecklistController::class, 'storeWorkSubmission'])->name('checklist.public.work.store');
 Route::delete('/checklist/{token}/work/{submission}', [ChecklistController::class, 'deleteWorkSubmission'])->name('checklist.public.work.delete');
+
+// Chatbot Widget API (no authentication - uses token)
+Route::post('/api/chatbot/init', [ChatbotApiController::class, 'initWidget']);
+Route::post('/api/chatbot/message', [ChatbotApiController::class, 'sendMessage']);
+Route::get('/api/chatbot/conversation/{conversation}', [ChatbotApiController::class, 'getConversation']);
 
 // Public UAT routes (no authentication required)
 Route::get('/uat/public/{token}', [UatPublicController::class, 'view'])->name('uat.public.view');
@@ -688,6 +695,25 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/talent-pool/{talentPool}', [App\Http\Controllers\Admin\TalentPoolController::class, 'show'])->name('talent-pool.show');
     Route::put('/talent-pool/{talentPool}', [App\Http\Controllers\Admin\TalentPoolController::class, 'update'])->name('talent-pool.update');
     Route::delete('/talent-pool/{talentPool}', [App\Http\Controllers\Admin\TalentPoolController::class, 'destroy'])->name('talent-pool.destroy');
+
+    // Chatbot Management
+    Route::get('/chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
+    Route::get('/chatbot/guide', [ChatbotController::class, 'guide'])->name('chatbot.guide');
+    Route::get('/chatbot/{conversation}', [ChatbotController::class, 'show'])->name('chatbot.show');
+    Route::post('/chatbot/{conversation}/reply', [ChatbotController::class, 'sendReply'])->name('chatbot.send-reply');
+    Route::post('/chatbot/{conversation}/assign', [ChatbotController::class, 'assign'])->name('chatbot.assign');
+    Route::post('/chatbot/{conversation}/close', [ChatbotController::class, 'close'])->name('chatbot.close');
+    Route::delete('/chatbot/{conversation}', [ChatbotController::class, 'destroy'])->name('chatbot.destroy');
+
+    // Chatbot Widgets Management
+    Route::get('/chatbot-widgets', [ChatbotController::class, 'widgetsIndex'])->name('chatbot.widgets.index');
+    Route::get('/chatbot-widgets/create', [ChatbotController::class, 'widgetsCreate'])->name('chatbot.widgets.create');
+    Route::post('/chatbot-widgets', [ChatbotController::class, 'widgetsStore'])->name('chatbot.widgets.store');
+    Route::get('/chatbot-widgets/{widget}', [ChatbotController::class, 'widgetsShow'])->name('chatbot.widgets.show');
+    Route::get('/chatbot-widgets/{widget}/edit', [ChatbotController::class, 'widgetsEdit'])->name('chatbot.widgets.edit');
+    Route::put('/chatbot-widgets/{widget}', [ChatbotController::class, 'widgetsUpdate'])->name('chatbot.widgets.update');
+    Route::post('/chatbot-widgets/{widget}/rotate-token', [ChatbotController::class, 'widgetsRotateToken'])->name('chatbot.widgets.rotate-token');
+    Route::delete('/chatbot-widgets/{widget}', [ChatbotController::class, 'widgetsDestroy'])->name('chatbot.widgets.destroy');
 });
 
 // Jibble Integration Routes

@@ -1,35 +1,38 @@
 # Team Management System - AI Coding Agent Instructions
 
 ## Project Overview
-This is a Laravel 12 team management application with integrated GitHub activity tracking, UAT (User Acceptance Testing) system, employee management, attendance tracking, and real-time notifications via Laravel Reverb.
+Laravel 12 team management platform with GitHub activity tracking, UAT system, employee management, attendance, and real-time notifications via Laravel Reverb. Multi-domain system supporting internal employees and external clients.
 
 ## Architecture & Key Components
 
 ### Core Domain Models
-- **Employee Management**: `Employee`, `EmployeePayment`, `EmployeeBankAccount`, `EmployeeAccess`, `EmploymentContract`
-  - Employees linked to GitHub via `email` and `github_username` fields
-  - Supports multi-currency salary tracking and discontinuation workflow
-- **Attendance System**: `Attendance`, `MonthlyAdjustment` - manual tracking with monthly adjustments
-- **Checklist System**: `ChecklistTemplate`, `DailyChecklist` with items - supports email-based public access via tokens
-- **GitHub Integration**: `GitHubLog` - stores all GitHub webhook events (pushes, PRs, reviews) linked to employees
-- **UAT Testing**: `UatProject`, `UatTestCase`, `UatFeedback`, `UatUser` - dual-mode (internal employees + external clients)
-- **Invoice Management**: `Invoice` with PDF generation via dompdf
-- **Personal Notes**: `PersonalNote`, `NoteRecipient`, `SavedEmail` - multi-type notes (text, password, backup code, website link, file) with email reminders and autocomplete
+**Employee** is the central hub with `hasMany` relationships to all activity types:
+- **Employee Management**: `Employee` (auth guard), `EmployeePayment`, `EmployeeBankAccount`, `EmployeeAccess`, `EmploymentContract`
+  - Linked to GitHub via **exact email match** (not username) from Git commits
+  - Multi-currency support (`currency` field: USD, BDT, etc.)
+  - Dual auth guards: `web` (User) and `employee` (Employee model with separate login)
+- **Attendance**: `Attendance`, `MonthlyAdjustment` - manual tracking with monthly corrections
+- **Checklists**: `ChecklistTemplate`, `DailyChecklist`, `DailyChecklistItem` - token-based public email access
+- **GitHub**: `GitHubLog` - webhook events (push, PR, review, issues) indexed by `event_at`
+- **UAT**: `UatProject`, `UatTestCase`, `UatFeedback`, `UatUser` - dual-mode (employees + external via token)
+- **Projects**: `Project`, `ProjectTask`, `ProjectFile`, `ProjectMember`, `ProjectDiscussion`, `ProjectExpense`, `ProjectTicket`
+- **Invoices**: `Invoice` with dompdf PDF generation
+- **Notes**: `PersonalNote`, `NoteRecipient`, `SavedEmail` - multi-type (text/password/code/link/file) with email reminders
 
 ### Real-Time Communication
-- **Broadcasting**: Uses Laravel Reverb (WebSocket server) for instant notifications
-- **Frontend**: Laravel Echo + Pusher.js for WebSocket connections
-- **Channel**: Private channel `user.{userId}` for per-user notifications
-- **Event**: `NewNotification` broadcasts to trigger UI updates
-- **Setup**: Run `php artisan reverb:start` in separate terminal (required for real-time features)
+- **Broadcasting**: Laravel Reverb (WebSocket) + Laravel Echo (frontend) for instant notifications
+- **Channels**: Private channel `user.{userId}` (use `{auth()->id()}` not `{auth()->guard('employee')->id()}`)
+- **Events**: `NewNotification` broadcasts; listen with `Echo.private('user.1').listen('.notification.new', ...)`
+- **Setup**: Run `php artisan reverb:start` in separate terminal (REQUIRED for real-time)
+- **Important**: Web users (admin) receive notifications on `user.{id}` where id is from `users` table, not employees
 
 ### GitHub Integration Workflow
-1. **Webhook Endpoint**: `POST /webhook/github` - no auth required, receives all GitHub events
-2. **Event Processing**: `GitHubWebhookController` matches events to employees by email
-3. **Stored Events**: push, pull_request, pull_request_review, issue comments, branch creation/deletion
-4. **PR Management**: `GitHubPullRequestController` + `GitHubApiService` for full PR operations (comment, review, merge, labels)
-5. **AI Code Review**: OpenAI GPT-4o-mini integration analyzes PR diffs (first 10 files, ~2000 tokens) - requires `OPENAI_API_KEY`
-6. **API Token**: Configure `GITHUB_API_TOKEN` in `.env` for GitHub API calls
+1. **Webhook Endpoint**: `POST /webhook/github` - no auth, receives all events via GitHub webhook
+2. **Email Matching**: Webhooks match to employees by **exact commit author email** (not username)
+3. **Stored Events**: Pushes, PRs, reviews, issue comments indexed by `event_at` (GitHub timestamp, not created_at)
+4. **API Client**: `GitHubApiService` wraps HTTP calls with `withoutVerifying()` in local env (Windows SSL workaround)
+5. **PR Operations**: `GitHubPullRequestController` provides comment, review, merge, label management
+6. **AI Review**: Analyzes PR diffs first 10 files (~2000 tokens) via OpenAI GPT-4o-mini if `OPENAI_API_KEY` set
 
 ### UAT System Architecture
 - **Dual Access**: Internal users (full CRUD) vs External users (read + feedback only)
@@ -44,49 +47,50 @@ This is a Laravel 12 team management application with integrated GitHub activity
 # One-time setup
 composer run setup
 
-# Development (runs all three services concurrently)
+# Development (runs 3 services: server, queue, vite)
 composer run dev
-# This starts: Laravel server (8000), Queue worker, Vite dev server
 
-# Real-time features (run in separate terminal)
-php artisan reverb:start  # WebSocket server on port 8080
+# Real-time notifications (separate terminal - REQUIRED)
+php artisan reverb:start
 ```
 
 ### Testing
 ```bash
-composer test  # Runs PHPUnit test suite
+composer test
 ```
 
 ### Database
-- MySQL-based (configured via `.env`)
-- Migrations in chronological order - employee system → attendance → contracts → checklists → invoices → GitHub → UAT
-- Key relationship: `Employee` is the central hub with hasMany to all activity types
+- MySQL (`.env` configured)
+- Migrations in chronological order: employees → attendance → contracts → checklists → invoices → GitHub → UAT
+- Critical: Employee email must match Git commit author email for webhook matching
 
 ## Code Patterns & Conventions
 
 ### Controller Organization
 - Resource controllers for main entities: `EmployeeController`, `UatProjectController`, `InvoiceController`
-- Specialized controllers for GitHub: `GitHubWebhookController` (webhook receiver), `GitHubPullRequestController` (API operations)
+- Specialized controllers for operations: `GitHubWebhookController` (webhook receiver), `GitHubPullRequestController` (API operations)
 - Public controllers for token-based access: `UatPublicController`, `ChecklistController::publicView`
+- Multiple admin/employee namespaced controllers under `Admin/`, `Employee/`, `Client/`
 
 ### Service Layer
-- `GitHubApiService`: Centralized GitHub API client with SSL verification disabled for local dev
-- HTTP client uses `withoutVerifying()` in local environment only (Windows development workaround)
+- `GitHubApiService`: Centralized GitHub API with SSL verification disabled in local env (Windows workaround)
+- Services wrap HTTP clients and add error handling/logging
+- Call `withoutVerifying()` only in `app()->environment('local')` contexts
 
 ### Frontend Stack
-- **Alpine.js**: Primary interactivity (modals, forms, toggles) - use `x-data` for component state
-- **Tailwind CSS**: Utility-first styling with dark mode support (`dark:` variants)
-- **Vite**: Asset bundling - use `@vite(['resources/css/app.css', 'resources/js/app.js'])` in layouts
-- **Laravel Echo**: Real-time event listening - example: `Echo.private('user.1').listen('.notification.new', ...)`
+- **Alpine.js**: Primary interactivity (x-data, x-show, x-transition) - store state in Alpine data objects
+- **Tailwind CSS**: Utility-first, dark mode with `dark:` variants
+- **Vite**: Asset bundling - reference as `@vite(['resources/css/app.css', 'resources/js/app.js'])`
+- **Laravel Echo**: Real-time events - listen on private channels: `Echo.private('user.{id}').listen('.notification.new', ...)`
 
-### Email System
-- Uses `laravel-dompdf` for PDF generation (invoices, contracts)
+### Email & PDF
+- `laravel-dompdf` for PDF generation (invoices, contracts)
 - Mail classes: `InvoiceMail`, `DailyChecklistMail`, `UatInvitation`, `NoteReminderMail`
-- Scheduled reminders: `notes:send-reminders` command runs every minute via Laravel Scheduler
-- Configure `MAIL_*` settings in `.env`
+- Scheduled reminders: `notes:send-reminders` runs every minute via scheduler
+- Configure `MAIL_*` in `.env`
 
 ### Event Broadcasting
-- Events in `app/Events`: `NewNotification`, `GitHubActivityReceived`
+- Events in `app/Events`: `NewNotification`, `GitHubActivityReceived`, `TaskCommentAdded`, `NewEmailReceived`
 - Implement `ShouldBroadcast` interface for real-time events
 - Channels defined in `routes/channels.php`
 
@@ -142,6 +146,33 @@ MAIL_MAILER=smtp
 - `laravel/reverb`: WebSocket server for broadcasting
 - `barryvdh/laravel-dompdf`: PDF generation
 - `laravel/tinker`: REPL for debugging
+- `webklex/php-imap`: IMAP email sync for real-time inbox
+- `smalot/pdfparser`: Resume parsing for job applications
+
+## Database Relationships Quick Reference
+
+```
+Employee (central hub)
+├─ hasMany: EmployeePayment, EmployeeBankAccount, EmployeeAccess
+├─ hasMany: Attendance, MonthlyAdjustment
+├─ hasMany: EmploymentContract
+├─ hasMany: ChecklistTemplate, DailyChecklist
+├─ hasMany: GitHubLog (event_at indexed, not created_at)
+├─ hasMany: PerformanceReview, SalaryReview, Goal
+├─ hasMany: ProjectMember, ProjectTask (assigned/created)
+└─ belongsToMany: Skill (with proficiency pivot data)
+
+Project (client work)
+├─ belongsTo: Client
+├─ hasMany: ProjectTask, ProjectFile, ProjectMember
+├─ hasMany: ProjectDiscussion, ProjectExpense, ProjectTicket
+└─ hasManyThrough: ProjectTaskComment (via ProjectTask)
+
+UatProject (external testing)
+├─ hasMany: UatTestCase
+├─ hasMany: UatUser (employees + external)
+└─ hasMany: UatFeedback (via UatTestCase)
+```
 
 ## Common Debugging Tips
 
@@ -149,16 +180,25 @@ MAIL_MAILER=smtp
 - Ensure Reverb server is running: `php artisan reverb:start`
 - Check browser console for Echo connection errors
 - Verify `VITE_REVERB_*` env vars are set and `npm run dev` was restarted after changes
+- Test with: `Echo.private('user.1').listen('.notification.new', console.log)`
 
 ### GitHub Webhook Not Working
 - Verify webhook URL is accessible: `https://team.ryven.co/webhook/github`
 - Check "Recent Deliveries" in GitHub webhook settings for error responses
 - Ensure employee email matches Git commit author email exactly
+- Webhook endpoint has no auth - it's at `POST /webhook/github`
 
 ### AI Review Failures
 - Check `OPENAI_API_KEY` is set in `.env`
 - Run `php artisan config:clear` after adding API key
 - API costs apply per request (~$0.15-0.60 per 1M tokens)
+- Reviews analyze first 10 files of PR diffs
+
+### Real-Time Email Sync
+- `FetchEmails` job runs via queue listener
+- Requires `MAIL_*` config for IMAP connection
+- Uses `webklex/php-imap` for email sync
+- Queue worker must be running: `php artisan queue:listen`
 
 ## File Locations Reference
 
@@ -174,7 +214,8 @@ MAIL_MAILER=smtp
 - Public endpoints (`/webhook/github`, `/uat/public/*`, `/checklist/*`) have no authentication
 - Token-based access for UAT/checklists - tokens are UUIDs stored in database
 - GitHub webhook should use Secret in production (currently not implemented)
-- SSL verification disabled in local environment only - re-enable for production
+- SSL verification disabled in local environment only (`GitHubApiService::withoutVerifying()`) - re-enable for production
+- Employee auth guard uses separate `employees` table - don't confuse with `users` (web guard)
 
 ## Button Components Style Guide
 - `<x-black-button>`: Primary action button with pure black background, white text, round and hover effect

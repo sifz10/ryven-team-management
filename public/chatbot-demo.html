@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Widget Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .code-section {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .code-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        code {
+            background: #f9f9f9;
+            padding: 15px;
+            display: block;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: auto;
+        }
+
+        .step {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #856404;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .feature {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .feature h3 {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .feature p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background: #764ba2;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            color: #856404;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Chatbot Widget Demo</h1>
+        <p class="subtitle">Complete working example - Copy & paste ready!</p>
+
+        <div class="success">
+            ✅ The chat widget is already installed on this page! Look for the bubble in the bottom-right corner.
+        </div>
+
+        <!-- Step 1 -->
+        <div class="step">
+            <h2>Step 1: Create Widget (Admin Only)</h2>
+            <p>First, create a widget configuration in your system.</p>
+            <div class="code-section">
+                <h3>Laravel Tinker Command</h3>
+                <code>$ php artisan tinker
+
+App\Models\ChatbotWidget::create([
+    'name' => 'Website Chat',
+    'domain' => 'yourwebsite.com',
+    'installed_in' => 'Website',
+    'welcome_message' => 'Hi! 👋 How can we help?',
+    'is_active' => true,
+]);
+
+// This generates a unique api_token like:
+// cbw_abc123xyz789</code>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step">
+            <h2>Step 2: Get Your API Token</h2>
+            <p>The token is auto-generated and looks like: <span class="highlight">cbw_abc123xyz789</span></p>
+            <p>You'll see it in the Tinker output or query the database:</p>
+            <div class="code-section">
+                <h3>Get Token from Database</h3>
+                <code>$ php artisan tinker
+
+ChatbotWidget::where('name', 'Website Chat')->first()->api_token
+
+// Returns: "cbw_abc123xyz789"</code>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step">
+            <h2>Step 3: Install Widget in Your App</h2>
+            <p>Add ONE line of code to your website/CRM:</p>
+            <div class="code-section">
+                <h3>HTML Installation</h3>
+                <code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+    &lt;h1&gt;Your Website&lt;/h1&gt;
+
+    &lt;!-- Add this script tag at the end of body --&gt;
+    &lt;script 
+        src="https://team.ryven.co/chatbot-widget.js" 
+        data-api-token="cbw_YOUR_TOKEN_HERE"
+        data-widget-url="https://team.ryven.co"
+        data-visitor-name="Guest"
+    &gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code>
+            </div>
+
+            <div class="code-section">
+                <h3>With Dynamic Data (CRM)</h3>
+                <code>&lt;script 
+    src="{{ config('app.url') }}/chatbot-widget.js" 
+    data-api-token="{{ env('CHATBOT_TOKEN') }}"
+    data-widget-url="{{ config('app.url') }}"
+    data-visitor-name="{{ $currentUser->name }}"
+    data-visitor-email="{{ $currentUser->email }}"
+    data-visitor-phone="{{ $currentUser->phone }}"
+&gt;&lt;/script&gt;</code>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step">
+            <h2>Step 4: Test & Manage</h2>
+            <p>Now you're ready to use the chatbot!</p>
+            <div class="features">
+                <div class="feature">
+                    <h3>👤 Customer</h3>
+                    <p>Clicks bubble, types message</p>
+                </div>
+                <div class="feature">
+                    <h3>💾 System</h3>
+                    <p>Stores in database</p>
+                </div>
+                <div class="feature">
+                    <h3>👨‍💼 Admin</h3>
+                    <p>Sees & replies instantly</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Features -->
+        <div class="step">
+            <h2>✨ Key Features</h2>
+            <ul style="margin-left: 20px; color: #666; line-height: 1.8;">
+                <li>✅ Single script tag installation</li>
+                <li>✅ No authentication required from customer</li>
+                <li>✅ Real-time message delivery (WebSocket)</li>
+                <li>✅ Admin dashboard at /admin/chatbot</li>
+                <li>✅ Token-based security</li>
+                <li>✅ Visitor info capture (optional)</li>
+                <li>✅ Mobile responsive</li>
+                <li>✅ Dark mode support</li>
+                <li>✅ Only 15KB (minified)</li>
+            </ul>
+        </div>
+
+        <!-- Configuration Options -->
+        <div class="step">
+            <h2>📋 Script Tag Options</h2>
+            <div class="code-section">
+                <h3>All Available Attributes</h3>
+                <code>&lt;script 
+    src="https://team.ryven.co/chatbot-widget.js" 
+    data-api-token="cbw_xxx"              &lt;!-- REQUIRED --&gt;
+    data-widget-url="https://..."          &lt;!-- REQUIRED --&gt;
+    data-visitor-name="John"               &lt;!-- Optional --&gt;
+    data-visitor-email="john@..."          &lt;!-- Optional --&gt;
+    data-visitor-phone="+1234567890"       &lt;!-- Optional --&gt;
+    data-visitor-id="crm_user_123"         &lt;!-- Optional --&gt;
+    data-visitor-metadata='{"key":"val"}'  &lt;!-- Optional --&gt;
+&gt;&lt;/script&gt;</code>
+            </div>
+        </div>
+
+        <!-- API Reference -->
+        <div class="step">
+            <h2>🔌 API Endpoints</h2>
+            <p>For custom integrations, you can use these endpoints directly:</p>
+
+            <div class="code-section">
+                <h3>Initialize Chat</h3>
+                <code>POST /api/chatbot/init
+Authorization: Bearer cbw_YOUR_TOKEN
+Content-Type: application/json
+
+{
+    "visitor_name": "John Doe",
+    "visitor_email": "john@example.com",
+    "visitor_phone": "+1234567890"
+}
+
+Response: { conversation_id: 1, widget_name: "..." }</code>
+            </div>
+
+            <div class="code-section">
+                <h3>Send Message</h3>
+                <code>POST /api/chatbot/message
+Authorization: Bearer cbw_YOUR_TOKEN
+
+{
+    "conversation_id": 1,
+    "message": "Hello!",
+    "sender_type": "visitor"
+}
+
+Response: { success: true, message_id: 42 }</code>
+            </div>
+
+            <div class="code-section">
+                <h3>Get Conversation</h3>
+                <code>GET /api/chatbot/conversation/1
+Authorization: Bearer cbw_YOUR_TOKEN
+
+Response: { 
+    data: {
+        messages: [...],
+        visitor_name: "John",
+        status: "active"
+    }
+}</code>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div class="step">
+            <h2>📊 Admin Dashboard</h2>
+            <p>Manage conversations at: <span class="highlight">/admin/chatbot</span></p>
+            <div class="features">
+                <div class="feature">
+                    <h3>📈 Stats</h3>
+                    <p>Total, pending, active, closed, unread</p>
+                </div>
+                <div class="feature">
+                    <h3>🔍 Filters</h3>
+                    <p>By status, widget, assigned employee</p>
+                </div>
+                <div class="feature">
+                    <h3>💬 Reply</h3>
+                    <p>Send instant responses</p>
+                </div>
+                <div class="feature">
+                    <h3>👤 Assign</h3>
+                    <p>Assign to team members</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Environment Setup -->
+        <div class="step">
+            <h2>⚙️ Environment Configuration</h2>
+            <p>Add these to your <span class="highlight">.env</span> file:</p>
+            <div class="code-section">
+                <h3>.env Settings</h3>
+                <code"># For Real-Time Messaging (Required)
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=your-app-id
+REVERB_APP_KEY=your-app-key
+REVERB_APP_SECRET=your-app-secret
+REVERB_PORT=8080
+
+# Widget URLs
+CHATBOT_WIDGET_URL=https://team.ryven.co
+
+# (Optional) Frontend Reverb config
+VITE_REVERB_HOST=team.ryven.co
+VITE_REVERB_PORT=443
+VITE_REVERB_SCHEME=https</code>
+            </div>
+        </div>
+
+        <!-- Starting Reverb -->
+        <div class="step">
+            <h2>🚀 Running the System</h2>
+            <p>You need to run the Reverb server for real-time messaging:</p>
+            <div class="code-section">
+                <h3>Terminal 1: Reverb Server</h3>
+                <code>$ php artisan reverb:start
+
+Starting Reverb server on 127.0.0.1:8080
+WebSocket server running...</code>
+            </div>
+
+            <div class="code-section">
+                <h3>Terminal 2: Laravel Server</h3>
+                <code>$ php artisan serve
+
+Local:   http://127.0.0.1:8000</code>
+            </div>
+
+            <div class="code-section">
+                <h3>Terminal 3: Queue Worker (optional)</h3>
+                <code>$ php artisan queue:listen</code>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="warning">
+            <h3>🔧 Troubleshooting</h3>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li><strong>Widget not showing?</strong> Check token is correct and widget is active</li>
+                <li><strong>Messages not appearing?</strong> Verify Reverb server is running</li>
+                <li><strong>CORS errors?</strong> Check domain configuration</li>
+                <li><strong>Real-time not working?</strong> Check Reverb connection in browser console</li>
+            </ul>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success">
+            <h3>✅ Ready to Use!</h3>
+            <p>The chatbot system is fully implemented and ready for production. Start with the Quick Start steps above, or check the documentation files for more details.</p>
+            <a href="#" class="button">View Full Documentation →</a>
+        </div>
+
+        <footer>
+            <p>Chatbot Widget System v1.0 • Ready for Production</p>
+            <p>For complete documentation, see: docs/CHATBOT_WIDGET_SYSTEM.md</p>
+        </footer>
+    </div>
+
+    <!-- 
+    ===================================
+    CHATBOT WIDGET INSTALLATION
+    ===================================
+    This is a demo. Replace cbw_demo_token_only with your actual token
+    -->
+    <script 
+        src="https://team.ryven.co/chatbot-widget.js" 
+        data-api-token="cbw_demo_token_only"
+        data-widget-url="https://team.ryven.co"
+        data-visitor-name="Demo Visitor"
+        data-visitor-email="demo@example.com"
+    ></script>
+</body>
+</html>
