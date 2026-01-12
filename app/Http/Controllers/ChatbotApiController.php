@@ -153,7 +153,18 @@ class ChatbotApiController extends Controller
                     'message_id' => $message->id,
                     'sender_type' => $message->sender_type,
                 ]);
-                broadcast(new \App\Events\ChatMessageReceived($conversation, $message))->toOthers();
+                
+                // Load attachments on the message instance
+                $message->load('attachments');
+                Log::info('Message loaded with attachments', [
+                    'message_id' => $message->id,
+                    'attachment_count' => $message->attachments->count(),
+                ]);
+                
+                $event = new \App\Events\ChatMessageReceived($conversation, $message);
+                Log::info('Event instance created', ['event' => get_class($event)]);
+                
+                broadcast($event)->toOthers();
                 Log::info('Broadcast sent successfully');
             } catch (\Exception $broadcastError) {
                 Log::error('Broadcast failed: ' . $broadcastError->getMessage(), [

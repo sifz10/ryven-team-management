@@ -12,6 +12,7 @@
         "laravel/framework": "^12.0",
         "laravel/reverb": "^1.6",
         "laravel/tinker": "^2.10.1",
+        "pusher/pusher-php-server": "^7.2",
         "smalot/pdfparser": "^2.12",
         "webklex/php-imap": "^6.2"
     },

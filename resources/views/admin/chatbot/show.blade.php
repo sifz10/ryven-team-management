@@ -685,10 +685,11 @@
                     try {
                         console.log('🔔 Real-time message received:', event);
                         
-                        // Mark connection as active
+                        // Mark connection as active only when we receive first message
                         if (!realtimeConnected) {
                             realtimeConnected = true;
                             stopPolling(); // Stop polling since real-time is working
+                            console.log('✅ Real-time working - received first message!');
                         }
                         
                         // Add visitor messages in real-time
@@ -718,12 +719,9 @@
                 .error((error) => {
                     console.warn('⚠️ Channel error, falling back to polling:', error);
                     realtimeConnected = false;
-                    // Don't immediately start polling, wait for a message to trigger retry
+                    startPolling();
                 });
             
-            // Set connection status
-            realtimeConnected = true;
-            stopPolling();
             console.log('✅ Real-time listener registered successfully');
             
         } catch (error) {
@@ -736,7 +734,14 @@
     // Monitor Echo connection state periodically
     setInterval(() => {
         if (window.Echo && window.Echo.connector) {
-            const isConnected = window.Echo.connector.socket?.connected;
+            // For Pusher: check pusher.connection.state
+            let isConnected = false;
+            if (window.Echo.connector.pusher && window.Echo.connector.pusher.connection) {
+                isConnected = window.Echo.connector.pusher.connection.state === 'connected';
+            } else if (window.Echo.connector.socket?.connected) {
+                isConnected = true;
+            }
+            
             if (!realtimeConnected && isConnected) {
                 console.log('✅ Echo reconnected, stopping polling');
                 stopPolling();

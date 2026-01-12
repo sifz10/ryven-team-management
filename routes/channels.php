@@ -15,3 +15,8 @@ Broadcast::channel('user.{userId}', function ($user, $userId) {
 Broadcast::channel('task.{taskId}', function ($user, $taskId) {
     return true; // Anyone viewing the task can see comments
 });
+
+// Public channel for chatbot conversations (no auth needed - public conversations)
+Broadcast::channel('chat.conversation.{conversationId}', function () {
+    return true; // Publicly accessible - anyone can listen to chat updates
+});

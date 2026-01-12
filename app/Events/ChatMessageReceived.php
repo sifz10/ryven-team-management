@@ -25,6 +25,12 @@ class ChatMessageReceived implements ShouldBroadcast
     {
         $this->conversation = $conversation;
         $this->message = $message;
+        
+        \Illuminate\Support\Facades\Log::info('ChatMessageReceived event created', [
+            'conversation_id' => $conversation->id,
+            'message_id' => $message->id,
+            'sender_type' => $message->sender_type,
+        ]);
     }
 
     /**
@@ -59,7 +65,7 @@ class ChatMessageReceived implements ShouldBroadcast
         // Load attachments eagerly for broadcast payload
         $this->message->load('attachments');
         
-        return [
+        $payload = [
             'id' => $this->message->id,
             'conversation_id' => $this->conversation->id,
             'sender_type' => $this->message->sender_type,
@@ -74,5 +80,14 @@ class ChatMessageReceived implements ShouldBroadcast
             'created_at' => $this->message->created_at->format('Y-m-d H:i:s'),
             'timestamp' => $this->message->created_at->timestamp,
         ];
+        
+        \Illuminate\Support\Facades\Log::info('BroadcastWith payload prepared', [
+            'channel' => 'chat.conversation.' . $this->conversation->id,
+            'payload_keys' => array_keys($payload),
+            'message_text' => $payload['message'] ?? 'NO MESSAGE',
+            'has_attachments' => count($payload['attachments'] ?? []),
+        ]);
+        
+        return $payload;
     }
 }
