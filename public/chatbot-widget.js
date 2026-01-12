@@ -932,7 +932,7 @@
         });
 
         // Send button
-        sendBtn.addEventListener('click', sendMessage);
+        sendBtn.addEventListener('click', () => sendMessage());
 
         // Input field - auto-resize and keyboard support
         input.addEventListener('input', (e) => {
