@@ -177,7 +177,7 @@ Messages are broadcast on channel: `chat.conversation.{id}`
 
 ### Initialize Chat
 ```
-POST /api/chatbot/init
+POST1
 Authorization: Bearer cbw_token
 ```
 
