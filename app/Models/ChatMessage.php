@@ -14,11 +14,13 @@ class ChatMessage extends Model
         'message',
         'attachment_path',
         'attachment_name',
+        'is_voice',
         'read_at',
     ];
 
     protected $casts = [
         'read_at' => 'datetime',
+        'is_voice' => 'boolean',
     ];
 
     public function conversation(): BelongsTo

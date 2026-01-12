@@ -131,18 +131,126 @@ class ChatbotApiController extends Controller
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
 
-            // Mark visitor messages as read
-            $conversation->messages()
-                ->where('sender_type', 'visitor')
-                ->whereNull('read_at')
-                ->update(['read_at' => now()]);
+    /**
+     * Upload file
+     * POST /api/chatbot/file
+     */
+    public function uploadFile(Request $request)
+    {
+        try {
+            $token = $request->header('Authorization');
+            if (!$token || !str_starts_with($token, 'Bearer ')) {
+                return response()->json(['error' => 'Invalid token'], 401);
+            }
+
+            $token = str_replace('Bearer ', '', $token);
+            $widget = $this->chatbotService->authenticateWidget($token);
+
+            if (!$widget) {
+                return response()->json(['error' => 'Widget not found'], 404);
+            }
+
+            $validated = $request->validate([
+                'conversation_id' => 'required|exists:chat_conversations,id',
+                'file' => 'required|file|max:10240', // 10MB max
+                'sender_type' => 'required|in:visitor,employee',
+            ]);
+
+            // Verify conversation belongs to this widget
+            $conversation = ChatConversation::findOrFail($validated['conversation_id']);
+            if ($conversation->chatbot_widget_id !== $widget->id) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            // Store file
+            $file = $request->file('file');
+            $path = $file->store('chatbot-files', 'public');
+            $fileName = $file->getClientOriginalName();
+
+            // Store message with attachment
+            $message = ChatMessage::create([
+                'chat_conversation_id' => $conversation->id,
+                'sender_type' => $validated['sender_type'],
+                'sender_id' => $widget->id,
+                'message' => "📎 {$fileName}",
+                'attachment_path' => "/storage/{$path}",
+                'attachment_name' => $fileName,
+            ]);
+
+            broadcast(new \App\Events\ChatMessageReceived($conversation, $message))->toOthers();
 
             return response()->json([
                 'success' => true,
-                'data' => $this->chatbotService->getConversationWithMessages($conversation),
+                'message_id' => $message->id,
+                'file_url' => "/storage/{$path}",
+                'timestamp' => $message->created_at->format('Y-m-d H:i:s'),
             ]);
         } catch (\Exception $e) {
-            Log::error('Get conversation error: ' . $e->getMessage());
+            Log::error('File upload error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error'], 500);
+        }
+    }
+
+    /**
+     * Upload voice message
+     * POST /api/chatbot/voice
+     */
+    public function uploadVoice(Request $request)
+    {
+        try {
+            $token = $request->header('Authorization');
+            if (!$token || !str_starts_with($token, 'Bearer ')) {
+                return response()->json(['error' => 'Invalid token'], 401);
+            }
+
+            $token = str_replace('Bearer ', '', $token);
+            $widget = $this->chatbotService->authenticateWidget($token);
+
+            if (!$widget) {
+                return response()->json(['error' => 'Widget not found'], 404);
+            }
+
+            $validated = $request->validate([
+                'conversation_id' => 'required|exists:chat_conversations,id',
+                'voice_message' => 'required|file|mimes:webm,mp3,wav,ogg,m4a|max:10240',
+                'sender_type' => 'required|in:visitor,employee',
+                'message' => 'required|string',
+            ]);
+
+            // Verify conversation belongs to this widget
+            $conversation = ChatConversation::findOrFail($validated['conversation_id']);
+            if ($conversation->chatbot_widget_id !== $widget->id) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            // Store voice file
+            $file = $request->file('voice_message');
+            $fileName = 'voice-' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('chatbot-voices', $fileName, 'public');
+
+            // Store message with voice attachment
+            $message = ChatMessage::create([
+                'chat_conversation_id' => $conversation->id,
+                'sender_type' => $validated['sender_type'],
+                'sender_id' => $widget->id,
+                'message' => $validated['message'],
+                'attachment_path' => "/storage/{$path}",
+                'attachment_name' => $fileName,
+            ]);
+
+            // Mark as voice message
+            $message->update(['is_voice' => true]);
+
+            broadcast(new \App\Events\ChatMessageReceived($conversation, $message))->toOthers();
+
+            return response()->json([
+                'success' => true,
+                'message_id' => $message->id,
+                'file_url' => "/storage/{$path}",
+                'timestamp' => $message->created_at->format('Y-m-d H:i:s'),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Voice upload error: ' . $e->getMessage());
             return response()->json(['error' => 'Server error'], 500);
         }
     }

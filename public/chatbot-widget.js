@@ -24,6 +24,9 @@
         conversationId: null,
         messages: [],
         isLoading: false,
+        isRecording: false,
+        mediaRecorder: null,
+        audioChunks: [],
     };
 
     // Create widget HTML
@@ -311,6 +314,113 @@
                     transform: none;
                 }
 
+                /* Action Buttons */
+                .chatbot-action-btn {
+                    background: rgba(102, 126, 234, 0.1);
+                    color: #667eea;
+                    border: 1px solid rgba(102, 126, 234, 0.2);
+                    border-radius: 8px;
+                    padding: 8px 10px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    line-height: 1;
+                }
+
+                .chatbot-action-btn:hover {
+                    background: rgba(102, 126, 234, 0.2);
+                    border-color: rgba(102, 126, 234, 0.4);
+                }
+
+                .chatbot-action-btn.recording {
+                    background: #ff3b3b;
+                    color: white;
+                    border-color: #ff3b3b;
+                    animation: pulse 1s infinite;
+                }
+
+                @keyframes pulse {
+                    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 59, 0.4); }
+                    50% { box-shadow: 0 0 0 8px rgba(255, 59, 59, 0); }
+                }
+
+                #chatbot-file-input, #chatbot-voice-input {
+                    display: none;
+                }
+
+                /* File/Voice Message Display */
+                .chatbot-file-message {
+                    padding: 12px;
+                    background: rgba(102, 126, 234, 0.1);
+                    border-radius: 8px;
+                    margin-top: 8px;
+                }
+
+                .chatbot-message.visitor .chatbot-file-message {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+
+                .chatbot-file-link {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    color: #667eea;
+                    text-decoration: none;
+                    font-size: 13px;
+                    font-weight: 500;
+                    padding: 8px;
+                    background: white;
+                    border-radius: 6px;
+                    transition: all 0.2s;
+                }
+
+                .chatbot-message.visitor .chatbot-file-link {
+                    color: white;
+                    background: rgba(255, 255, 255, 0.2);
+                }
+
+                .chatbot-file-link:hover {
+                    background: rgba(102, 126, 234, 0.2);
+                }
+
+                .chatbot-message.visitor .chatbot-file-link:hover {
+                    background: rgba(255, 255, 255, 0.3);
+                }
+
+                .chatbot-voice-player {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: white;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    margin-top: 8px;
+                }
+
+                .chatbot-message.visitor .chatbot-voice-player {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+
+                .chatbot-voice-player audio {
+                    max-width: 200px;
+                    height: 28px;
+                }
+
+                .chatbot-voice-duration {
+                    font-size: 12px;
+                    color: #666;
+                    min-width: 40px;
+                }
+
+                .chatbot-message.visitor .chatbot-voice-duration {
+                    color: rgba(255, 255, 255, 0.8);
+                }
+
                 /* Loading State */
                 .chatbot-loading {
                     text-align: center;
@@ -432,6 +542,9 @@
                 </div>
 
                 <div class="chatbot-input-area">
+                    <input type="file" id="chatbot-file-input" accept="*/*">
+                    <button class="chatbot-action-btn" id="chatbot-file-btn" title="Send File">📎</button>
+                    <button class="chatbot-action-btn" id="chatbot-voice-btn" title="Send Voice Message">🎤</button>
                     <textarea class="chatbot-input" id="chatbot-input" placeholder="Type a message..." rows="1"></textarea>
                     <button class="chatbot-send" id="chatbot-send">Send</button>
                 </div>
@@ -509,10 +622,47 @@
         state.messages.forEach(msg => {
             const div = document.createElement('div');
             div.className = `chatbot-message ${msg.sender_type === 'visitor' ? 'visitor' : 'employee'}`;
+            
+            let content = `<div class="chatbot-message-content">${escapeHtml(msg.message)}</div>`;
+            
+            // Add file attachment if exists
+            if (msg.attachment_path) {
+                const fileName = msg.attachment_name || msg.attachment_path.split('/').pop();
+                const fileExt = fileName.split('.').pop().toLowerCase();
+                let fileIcon = '📄';
+                if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) fileIcon = '🖼️';
+                else if (['mp3', 'wav', 'ogg', 'm4a'].includes(fileExt)) fileIcon = '🎵';
+                else if (['pdf'].includes(fileExt)) fileIcon = '📕';
+                else if (['doc', 'docx'].includes(fileExt)) fileIcon = '📘';
+                else if (['xls', 'xlsx'].includes(fileExt)) fileIcon = '📊';
+                
+                content += `
+                    <div class="chatbot-file-message">
+                        <a href="${msg.attachment_path}" class="chatbot-file-link" target="_blank" download>
+                            <span>${fileIcon}</span>
+                            <span>${escapeHtml(fileName)}</span>
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Add voice message if exists
+            if (msg.is_voice) {
+                const audioUrl = msg.attachment_path;
+                content += `
+                    <div class="chatbot-voice-player">
+                        <audio controls>
+                            <source src="${audioUrl}" type="audio/webm">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                `;
+            }
+            
             div.innerHTML = `
                 <div>
-                    <div class="chatbot-message-content">${escapeHtml(msg.message)}</div>
-                    <div class="chatbot-message-time">${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    ${content}
+                    <div class="chatbot-message-time">${new Date(msg.timestamp || msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                 </div>
             `;
             container.appendChild(div);
@@ -587,9 +737,148 @@
             }
         });
 
+        // File upload handler
+        document.getElementById('chatbot-file-btn').addEventListener('click', () => {
+            document.getElementById('chatbot-file-input').click();
+        });
+
+        document.getElementById('chatbot-file-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                sendFile(file);
+            }
+        });
+
+        // Voice recording handler
+        document.getElementById('chatbot-voice-btn').addEventListener('click', toggleVoiceRecording);
+
         // Setup real-time updates if Reverb is available
         if (window.Echo) {
             setupRealtimeUpdates();
+        }
+    }
+
+    // Send file
+    async function sendFile(file) {
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('conversation_id', state.conversationId);
+        formData.append('file', file);
+        formData.append('sender_type', 'visitor');
+
+        try {
+            document.getElementById('chatbot-send').disabled = true;
+            
+            const response = await fetch(`${CONFIG.widgetUrl}/api/chatbot/file`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${CONFIG.apiToken}`,
+                },
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                state.messages.push({
+                    sender_type: 'visitor',
+                    message: `📎 ${file.name}`,
+                    attachment_path: data.file_url,
+                    attachment_name: file.name,
+                    timestamp: new Date().toISOString(),
+                });
+                renderMessages();
+                // Reset file input
+                document.getElementById('chatbot-file-input').value = '';
+            }
+        } catch (error) {
+            console.error('Failed to send file:', error);
+            alert('Failed to upload file. Please try again.');
+        } finally {
+            document.getElementById('chatbot-send').disabled = false;
+        }
+    }
+
+    // Voice recording
+    async function toggleVoiceRecording() {
+        if (!state.isRecording) {
+            startVoiceRecording();
+        } else {
+            stopVoiceRecording();
+        }
+    }
+
+    async function startVoiceRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            state.mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            state.audioChunks = [];
+
+            state.mediaRecorder.ondataavailable = (event) => {
+                state.audioChunks.push(event.data);
+            };
+
+            state.mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
+                sendVoiceMessage(audioBlob);
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            state.mediaRecorder.start();
+            state.isRecording = true;
+            const voiceBtn = document.getElementById('chatbot-voice-btn');
+            voiceBtn.classList.add('recording');
+            voiceBtn.textContent = '⏹️';
+        } catch (error) {
+            console.error('Microphone access denied:', error);
+            alert('Please allow microphone access to send voice messages.');
+        }
+    }
+
+    function stopVoiceRecording() {
+        if (state.mediaRecorder) {
+            state.mediaRecorder.stop();
+            state.isRecording = false;
+            const voiceBtn = document.getElementById('chatbot-voice-btn');
+            voiceBtn.classList.remove('recording');
+            voiceBtn.textContent = '🎤';
+        }
+    }
+
+    async function sendVoiceMessage(audioBlob) {
+        const formData = new FormData();
+        formData.append('conversation_id', state.conversationId);
+        formData.append('voice_message', audioBlob, 'voice-message.webm');
+        formData.append('sender_type', 'visitor');
+        formData.append('message', '🎤 Voice message');
+
+        try {
+            document.getElementById('chatbot-send').disabled = true;
+            
+            const response = await fetch(`${CONFIG.widgetUrl}/api/chatbot/voice`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${CONFIG.apiToken}`,
+                },
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                state.messages.push({
+                    sender_type: 'visitor',
+                    message: '🎤 Voice message',
+                    attachment_path: data.file_url,
+                    is_voice: true,
+                    timestamp: new Date().toISOString(),
+                });
+                renderMessages();
+            }
+        } catch (error) {
+            console.error('Failed to send voice message:', error);
+            alert('Failed to send voice message. Please try again.');
+        } finally {
+            document.getElementById('chatbot-send').disabled = false;
         }
     }
 

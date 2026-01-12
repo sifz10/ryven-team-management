@@ -65,6 +65,8 @@ Route::delete('/checklist/{token}/work/{submission}', [ChecklistController::clas
 // Chatbot Widget API (no authentication - uses token)
 Route::post('/api/chatbot/init', [ChatbotApiController::class, 'initWidget']);
 Route::post('/api/chatbot/message', [ChatbotApiController::class, 'sendMessage']);
+Route::post('/api/chatbot/file', [ChatbotApiController::class, 'uploadFile']);
+Route::post('/api/chatbot/voice', [ChatbotApiController::class, 'uploadVoice']);
 Route::get('/api/chatbot/conversation/{conversation}', [ChatbotApiController::class, 'getConversation']);
 
 // Public UAT routes (no authentication required)
