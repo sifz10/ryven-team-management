@@ -678,9 +678,13 @@
                 state.conversationId = data.conversation_id;
                 loadMessages();
                 setupEventListeners();
+            } else {
+                console.error('Init failed:', data);
+                showNotification(data.error || 'Failed to initialize chat', 'error');
             }
         } catch (error) {
-            console.error('Failed to init chat:', error);
+            console.error('Init error:', error);
+            showNotification('Failed to connect to chat service', 'error');
         }
     }
 

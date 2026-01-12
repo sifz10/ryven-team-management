@@ -53,8 +53,8 @@ class ChatbotApiController extends Controller
                 'welcome_message' => $widget->welcome_message,
             ]);
         } catch (\Exception $e) {
-            Log::error('Chatbot init error: ' . $e->getMessage());
-            return response()->json(['error' => 'Server error'], 500);
+            Log::error('Chatbot init error: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+            return response()->json(['error' => 'Server error', 'debug' => env('APP_DEBUG') ? $e->getMessage() : null], 500);
         }
     }
 
@@ -93,17 +93,25 @@ class ChatbotApiController extends Controller
             // Store message
             $message = $this->chatbotService->storeMessage($conversation, $validated);
 
-            // Broadcast real-time update
-            broadcast(new \App\Events\ChatMessageReceived($conversation, $message))->toOthers();
+            // Broadcast real-time update (wrap in try-catch to prevent failure if broadcast unavailable)
+            try {
+                broadcast(new \App\Events\ChatMessageReceived($conversation, $message))->toOthers();
+            } catch (\Exception $broadcastError) {
+                Log::debug('Broadcast failed (non-critical): ' . $broadcastError->getMessage());
+                // Don't fail the message send if broadcast fails
+            }
 
             return response()->json([
                 'success' => true,
                 'message_id' => $message->id,
                 'timestamp' => $message->created_at->format('Y-m-d H:i:s'),
             ]);
+        } catch (\Illuminate\Validation\ValidationException $validationError) {
+            Log::error('Validation error: ', $validationError->errors());
+            return response()->json(['error' => 'Validation failed', 'details' => $validationError->errors()], 422);
         } catch (\Exception $e) {
-            Log::error('Send message error: ' . $e->getMessage());
-            return response()->json(['error' => 'Server error'], 500);
+            Log::error('Send message error: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+            return response()->json(['error' => 'Server error', 'debug' => env('APP_DEBUG') ? $e->getMessage() : null], 500);
         }
     }
 
