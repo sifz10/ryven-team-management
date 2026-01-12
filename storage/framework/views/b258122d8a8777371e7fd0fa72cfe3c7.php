@@ -1,4 +1,13 @@
-<x-app-layout>
+<?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
+<?php $component = App\View\Components\AppLayout::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('app-layout'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\App\View\Components\AppLayout::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
 
 <style>
     @keyframes fadeIn {
@@ -42,7 +51,7 @@
 <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
     <!-- Header Section -->
     <div class="mb-8">
-        <a href="{{ route('admin.chatbot.index') }}" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 mb-4 transition-colors">
+        <a href="<?php echo e(route('admin.chatbot.index')); ?>" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 mb-4 transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
@@ -51,19 +60,24 @@
         
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-1">{{ $conversation->visitor_name }}</h1>
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-1"><?php echo e($conversation->visitor_name); ?></h1>
                 <p class="text-slate-600 dark:text-slate-400 flex items-center gap-2">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
-                    {{ $conversation->visitor_email }}
+                    <?php echo e($conversation->visitor_email); ?>
+
                 </p>
             </div>
             <div class="flex gap-3">
                 <span class="px-4 py-2 text-sm font-semibold rounded-full transition-colors
-                    {{ $conversation->status === 'pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' : '' }}
-                    {{ $conversation->status === 'active' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' : '' }}
-                    {{ $conversation->status === 'closed' ? 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200' : '' }}
+                    <?php echo e($conversation->status === 'pending' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' : ''); ?>
+
+                    <?php echo e($conversation->status === 'active' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' : ''); ?>
+
+                    <?php echo e($conversation->status === 'closed' ? 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200' : ''); ?>
+
                 ">
-                    {{ ucfirst($conversation->status) }}
+                    <?php echo e(ucfirst($conversation->status)); ?>
+
                 </span>
                 <button onclick="closeConversation()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-md hover:shadow-lg">Close Chat</button>
             </div>
@@ -78,28 +92,31 @@
                 <div class="border-b border-slate-200 dark:border-gray-700 bg-gradient-to-r from-slate-50 to-transparent dark:from-gray-700 dark:to-transparent px-6 py-4">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h3 class="font-bold text-gray-900 dark:text-white text-lg">{{ $conversation->visitor_name }}</h3>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $conversation->status === 'active' ? '🟢 Active now' : 'Last seen ' . $conversation->updated_at?->diffForHumans() }}</p>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-lg"><?php echo e($conversation->visitor_name); ?></h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1"><?php echo e($conversation->status === 'active' ? '🟢 Active now' : 'Last seen ' . $conversation->updated_at?->diffForHumans()); ?></p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Messages Area -->
                 <div id="messages-container" class="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4 scroll-smooth">
-                    @forelse($conversation->messages as $message)
-                        <div class="flex {{ $message->sender_type === 'employee' ? 'justify-end' : 'justify-start' }} animate-fadeIn">
+                    <?php $__empty_1 = true; $__currentLoopData = $conversation->messages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $message): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <div class="flex <?php echo e($message->sender_type === 'employee' ? 'justify-end' : 'justify-start'); ?> animate-fadeIn">
                             <div class="max-w-sm">
-                                <div class="text-xs text-slate-500 dark:text-slate-400 mb-1.5 {{ $message->sender_type === 'employee' ? 'text-right' : '' }}">
-                                    {{ $message->sender_type === 'employee' ? 'You' : $conversation->visitor_name }} • {{ $message->created_at->format('H:i') }}
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mb-1.5 <?php echo e($message->sender_type === 'employee' ? 'text-right' : ''); ?>">
+                                    <?php echo e($message->sender_type === 'employee' ? 'You' : $conversation->visitor_name); ?> • <?php echo e($message->created_at->format('H:i')); ?>
+
                                 </div>
                                 <div class="px-4 py-3 rounded-2xl font-medium break-words
-                                    {{ $message->sender_type === 'employee' ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md' : 'bg-slate-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' }}
+                                    <?php echo e($message->sender_type === 'employee' ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md' : 'bg-slate-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'); ?>
+
                                 ">
-                                    {{ $message->message }}
+                                    <?php echo e($message->message); ?>
+
                                 </div>
                             </div>
                         </div>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <div class="flex items-center justify-center h-full text-center">
                             <div>
                                 <svg class="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +126,7 @@
                                 <p class="text-sm text-slate-400 dark:text-slate-500 mt-1">Start the conversation below</p>
                             </div>
                         </div>
-                    @endforelse
+                    <?php endif; ?>
                 </div>
 
                 <!-- Input Area -->
@@ -155,7 +172,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                        <span class="text-white font-bold text-lg">{{ substr($conversation->visitor_name, 0, 1) }}</span>
+                        <span class="text-white font-bold text-lg"><?php echo e(substr($conversation->visitor_name, 0, 1)); ?></span>
                     </div>
                     <div>
                         <h3 class="font-bold text-gray-900 dark:text-white">Visitor Information</h3>
@@ -165,27 +182,27 @@
                 <div class="space-y-4">
                     <div class="border-t border-slate-200 dark:border-gray-700 pt-4">
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Name</label>
-                        <p class="font-semibold text-gray-900 dark:text-white mt-1">{{ $conversation->visitor_name }}</p>
+                        <p class="font-semibold text-gray-900 dark:text-white mt-1"><?php echo e($conversation->visitor_name); ?></p>
                     </div>
-                    @if($conversation->visitor_email)
+                    <?php if($conversation->visitor_email): ?>
                         <div class="border-t border-slate-200 dark:border-gray-700 pt-4">
                             <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Email</label>
-                            <p class="font-medium text-blue-600 dark:text-blue-400 mt-1 break-all text-sm">{{ $conversation->visitor_email }}</p>
+                            <p class="font-medium text-blue-600 dark:text-blue-400 mt-1 break-all text-sm"><?php echo e($conversation->visitor_email); ?></p>
                         </div>
-                    @endif
-                    @if($conversation->visitor_phone)
+                    <?php endif; ?>
+                    <?php if($conversation->visitor_phone): ?>
                         <div class="border-t border-slate-200 dark:border-gray-700 pt-4">
                             <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Phone</label>
-                            <p class="font-semibold text-gray-900 dark:text-white mt-1">{{ $conversation->visitor_phone }}</p>
+                            <p class="font-semibold text-gray-900 dark:text-white mt-1"><?php echo e($conversation->visitor_phone); ?></p>
                         </div>
-                    @endif
+                    <?php endif; ?>
                     <div class="border-t border-slate-200 dark:border-gray-700 pt-4">
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">IP Address</label>
-                        <p class="font-mono text-gray-900 dark:text-white mt-1 text-xs bg-slate-50 dark:bg-gray-700 px-2 py-1 rounded">{{ $conversation->visitor_ip }}</p>
+                        <p class="font-mono text-gray-900 dark:text-white mt-1 text-xs bg-slate-50 dark:bg-gray-700 px-2 py-1 rounded"><?php echo e($conversation->visitor_ip); ?></p>
                     </div>
                     <div class="border-t border-slate-200 dark:border-gray-700 pt-4">
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Started</label>
-                        <p class="font-medium text-gray-900 dark:text-white mt-1">{{ $conversation->created_at->format('M d, Y H:i') }}</p>
+                        <p class="font-medium text-gray-900 dark:text-white mt-1"><?php echo e($conversation->created_at->format('M d, Y H:i')); ?></p>
                     </div>
                 </div>
             </div>
@@ -199,11 +216,12 @@
                 <form id="assign-form" class="space-y-3">
                     <select id="employee_id" class="w-full px-4 py-2.5 border border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:focus:ring-blue-400 font-medium transition-all">
                         <option value="">Select Employee</option>
-                        @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}" {{ $conversation->assigned_to_employee_id === $employee->id ? 'selected' : '' }}>
-                                {{ $employee->first_name }} {{ $employee->last_name }}
+                        <?php $__currentLoopData = $employees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $employee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($employee->id); ?>" <?php echo e($conversation->assigned_to_employee_id === $employee->id ? 'selected' : ''); ?>>
+                                <?php echo e($employee->first_name); ?> <?php echo e($employee->last_name); ?>
+
                             </option>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                     <button type="submit" class="w-full px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:from-emerald-600 hover:to-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all duration-200">
                         Assign
@@ -393,10 +411,10 @@
                 formData.append('attachments[]', file);
             });
 
-            const response = await fetch('{{ route("admin.chatbot.send-reply", $conversation) }}', {
+            const response = await fetch('<?php echo e(route("admin.chatbot.send-reply", $conversation)); ?>', {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
                 },
                 body: formData,
             });
@@ -427,11 +445,11 @@
         button.textContent = 'Assigning...';
 
         try {
-            const response = await fetch('{{ route("admin.chatbot.assign", $conversation) }}', {
+            const response = await fetch('<?php echo e(route("admin.chatbot.assign", $conversation)); ?>', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
                 },
                 body: JSON.stringify({ employee_id: employeeId }),
             });
@@ -454,14 +472,14 @@
     function closeConversation() {
         if (!confirm('Are you sure you want to close this conversation?')) return;
 
-        fetch('{{ route("admin.chatbot.close", $conversation) }}', {
+        fetch('<?php echo e(route("admin.chatbot.close", $conversation)); ?>', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
             },
         }).then(() => {
-            window.location.href = '{{ route("admin.chatbot.index") }}';
+            window.location.href = '<?php echo e(route("admin.chatbot.index")); ?>';
         });
     }
 
@@ -469,19 +487,19 @@
     function deleteConversation() {
         if (!confirm('Are you sure you want to delete this entire conversation? This cannot be undone.')) return;
 
-        fetch('{{ route("admin.chatbot.destroy", $conversation) }}', {
+        fetch('<?php echo e(route("admin.chatbot.destroy", $conversation)); ?>', {
             method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
             },
         }).then(() => {
-            window.location.href = '{{ route("admin.chatbot.index") }}';
+            window.location.href = '<?php echo e(route("admin.chatbot.index")); ?>';
         });
     }
 
     // Real-time updates via WebSocket (Pusher) + Polling Fallback
-    const conversationId = {{ $conversation->id }};
-    let lastMessageId = {{ $conversation->messages->last()?->id ?? 0 }};
+    const conversationId = <?php echo e($conversation->id); ?>;
+    let lastMessageId = <?php echo e($conversation->messages->last()?->id ?? 0); ?>;
     let pollingInterval = null;
     let lastSentMessage = null;
     
@@ -491,7 +509,7 @@
     function startPolling() {
         console.log('📡 Starting polling fallback for new messages...');
         pollingInterval = setInterval(() => {
-            fetch('{{ route("admin.chatbot.get-messages", $conversation) }}', {
+            fetch('<?php echo e(route("admin.chatbot.get-messages", $conversation)); ?>', {
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
@@ -525,7 +543,7 @@
         
         if (window.Echo) {
             clearInterval(echoInterval);
-            console.log('✅ Echo available! Broadcasting driver:', '{{ config("broadcasting.default") }}');
+            console.log('✅ Echo available! Broadcasting driver:', '<?php echo e(config("broadcasting.default")); ?>');
             subscribeToRealtimeUpdates();
         } else if (echoWaitCount > 50) {
             clearInterval(echoInterval);
@@ -670,11 +688,11 @@
     
     // Mark message as read
     function markAsRead(messageId) {
-        fetch('{{ route("admin.chatbot.mark-read", $conversation) }}', {
+        fetch('<?php echo e(route("admin.chatbot.mark-read", $conversation)); ?>', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
             },
             body: JSON.stringify({
                 message_id: messageId,
@@ -686,11 +704,11 @@
     // Update conversation last message time
     function updateConversationTime() {
         // Update the last_message_at in database
-        fetch('{{ route("admin.chatbot.update-time", $conversation) }}', {
+        fetch('<?php echo e(route("admin.chatbot.update-time", $conversation)); ?>', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
             },
         }).catch(err => console.debug('Update time error:', err));
     }
@@ -706,4 +724,14 @@
     }
 
 </script>
-</x-app-layout>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $attributes = $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $component = $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
+<?php /**PATH D:\Ryven Works\ryven-team-management\resources\views/admin/chatbot/show.blade.php ENDPATH**/ ?>

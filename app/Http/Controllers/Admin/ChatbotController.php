@@ -56,7 +56,7 @@ class ChatbotController extends Controller
      */
     public function show(ChatConversation $conversation)
     {
-        $conversation->load(['messages', 'chatbotWidget', 'assignedEmployee']);
+        $conversation->load(['messages.sender', 'chatbotWidget', 'assignedEmployee']);
         
         // Mark all unread visitor messages as read
         $conversation->messages()
@@ -70,19 +70,95 @@ class ChatbotController extends Controller
     }
 
     /**
+     * Get conversation messages as JSON (for polling/AJAX)
+     */
+    public function getMessages(ChatConversation $conversation)
+    {
+        $messages = $conversation->messages()
+            ->with('sender')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function ($message) {
+                if ($message->sender_type === 'employee') {
+                    $senderName = $message->sender?->name ?? 'Admin';
+                } else {
+                    // For visitors, get name from conversation if available
+                    $senderName = $message->conversation?->visitor_name ?? 'Visitor';
+                }
+                
+                // Get attachments
+                $attachments = \DB::table('chat_message_attachments')
+                    ->where('chat_message_id', $message->id)
+                    ->get()
+                    ->map(function ($att) {
+                        return [
+                            'id' => $att->id,
+                            'name' => $att->file_name,
+                            'type' => $att->file_type,
+                            'size' => $att->file_size,
+                            'url' => asset('storage/' . $att->file_path),
+                        ];
+                    })
+                    ->toArray();
+                
+                return [
+                    'id' => $message->id,
+                    'sender_type' => $message->sender_type,
+                    'sender_name' => $senderName,
+                    'message' => $message->message,
+                    'attachments' => $attachments,
+                    'created_at' => $message->created_at->format('Y-m-d H:i:s'),
+                    'timestamp' => $message->created_at->timestamp,
+                ];
+            });
+
+        return response()->json([
+            'conversation_id' => $conversation->id,
+            'messages' => $messages,
+            'timestamp' => now()->timestamp,
+        ]);
+    }
+
+    /**
      * Send reply message
      */
     public function sendReply(Request $request, ChatConversation $conversation)
     {
         $validated = $request->validate([
-            'message' => 'required|string|max:5000',
+            'message' => 'nullable|string|max:5000',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:20480', // 20MB per file
         ]);
+
+        // Ensure at least message or attachments
+        if (empty($validated['message']) && empty($request->file('attachments'))) {
+            return response()->json(['error' => 'Message or attachments required'], 422);
+        }
 
         $message = $conversation->messages()->create([
             'sender_type' => 'employee',
             'sender_id' => auth()->guard('web')->id(),
-            'message' => $validated['message'],
+            'message' => $validated['message'] ?? '',
         ]);
+
+        // Handle file attachments
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                // Store file
+                $path = $file->store('chatbot-attachments/' . $conversation->id, 'public');
+                
+                // Create attachment record
+                \DB::table('chat_message_attachments')->insert([
+                    'chat_message_id' => $message->id,
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
 
         $conversation->update([
             'status' => 'active',
@@ -122,6 +198,9 @@ class ChatbotController extends Controller
     public function close(ChatConversation $conversation)
     {
         $conversation->update(['status' => 'closed']);
+
+        // Broadcast conversation closed event to widget
+        broadcast(new \App\Events\ConversationClosed($conversation))->toOthers();
 
         return response()->json(['success' => true]);
     }
@@ -268,5 +347,30 @@ class ChatbotController extends Controller
 
         return redirect()->route('admin.chatbot.widgets.index')
             ->with('success', 'Widget deleted successfully!');
+    }
+
+    /**
+     * Mark message as read (AJAX endpoint)
+     */
+    public function markRead(Request $request)
+    {
+        $validated = $request->validate([
+            'message_id' => 'required|integer',
+        ]);
+
+        $message = ChatMessage::findOrFail($validated['message_id']);
+        $message->update(['read_at' => now()]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Update conversation last_message_at timestamp (AJAX endpoint)
+     */
+    public function updateTime(ChatConversation $conversation)
+    {
+        $conversation->touch('last_message_at');
+
+        return response()->json(['success' => true]);
     }
 }

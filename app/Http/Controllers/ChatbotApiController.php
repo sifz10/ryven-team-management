@@ -19,6 +19,48 @@ class ChatbotApiController extends Controller
     }
 
     /**
+     * Get real-time configuration for the widget
+     * GET /api/chatbot/config
+     */
+    public function getRealtimeConfig(Request $request)
+    {
+        try {
+            $token = $request->header('Authorization');
+            if (!$token || !str_starts_with($token, 'Bearer ')) {
+                return response()->json(['error' => 'Invalid token'], 401);
+            }
+
+            $token = str_replace('Bearer ', '', $token);
+            $widget = $this->chatbotService->authenticateWidget($token);
+
+            if (!$widget) {
+                return response()->json(['error' => 'Widget not found'], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'realtimeProvider' => config('broadcasting.default'),
+                'reverb' => [
+                    'enabled' => config('broadcasting.default') === 'reverb',
+                    'key' => config('broadcasting.connections.reverb.key'),
+                    'host' => config('broadcasting.connections.reverb.options.host'),
+                    'port' => config('broadcasting.connections.reverb.options.port'),
+                    'scheme' => config('broadcasting.connections.reverb.options.scheme'),
+                ],
+                'pusher' => [
+                    'enabled' => config('broadcasting.default') === 'pusher',
+                    'key' => config('broadcasting.connections.pusher.key'),
+                    'cluster' => config('broadcasting.connections.pusher.options.cluster'),
+                    'encrypted' => config('broadcasting.connections.pusher.options.encrypted'),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Chatbot config error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error'], 500);
+        }
+    }
+
+    /**
      * Initialize chatbot widget - Get conversation or create new one
      * POST /api/chatbot/init
      */
@@ -99,11 +141,23 @@ class ChatbotApiController extends Controller
             // Store message
             $message = $this->chatbotService->storeMessage($conversation, array_merge($validated, ['message' => $message]));
 
-            // Broadcast real-time update (wrap in try-catch to prevent failure if broadcast unavailable)
+            Log::info('Message stored', ['message_id' => $message->id, 'conversation_id' => $conversation->id]);
+
+            // Broadcast real-time update
             try {
+                Log::info('Broadcasting ChatMessageReceived event', [
+                    'broadcast_driver' => config('broadcasting.default'),
+                    'conversation_id' => $conversation->id,
+                    'message_id' => $message->id,
+                    'sender_type' => $message->sender_type,
+                ]);
                 broadcast(new \App\Events\ChatMessageReceived($conversation, $message))->toOthers();
+                Log::info('Broadcast sent successfully');
             } catch (\Exception $broadcastError) {
-                Log::debug('Broadcast failed (non-critical): ' . $broadcastError->getMessage());
+                Log::error('Broadcast failed: ' . $broadcastError->getMessage(), [
+                    'exception' => $broadcastError,
+                    'broadcast_driver' => config('broadcasting.default'),
+                ]);
                 // Don't fail the message send if broadcast fails
             }
 

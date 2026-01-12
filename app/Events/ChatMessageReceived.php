@@ -41,7 +41,7 @@ class ChatMessageReceived implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('chat.conversation.' . $this->conversation->id),
+            new Channel('chat.conversation.' . $this->conversation->id),
         ];
     }
 

@@ -46,45 +46,186 @@
         isRecording: false,
         mediaRecorder: null,
         audioChunks: [],
+        realtimeConnected: false,
+        realtimeProvider: null, // 'pusher', 'reverb', or 'polling'
+        channelSubscription: null,
+        pollingInterval: null, // Track polling so we can stop it
+        lastSentMessage: null, // Track last sent message to avoid duplicates
     };
 
-    // Load Laravel Echo for real-time messaging
-    function loadLaravelEcho() {
-        // Only load if not already loaded
-        if (window.Echo) return;
+    // LocalStorage keys
+    const STORAGE_KEYS = {
+        conversationId: 'chatbot_conversation_id',
+        conversationStatus: 'chatbot_conversation_status',
+        conversationTimestamp: 'chatbot_conversation_timestamp',
+    };
 
-        // Create a script to load Laravel Echo and Pusher
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js';
-        script.onload = () => {
-            try {
-                // Get the app key from the server
-                const url = new URL(CONFIG.widgetUrl || window.location.href);
-                const wsHost = url.hostname;
-                const wsProtocol = url.protocol === 'https:' ? 'wss' : 'ws';
-                
-                // Initialize Echo with Reverb
-                window.Echo = new window.Echo({
-                    broadcaster: 'reverb',
-                    key: 'your-app-key', // This will be set by server-side config
-                    wsHost: wsHost,
-                    wsPort: 8080,
-                    wssPort: 443,
-                    forceTLS: window.location.protocol === 'https:',
-                    encrypted: true,
-                    disableStats: true,
-                });
-                console.log('✓ Laravel Echo initialized for real-time messaging');
-            } catch (error) {
-                console.error('Failed to initialize Echo:', error);
-                startPollingMessages();
+    // Check if we have an existing active conversation
+    function getExistingConversation() {
+        const conversationId = localStorage.getItem(STORAGE_KEYS.conversationId);
+        const conversationStatus = localStorage.getItem(STORAGE_KEYS.conversationStatus);
+        const timestamp = localStorage.getItem(STORAGE_KEYS.conversationTimestamp);
+
+        // If no stored conversation, return null
+        if (!conversationId) {
+            return null;
+        }
+
+        // If conversation is closed, clear and return null
+        if (conversationStatus === 'closed') {
+            clearConversationStorage();
+            return null;
+        }
+
+        // If conversation is older than 24 hours, clear and return null
+        if (timestamp) {
+            const age = (Date.now() - parseInt(timestamp)) / 1000 / 60 / 60; // hours
+            if (age > 24) {
+                clearConversationStorage();
+                return null;
             }
-        };
-        script.onerror = () => {
-            console.log('Laravel Echo not available, using polling fallback');
+        }
+
+        return conversationId;
+    }
+
+    // Store conversation in localStorage
+    function storeConversation(conversationId, status = 'active') {
+        localStorage.setItem(STORAGE_KEYS.conversationId, conversationId);
+        localStorage.setItem(STORAGE_KEYS.conversationStatus, status);
+        localStorage.setItem(STORAGE_KEYS.conversationTimestamp, Date.now().toString());
+    }
+
+    // Clear conversation from localStorage
+    function clearConversationStorage() {
+        localStorage.removeItem(STORAGE_KEYS.conversationId);
+        localStorage.removeItem(STORAGE_KEYS.conversationStatus);
+        localStorage.removeItem(STORAGE_KEYS.conversationTimestamp);
+    }
+
+    // Real-time Configuration
+    const REALTIME_CONFIG = {
+        // Try to use Pusher first (more reliable), fallback to Reverb
+        providers: ['pusher', 'reverb'],
+        pusher: {
+            cluster: 'mt1',
+            encrypted: true,
+            enabledTransports: ['ws', 'wss'],
+            disabledTransports: [],
+        },
+        reverb: {
+            forceTLS: window.location.protocol === 'https:',
+            encrypted: true,
+            disableStats: true,
+        },
+        reconnectAttempts: 5,
+        reconnectDelay: 1000,
+    };
+
+    // Load dependencies for real-time messaging
+    async function loadRealTimeDependencies() {
+        return new Promise((resolve) => {
+            // Load Laravel Echo
+            const echoScript = document.createElement('script');
+            echoScript.src = 'https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js';
+            echoScript.onload = () => {
+                console.log('✓ Laravel Echo loaded');
+                // Load Pusher as fallback
+                const pusherScript = document.createElement('script');
+                pusherScript.src = 'https://js.pusher.com/8.2.0/pusher.min.js';
+                pusherScript.onload = () => {
+                    console.log('✓ Pusher loaded');
+                    initializeRealTime();
+                    resolve();
+                };
+                pusherScript.onerror = () => {
+                    console.log('⚠ Pusher not available, will use Reverb only');
+                    initializeRealTime();
+                    resolve();
+                };
+                document.head.appendChild(pusherScript);
+            };
+            echoScript.onerror = () => {
+                console.warn('⚠ Laravel Echo failed to load, real-time messaging disabled');
+                startPollingMessages();
+                resolve();
+            };
+            document.head.appendChild(echoScript);
+        });
+    }
+
+    // Initialize real-time provider (Pusher or Reverb)
+    function initializeRealTime() {
+        if (window.Echo) {
+            tryInitializePusher();
+        } else {
+            console.log('No Echo library available, using polling fallback');
             startPollingMessages();
-        };
-        document.head.appendChild(script);
+        }
+    }
+
+    // Try to initialize Pusher via Echo
+    function tryInitializePusher() {
+        try {
+            // Use existing Echo instance from bootstrap.js if available
+            if (window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
+                state.realtimeProvider = 'pusher';
+                state.realtimeConnected = true;
+                console.log('✓ Pusher real-time connected (using existing Echo)');
+                return;
+            }
+
+            if (typeof window.Pusher === 'undefined') {
+                console.log('Pusher not available, trying Reverb...');
+                tryInitializeReverb();
+                return;
+            }
+
+            // Only create new Echo if one doesn't exist
+            if (!window.Echo) {
+                window.Echo = new window.Echo({
+                    broadcaster: 'pusher',
+                    key: 'b2d29ad1ac007bfd4c83', // From bootstrap.js - ap2 cluster
+                    cluster: 'ap2',
+                    encrypted: true,
+                });
+            }
+            state.realtimeProvider = 'pusher';
+            state.realtimeConnected = true;
+            console.log('✓ Pusher real-time connected');
+        } catch (error) {
+            console.warn('Pusher initialization failed:', error.message);
+            tryInitializeReverb();
+        }
+    }
+
+    // Try to initialize Reverb via Echo
+    function tryInitializeReverb() {
+        try {
+            const url = new URL(CONFIG.widgetUrl || window.location.href);
+            const wsHost = url.hostname;
+            const wsProtocol = url.protocol === 'https:' ? 'wss' : 'ws';
+            const wsPort = wsProtocol === 'wss' ? 443 : 8080;
+
+            window.Echo = new window.Echo({
+                broadcaster: 'reverb',
+                key: 'ysgs6pjrsn52uowbeuv7', // From .env REVERB_APP_KEY
+                wsHost: wsHost,
+                wsPort: wsPort,
+                wssPort: 443,
+                forceTLS: REALTIME_CONFIG.reverb.forceTLS,
+                encrypted: REALTIME_CONFIG.reverb.encrypted,
+                disableStats: REALTIME_CONFIG.reverb.disableStats,
+            });
+            state.realtimeProvider = 'reverb';
+            state.realtimeConnected = true;
+            console.log('✓ Reverb real-time connected on', wsHost + ':' + wsPort);
+        } catch (error) {
+            console.warn('Reverb initialization failed:', error.message);
+            console.log('Falling back to polling...');
+            startPollingMessages();
+            state.realtimeProvider = 'polling';
+        }
     }
 
     // Create widget HTML
@@ -769,6 +910,20 @@
     // Initialize chat session
     async function initChat() {
         try {
+            // Check if we have an existing active conversation
+            const existingConversationId = getExistingConversation();
+            
+            if (existingConversationId) {
+                console.log('📝 Resuming existing conversation:', existingConversationId);
+                state.conversationId = existingConversationId;
+                await loadMessages();
+                setupEventListeners();
+                setupRealtimeUpdates();
+                return;
+            }
+
+            // Create new conversation if no existing one
+            console.log('🆕 Creating new conversation');
             const response = await fetch(`${CONFIG.widgetUrl}/api/chatbot/init`, {
                 method: 'POST',
                 headers: {
@@ -791,6 +946,8 @@
             const data = await response.json();
             if (data.success) {
                 state.conversationId = data.conversation_id;
+                // Store conversation in localStorage
+                storeConversation(state.conversationId, 'active');
                 await loadMessages();
                 setupEventListeners();
                 setupRealtimeUpdates();
@@ -941,7 +1098,12 @@
             if (response.ok) {
                 if (!messageText) input.value = '';
                 input.style.height = 'auto';
+                
+                // Track the message we just sent to avoid duplicates
+                state.lastSentMessage = responseData.message_id;
+                
                 state.messages.push({
+                    id: responseData.message_id,
                     sender_type: 'visitor',
                     message: message,
                     timestamp: new Date().toISOString(),
@@ -1005,6 +1167,8 @@
         document.getElementById('chatbot-close').addEventListener('click', () => {
             state.isOpen = false;
             document.getElementById('chatbot-window').classList.remove('open');
+            // Note: Conversation stays in localStorage until admin closes it
+            // This button just closes the widget UI
         });
 
         // Send button
@@ -1208,42 +1372,109 @@
 
     // Setup real-time message updates via Reverb or polling
     function setupRealtimeUpdates() {
-        if (typeof window.Echo !== 'undefined') {
-            // Subscribe to private channel for this conversation
-            window.Echo.private(`chat.conversation.${state.conversationId}`)
-                .listen('.ChatMessageReceived', (event) => {
-                    // Check if message already exists (to avoid duplicates)
-                    const messageExists = state.messages.some(m => m.id === event.id);
-                    if (!messageExists) {
-                        state.messages.push({
-                            id: event.id,
-                            sender_type: event.sender_type,
-                            sender_name: event.sender_name,
-                            message: event.message,
-                            attachment_path: event.attachment_path,
-                            attachment_name: event.attachment_name,
-                            is_voice: event.is_voice,
-                            timestamp: event.timestamp,
-                            created_at: event.timestamp,
-                        });
-                        renderMessages();
-                    }
-                })
-                .error((error) => {
-                    console.error('Echo subscription error:', error);
-                    // Fallback to polling if Echo fails
-                    startPollingMessages();
-                });
+        if (!state.conversationId) return;
+        
+        // Stop polling if it was running
+        if (state.pollingInterval) {
+            clearInterval(state.pollingInterval);
+            state.pollingInterval = null;
+            console.log('Stopped polling (real-time connected)');
+        }
+        
+        if (state.realtimeConnected && window.Echo) {
+            subscribeToChannel();
         } else {
-            // Echo not available, use polling fallback
+            // Fallback to polling if real-time unavailable
             startPollingMessages();
+        }
+    }
+
+    // Subscribe to real-time channel (Pusher or Reverb)
+    function subscribeToChannel() {
+        try {
+            const channelName = `chat.conversation.${state.conversationId}`;
+            
+            // Subscribe to public channel (must match admin's broadcast channel)
+            state.channelSubscription = window.Echo.channel(channelName)
+                .listen('.ChatMessageReceived', handleNewMessage)
+                .listen('.ConversationClosed', handleConversationClosed)
+                .error((error) => {
+                    console.warn(`Channel subscription error on ${state.realtimeProvider}:`, error);
+                    // Fallback to polling
+                    if (!window.Echo.connector.socket.connected) {
+                        console.log('Socket disconnected, using polling fallback');
+                        startPollingMessages();
+                    }
+                });
+            
+            console.log(`✓ Subscribed to real-time channel: ${channelName} via ${state.realtimeProvider}`);
+        } catch (error) {
+            console.error('Channel subscription failed:', error);
+            startPollingMessages();
+        }
+    }
+
+    // Handle conversation closure from admin
+    function handleConversationClosed(event) {
+        console.log('🔴 Conversation closed by admin');
+        // Clear conversation from storage so a new one starts on refresh
+        clearConversationStorage();
+        
+        // Show notification
+        showNotification('Conversation ended by admin. Refresh to start a new chat.', 'info');
+        
+        // Disable input
+        const input = document.getElementById('chatbot-message-input');
+        if (input) {
+            input.disabled = true;
+            input.placeholder = 'Chat ended';
+        }
+        const sendBtn = document.getElementById('chatbot-send-btn');
+        if (sendBtn) {
+            sendBtn.disabled = true;
+        }
+    }
+
+    // Handle new message from real-time channel
+    function handleNewMessage(event) {
+        // Skip if this is a message we just sent (avoid duplicates)
+        if (event.id === state.lastSentMessage) {
+            console.log('Skipping duplicate message:', event.id);
+            state.lastSentMessage = null; // Reset
+            return;
+        }
+        
+        // Check if message already exists (to avoid duplicates)
+        const messageExists = state.messages.some(m => m.id === event.id);
+        if (!messageExists) {
+            state.messages.push({
+                id: event.id,
+                sender_type: event.sender_type,
+                sender_name: event.sender_name,
+                message: event.message,
+                attachment_path: event.attachment_path,
+                attachment_name: event.attachment_name,
+                is_voice: event.is_voice,
+                timestamp: event.timestamp,
+                created_at: event.timestamp,
+            });
+            console.log(`✓ New message received via ${state.realtimeProvider}:`, event.message);
+            renderMessages();
         }
     }
 
     // Polling fallback for real-time updates (when Echo unavailable)
     function startPollingMessages() {
+        if (state.pollingInterval !== null) {
+            console.log('Already polling, skipping duplicate polling setup');
+            return;
+        }
+        
+        state.realtimeProvider = 'polling';
+        console.log('⚠ Falling back to polling mode (2s interval)');
+        
         // Check for new messages every 2 seconds
-        setInterval(async () => {
+        state.pollingInterval = setInterval(async () => {
             if (!state.conversationId) return;
             try {
                 const response = await fetch(
@@ -1284,14 +1515,16 @@
 
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLaravelEcho();
+        document.addEventListener('DOMContentLoaded', async () => {
             createWidgetHTML();
+            await loadRealTimeDependencies();
             initChat();
         });
     } else {
-        loadLaravelEcho();
-        createWidgetHTML();
-        initChat();
+        (async () => {
+            createWidgetHTML();
+            await loadRealTimeDependencies();
+            initChat();
+        })();
     }
 })();

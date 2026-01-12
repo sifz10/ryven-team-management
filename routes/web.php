@@ -64,6 +64,7 @@ Route::delete('/checklist/{token}/work/{submission}', [ChecklistController::clas
 
 // Chatbot Widget API (no authentication - uses token)
 Route::post('/api/chatbot/init', [ChatbotApiController::class, 'initWidget']);
+Route::get('/api/chatbot/config', [ChatbotApiController::class, 'getRealtimeConfig']);
 Route::post('/api/chatbot/message', [ChatbotApiController::class, 'sendMessage']);
 Route::post('/api/chatbot/file', [ChatbotApiController::class, 'uploadFile']);
 Route::post('/api/chatbot/voice', [ChatbotApiController::class, 'uploadVoice']);
@@ -702,9 +703,12 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
     Route::get('/chatbot/guide', [ChatbotController::class, 'guide'])->name('chatbot.guide');
     Route::get('/chatbot/{conversation}', [ChatbotController::class, 'show'])->name('chatbot.show');
+    Route::get('/chatbot/{conversation}/messages', [ChatbotController::class, 'getMessages'])->name('chatbot.get-messages');
     Route::post('/chatbot/{conversation}/reply', [ChatbotController::class, 'sendReply'])->name('chatbot.send-reply');
     Route::post('/chatbot/{conversation}/assign', [ChatbotController::class, 'assign'])->name('chatbot.assign');
     Route::post('/chatbot/{conversation}/close', [ChatbotController::class, 'close'])->name('chatbot.close');
+    Route::post('/chatbot/{conversation}/mark-read', [ChatbotController::class, 'markRead'])->name('chatbot.mark-read');
+    Route::post('/chatbot/{conversation}/update-time', [ChatbotController::class, 'updateTime'])->name('chatbot.update-time');
     Route::delete('/chatbot/{conversation}', [ChatbotController::class, 'destroy'])->name('chatbot.destroy');
 
     // Chatbot Widgets Management
