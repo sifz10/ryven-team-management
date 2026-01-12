@@ -564,6 +564,8 @@
         }
         
         console.log('🔔 Subscribing to chat.conversation.' + conversationId);
+        console.log('Echo object:', window.Echo);
+        console.log('Echo connection:', window.Echo?.connector?.socket?.readyState);
         
         try {
             // Stop polling when real-time connects
@@ -574,25 +576,31 @@
             
             // Try to use public channel first
             const channel = window.Echo.channel(`chat.conversation.${conversationId}`);
+            console.log('✅ Channel object created:', channel);
             
-            channel.listen('.ChatMessageReceived', (event) => {
-                console.log('🔔 Real-time message received on admin:', event);
-                
-                // Add visitor messages in real-time (employee messages already shown via optimistic update)
-                if (event.sender_type === 'visitor') {
-                    // Skip if this is a duplicate of our own sent message
-                    if (lastSentMessage && event.id === lastSentMessage.id) {
-                        console.log('⏭️ Skipping duplicate sent message:', event.id);
-                        lastSentMessage = null;
-                        return;
-                    }
+            const listener = channel.listen('.ChatMessageReceived', (event) => {
+                try {
+                    console.log('🔔 Real-time message received on admin:', event);
+                    console.log('Event details - ID:', event.id, 'Sender:', event.sender_type, 'Message:', event.message);
                     
-                    console.log('➕ Adding visitor message to UI:', event.message);
-                    addMessageToUI(event);
-                    markAsRead(event.id);
-                    lastMessageId = Math.max(lastMessageId, event.id);
-                } else {
-                    console.log('⏭️ Skipping employee message (already displayed):', event.id);
+                    // Add visitor messages in real-time (employee messages already shown via optimistic update)
+                    if (event.sender_type === 'visitor') {
+                        // Skip if this is a duplicate of our own sent message
+                        if (lastSentMessage && event.id === lastSentMessage.id) {
+                            console.log('⏭️ Skipping duplicate sent message:', event.id);
+                            lastSentMessage = null;
+                            return;
+                        }
+                        
+                        console.log('➕ Adding visitor message to UI:', event.message);
+                        addMessageToUI(event);
+                        markAsRead(event.id);
+                        lastMessageId = Math.max(lastMessageId, event.id);
+                    } else {
+                        console.log('⏭️ Skipping employee message (already displayed):', event.id);
+                    }
+                } catch (err) {
+                    console.error('❌ Error processing real-time event:', err);
                 }
             })
             .error((error) => {
@@ -601,6 +609,11 @@
                 // Restart polling on error
                 startPolling();
             });
+            
+            // Log listener registration
+            if (listener) {
+                console.log('✅ Listener object created:', listener);
+            }
             
             console.log('✅ Channel listener registered');
         } catch (error) {

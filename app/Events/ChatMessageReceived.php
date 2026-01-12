@@ -32,7 +32,13 @@ class ChatMessageReceived implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        return 'ChatMessageReceived';
+        $eventName = 'ChatMessageReceived';
+        \Illuminate\Support\Facades\Log::debug('Event broadcastAs() called', [
+            'event_name' => $eventName,
+            'conversation_id' => $this->conversation->id,
+            'message_id' => $this->message->id,
+        ]);
+        return $eventName;
     }
 
     /**
