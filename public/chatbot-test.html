@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #000;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Chat Widget Test</h1>
+        
+        <div class="info">
+            <h3>Test Setup</h3>
+            <p>This page tests the chat widget real-time messaging:</p>
+            <ul>
+                <li>✓ Laravel server running on port 8000</li>
+                <li>✓ Reverb WebSocket server running on port 8080</li>
+                <li>✓ Widget loads and initializes chat</li>
+                <li>Messages auto-update in real-time</li>
+            </ul>
+        </div>
+
+        <div id="status">
+            <div class="status info">Loading chat widget...</div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>The chat widget will appear in the bottom-right corner</li>
+                <li>Click to open the chat</li>
+                <li>Type a message and click Send</li>
+                <li>Open this page in another tab/window</li>
+                <li>Send a message from the first window</li>
+                <li>The message should appear in real-time in the second window without refreshing</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <h3>Debug Information:</h3>
+            <p>Open browser console (F12) to see debug information:</p>
+            <ul>
+                <li>Echo initialization status</li>
+                <li>WebSocket connection status</li>
+                <li>Message broadcasting events</li>
+                <li>Any errors or issues</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Embed the chat widget -->
+    <script>
+        window.ChatbotConfig = {
+            widgetUrl: 'http://127.0.0.1:8000',
+            apiToken: 'cbw_test_token_change_this', // Change to your actual token
+            visitorName: 'Test User',
+            visitorEmail: 'test@example.com',
+        };
+    </script>
+    <script src="http://127.0.0.1:8000/chatbot-widget.js"></script>
+
+    <!-- Update status -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const statusDiv = document.getElementById('status');
+                
+                if (window.Echo) {
+                    statusDiv.innerHTML = '<div class="status success">✓ Laravel Echo loaded - Real-time messaging active!</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="status info">⚠ Echo not available - Using polling fallback (2 second updates)</div>';
+                }
+            }, 2000);
+        });
+
+        // Log to console for debugging
+        window.addEventListener('load', () => {
+            console.log('Chat Widget Test Page Loaded');
+            console.log('Config:', window.ChatbotConfig);
+            console.log('Echo available:', typeof window.Echo !== 'undefined');
+            console.log('Laravel Reverb should be running on port 8080');
+            console.log('Check the browser Network tab (F12 -> Network) to see WebSocket connections');
+        });
+    </script>
+</body>
+</html>

@@ -28,6 +28,14 @@ class ChatMessageReceived implements ShouldBroadcast
     }
 
     /**
+     * Get the name of the broadcast event.
+     */
+    public function broadcastAs(): string
+    {
+        return 'ChatMessageReceived';
+    }
+
+    /**
      * Get the channels the event should broadcast on.
      */
     public function broadcastOn(): array
@@ -46,10 +54,13 @@ class ChatMessageReceived implements ShouldBroadcast
             'id' => $this->message->id,
             'conversation_id' => $this->conversation->id,
             'sender_type' => $this->message->sender_type,
-            'sender_name' => $this->message->sender_type === 'employee'
+            'sender_name' => $this->message->sender_type === 'employee' 
                 ? ($this->message->sender ? $this->message->sender->first_name . ' ' . $this->message->sender->last_name : 'Support')
                 : $this->conversation->visitor_name,
             'message' => $this->message->message,
+            'attachment_path' => $this->message->attachment_path,
+            'attachment_name' => $this->message->attachment_name,
+            'is_voice' => $this->message->is_voice ?? false,
             'timestamp' => $this->message->created_at->format('Y-m-d H:i:s'),
         ];
     }

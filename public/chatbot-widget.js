@@ -29,6 +29,45 @@
         audioChunks: [],
     };
 
+    // Load Laravel Echo for real-time messaging
+    function loadLaravelEcho() {
+        // Only load if not already loaded
+        if (window.Echo) return;
+
+        // Create a script to load Laravel Echo and Pusher
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js';
+        script.onload = () => {
+            try {
+                // Get the app key from the server
+                const url = new URL(CONFIG.widgetUrl || window.location.href);
+                const wsHost = url.hostname;
+                const wsProtocol = url.protocol === 'https:' ? 'wss' : 'ws';
+                
+                // Initialize Echo with Reverb
+                window.Echo = new window.Echo({
+                    broadcaster: 'reverb',
+                    key: 'your-app-key', // This will be set by server-side config
+                    wsHost: wsHost,
+                    wsPort: 8080,
+                    wssPort: 443,
+                    forceTLS: window.location.protocol === 'https:',
+                    encrypted: true,
+                    disableStats: true,
+                });
+                console.log('✓ Laravel Echo initialized for real-time messaging');
+            } catch (error) {
+                console.error('Failed to initialize Echo:', error);
+                startPollingMessages();
+            }
+        };
+        script.onerror = () => {
+            console.log('Laravel Echo not available, using polling fallback');
+            startPollingMessages();
+        };
+        document.head.appendChild(script);
+    }
+
     // Create widget HTML
     function createWidgetHTML() {
         const container = document.createElement('div');
@@ -676,8 +715,9 @@
             const data = await response.json();
             if (data.success) {
                 state.conversationId = data.conversation_id;
-                loadMessages();
+                await loadMessages();
                 setupEventListeners();
+                setupRealtimeUpdates();
             } else {
                 console.error('Init failed:', data);
                 showNotification(data.error || 'Failed to initialize chat', 'error');
@@ -1078,18 +1118,68 @@
         }
     }
 
-    // Setup real-time message updates via Reverb
+    // Setup real-time message updates via Reverb or polling
     function setupRealtimeUpdates() {
-        window.Echo.private(`chat.conversation.${state.conversationId}`)
-            .listen('.chat.message.received', (event) => {
-                state.messages.push({
-                    sender_type: event.sender_type,
-                    sender_name: event.sender_name,
-                    message: event.message,
-                    timestamp: event.timestamp,
+        if (typeof window.Echo !== 'undefined') {
+            // Subscribe to private channel for this conversation
+            window.Echo.private(`chat.conversation.${state.conversationId}`)
+                .listen('.ChatMessageReceived', (event) => {
+                    // Check if message already exists (to avoid duplicates)
+                    const messageExists = state.messages.some(m => m.id === event.id);
+                    if (!messageExists) {
+                        state.messages.push({
+                            id: event.id,
+                            sender_type: event.sender_type,
+                            sender_name: event.sender_name,
+                            message: event.message,
+                            attachment_path: event.attachment_path,
+                            attachment_name: event.attachment_name,
+                            is_voice: event.is_voice,
+                            timestamp: event.timestamp,
+                            created_at: event.timestamp,
+                        });
+                        renderMessages();
+                    }
+                })
+                .error((error) => {
+                    console.error('Echo subscription error:', error);
+                    // Fallback to polling if Echo fails
+                    startPollingMessages();
                 });
-                renderMessages();
-            });
+        } else {
+            // Echo not available, use polling fallback
+            startPollingMessages();
+        }
+    }
+
+    // Polling fallback for real-time updates (when Echo unavailable)
+    function startPollingMessages() {
+        // Check for new messages every 2 seconds
+        setInterval(async () => {
+            if (!state.conversationId) return;
+            try {
+                const response = await fetch(
+                    `${CONFIG.widgetUrl}/api/chatbot/conversation/${state.conversationId}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${CONFIG.apiToken}`,
+                        },
+                    }
+                );
+                const data = await response.json();
+                if (data.success && data.data.messages) {
+                    const newMessages = data.data.messages.filter(msg => {
+                        return !state.messages.some(m => m.id === msg.id);
+                    });
+                    if (newMessages.length > 0) {
+                        state.messages.push(...newMessages);
+                        renderMessages();
+                    }
+                }
+            } catch (error) {
+                console.debug('Polling error (non-critical):', error);
+            }
+        }, 2000);
     }
 
     // Utility function to escape HTML
@@ -1107,10 +1197,12 @@
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
+            loadLaravelEcho();
             createWidgetHTML();
             initChat();
         });
     } else {
+        loadLaravelEcho();
         createWidgetHTML();
         initChat();
     }
