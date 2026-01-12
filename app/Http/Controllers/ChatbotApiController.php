@@ -78,11 +78,17 @@ class ChatbotApiController extends Controller
             }
 
             $validated = $request->validate([
-                'conversation_id' => 'required|exists:chat_conversations,id',
+                'conversation_id' => 'required|integer|exists:chat_conversations,id',
                 'message' => 'required|string|max:5000',
                 'sender_type' => 'required|in:visitor,employee',
                 'sender_id' => 'nullable|integer',
             ]);
+
+            // Ensure message is a string and not empty
+            $message = trim((string)$validated['message']);
+            if (empty($message)) {
+                return response()->json(['error' => 'Validation failed', 'details' => ['message' => ['The message field cannot be empty.']]], 422);
+            }
 
             // Verify conversation belongs to this widget
             $conversation = ChatConversation::findOrFail($validated['conversation_id']);
@@ -91,7 +97,7 @@ class ChatbotApiController extends Controller
             }
 
             // Store message
-            $message = $this->chatbotService->storeMessage($conversation, $validated);
+            $message = $this->chatbotService->storeMessage($conversation, array_merge($validated, ['message' => $message]));
 
             // Broadcast real-time update (wrap in try-catch to prevent failure if broadcast unavailable)
             try {
@@ -235,10 +241,10 @@ class ChatbotApiController extends Controller
             }
 
             $validated = $request->validate([
-                'conversation_id' => 'required|exists:chat_conversations,id',
+                'conversation_id' => 'required|integer|exists:chat_conversations,id',
                 'voice_message' => 'required|file|mimes:webm,mp3,wav,ogg,m4a|max:10240',
                 'sender_type' => 'required|in:visitor,employee',
-                'message' => 'required|string',
+                'message' => 'nullable|string',
             ]);
 
             // Verify conversation belongs to this widget
@@ -252,12 +258,18 @@ class ChatbotApiController extends Controller
             $fileName = 'voice-' . uniqid() . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('chatbot-voices', $fileName, 'public');
 
+            // Use provided message or default
+            $messageText = trim((string)($validated['message'] ?? 'Voice message'));
+            if (empty($messageText)) {
+                $messageText = 'Voice message';
+            }
+
             // Store message with voice attachment
             $message = ChatMessage::create([
                 'chat_conversation_id' => $conversation->id,
                 'sender_type' => $validated['sender_type'],
                 'sender_id' => $widget->id,
-                'message' => $validated['message'],
+                'message' => $messageText,
                 'attachment_path' => "/storage/{$path}",
                 'attachment_name' => $fileName,
             ]);
@@ -273,9 +285,12 @@ class ChatbotApiController extends Controller
                 'file_url' => "/storage/{$path}",
                 'timestamp' => $message->created_at->format('Y-m-d H:i:s'),
             ]);
+        } catch (\Illuminate\Validation\ValidationException $validationError) {
+            Log::error('Voice validation error: ', $validationError->errors());
+            return response()->json(['error' => 'Validation failed', 'details' => $validationError->errors()], 422);
         } catch (\Exception $e) {
-            Log::error('Voice upload error: ' . $e->getMessage());
-            return response()->json(['error' => 'Server error'], 500);
+            Log::error('Voice upload error: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+            return response()->json(['error' => 'Server error', 'debug' => env('APP_DEBUG') ? $e->getMessage() : null], 500);
         }
     }
 }

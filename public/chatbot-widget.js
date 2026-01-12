@@ -829,7 +829,8 @@
         const input = document.getElementById('chatbot-input');
         const message = messageText || input.value.trim();
 
-        if (!message) {
+        if (!message || typeof message !== 'string') {
+            console.warn('Invalid message:', message, typeof message);
             input.focus();
             return;
         }
@@ -842,19 +843,25 @@
             sendBtn.disabled = true;
             sendBtn.innerHTML = '<div class="chatbot-spinner" style="width: 10px; height: 10px; margin: 0; display: inline-block;"></div>';
 
+            const payload = {
+                conversation_id: state.conversationId,
+                message: String(message).trim(),
+                sender_type: 'visitor',
+            };
+            
+            console.log('Sending message payload:', payload);
+
             const response = await fetch(`${CONFIG.widgetUrl}/api/chatbot/message`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${CONFIG.apiToken}`,
                 },
-                body: JSON.stringify({
-                    conversation_id: state.conversationId,
-                    message: message,
-                    sender_type: 'visitor',
-                }),
+                body: JSON.stringify(payload),
             });
 
+            const responseData = await response.json();
+            
             if (response.ok) {
                 if (!messageText) input.value = '';
                 input.style.height = 'auto';
@@ -865,7 +872,8 @@
                 });
                 renderMessages();
             } else {
-                showNotification('Failed to send message', 'error');
+                console.error('API Error:', responseData);
+                showNotification(responseData.details?.message?.[0] || responseData.error || 'Failed to send message', 'error');
             }
         } catch (error) {
             console.error('Failed to send message:', error);
@@ -1002,12 +1010,13 @@
                 body: formData,
             });
 
+            const responseData = await response.json();
+            
             if (response.ok) {
-                const data = await response.json();
                 state.messages.push({
                     sender_type: 'visitor',
-                    message: `📎 ${file.name}`,
-                    attachment_path: data.file_url,
+                    message: file.name,
+                    attachment_path: responseData.file_url,
                     attachment_name: file.name,
                     timestamp: new Date().toISOString(),
                 });
@@ -1015,7 +1024,8 @@
                 document.getElementById('chatbot-file-input').value = '';
                 showNotification('File uploaded successfully', 'success');
             } else {
-                showNotification('Failed to upload file', 'error');
+                console.error('File upload API Error:', responseData);
+                showNotification(responseData.error || 'Failed to upload file', 'error');
             }
         } catch (error) {
             console.error('Failed to send file:', error);
@@ -1077,7 +1087,7 @@
         formData.append('conversation_id', state.conversationId);
         formData.append('voice_message', audioBlob, 'voice-message.webm');
         formData.append('sender_type', 'visitor');
-        formData.append('message', '🎤 Voice message');
+        formData.append('message', 'Voice message');
 
         const sendBtn = document.getElementById('chatbot-send');
         const originalText = sendBtn.textContent;
@@ -1095,19 +1105,21 @@
                 body: formData,
             });
 
+            const responseData = await response.json();
+            
             if (response.ok) {
-                const data = await response.json();
                 state.messages.push({
                     sender_type: 'visitor',
-                    message: '🎤 Voice message',
-                    attachment_path: data.file_url,
+                    message: 'Voice message',
+                    attachment_path: responseData.file_url,
                     is_voice: true,
                     timestamp: new Date().toISOString(),
                 });
                 renderMessages();
                 showNotification('Voice message sent', 'success');
             } else {
-                showNotification('Failed to send voice message', 'error');
+                console.error('Voice API Error:', responseData);
+                showNotification(responseData.error || 'Failed to send voice message', 'error');
             }
         } catch (error) {
             console.error('Failed to send voice message:', error);
