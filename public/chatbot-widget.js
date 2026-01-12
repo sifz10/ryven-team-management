@@ -852,6 +852,138 @@
                         font-size: 11px;
                     }
                 }
+
+                /* Attachment Preview Modal */
+                .chatbot-modal {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    z-index: 10000;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: inherit;
+                }
+
+                .chatbot-modal.show {
+                    display: flex;
+                    animation: fadeInModal 0.2s ease-out;
+                }
+
+                .chatbot-modal-content {
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                    max-width: 90vw;
+                    max-height: 90vh;
+                    width: 600px;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                }
+
+                .chatbot-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px;
+                    border-bottom: 1px solid #e5e7eb;
+                    flex-shrink: 0;
+                }
+
+                .chatbot-modal-header h3 {
+                    margin: 0;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #1f2937;
+                }
+
+                .chatbot-modal-actions {
+                    display: flex;
+                    gap: 8px;
+                }
+
+                .chatbot-modal-btn {
+                    width: 32px;
+                    height: 32px;
+                    border: none;
+                    background: none;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #6b7280;
+                    padding: 0;
+                    border-radius: 6px;
+                    transition: all 0.2s;
+                }
+
+                .chatbot-modal-btn:hover {
+                    background-color: #f3f4f6;
+                    color: #1f2937;
+                }
+
+                .chatbot-modal-body {
+                    flex: 1;
+                    padding: 24px;
+                    overflow: auto;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .chatbot-preview {
+                    max-width: 100%;
+                    max-height: 100%;
+                    border-radius: 8px;
+                }
+
+                #chatbot-preview-pdf {
+                    width: 100%;
+                    height: 500px;
+                }
+
+                #chatbot-preview-audio {
+                    width: 100%;
+                }
+
+                .chatbot-unsupported-preview {
+                    text-align: center;
+                    color: #9ca3af;
+                }
+
+                .chatbot-unsupported-preview svg {
+                    margin-bottom: 16px;
+                    opacity: 0.5;
+                }
+
+                .chatbot-unsupported-preview p {
+                    margin: 0;
+                    font-size: 14px;
+                    font-weight: 500;
+                }
+
+                .chatbot-attachment-btn {
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .chatbot-attachment-btn:hover {
+                    transform: translateY(-2px);
+                    filter: brightness(0.9);
+                }
+
+                @keyframes fadeInModal {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
             </style>
 
             <!-- Chat Bubble Button -->
@@ -900,6 +1032,43 @@
                     </button>
                     <textarea class="chatbot-input" id="chatbot-input" placeholder="Type a message..." rows="1"></textarea>
                     <button class="chatbot-send" id="chatbot-send">Send</button>
+                </div>
+            </div>
+
+            <!-- Attachment Preview Modal -->
+            <div id="chatbot-attachment-modal" class="chatbot-modal" onclick="chatbotCloseAttachmentModal(event)">
+                <div class="chatbot-modal-content" onclick="event.stopPropagation()">
+                    <div class="chatbot-modal-header">
+                        <h3 id="chatbot-attachment-title">Attachment</h3>
+                        <div class="chatbot-modal-actions">
+                            <a id="chatbot-download-btn" href="#" download class="chatbot-modal-btn" title="Download">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                            </a>
+                            <button class="chatbot-modal-btn" onclick="chatbotCloseAttachmentModal()">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chatbot-modal-body">
+                        <img id="chatbot-preview-image" class="chatbot-preview" style="display:none;" />
+                        <iframe id="chatbot-preview-pdf" class="chatbot-preview" style="display:none;"></iframe>
+                        <audio id="chatbot-preview-audio" class="chatbot-preview" controls style="display:none;"></audio>
+                        <video id="chatbot-preview-video" class="chatbot-preview" controls style="display:none;"></video>
+                        <div id="chatbot-preview-unsupported" class="chatbot-unsupported-preview" style="display:none;">
+                            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" fill="none" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <p>Preview not available</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -984,32 +1153,61 @@
     }
 
     // Render messages
-    function renderMessages() {
-        const container = document.getElementById('chatbot-messages');
-        container.innerHTML = '';
+    // Batch rendering system for widget messages
+    let messageQueue = [];
+    let renderTimeout = null;
+    const BATCH_DELAY = 50;
 
-        if (state.messages.length === 0) {
-            container.innerHTML = `
-                <div class="chatbot-empty-state">
-                    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    <p>Start a conversation with us!</p>
-                </div>
-            `;
-            return;
+    function queueMessageForRender(message) {
+        // Check if message already exists before queuing
+        const messageExists = messageQueue.some(m => m.id === message.id) || 
+                             state.messages.some(m => m.id === message.id);
+        if (messageExists) {
+            return; // Skip duplicate
         }
 
-        state.messages.forEach(msg => {
+        messageQueue.push(message);
+
+        // Clear existing timeout
+        if (renderTimeout) clearTimeout(renderTimeout);
+
+        // Batch render after delay
+        renderTimeout = setTimeout(() => {
+            renderMessageBatch(messageQueue.splice(0));
+            renderTimeout = null;
+        }, BATCH_DELAY);
+    }
+
+    function renderMessageBatch(newMessages) {
+        const container = document.getElementById('chatbot-messages');
+        
+        // Add messages to state
+        state.messages.push(...newMessages);
+
+        // Use DocumentFragment for efficient DOM insertion
+        const fragment = document.createDocumentFragment();
+
+        newMessages.forEach(msg => {
             const div = document.createElement('div');
             div.className = `chatbot-message ${msg.sender_type === 'visitor' ? 'visitor' : 'employee'}`;
             
             let content = `<div class="chatbot-message-content">${escapeHtml(msg.message)}</div>`;
             
-            // Add file attachment if exists
-            if (msg.attachment_path) {
-                const fileName = msg.attachment_name || msg.attachment_path.split('/').pop();
+            // Handle both attachment formats
+            const attachments = msg.attachments || [];
+            if (msg.attachment_path && !attachments.length) {
+                attachments.push({
+                    name: msg.attachment_name || msg.attachment_path.split('/').pop(),
+                    type: 'application/octet-stream',
+                    url: msg.attachment_path,
+                });
+            }
+
+            // Add attachments
+            attachments.forEach(attachment => {
+                const fileName = attachment.name || 'file';
                 const fileExt = fileName.split('.').pop().toLowerCase();
+                const fileType = attachment.type || 'application/octet-stream';
                 let fileIcon = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
                 
                 if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) 
@@ -1021,19 +1219,25 @@
                 else if (['doc', 'docx'].includes(fileExt)) 
                     fileIcon = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
                 
+                let type = 'file';
+                if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) type = 'image';
+                else if (['mp3', 'wav', 'ogg', 'm4a'].includes(fileExt)) type = 'audio';
+                else if (['pdf'].includes(fileExt)) type = 'pdf';
+                else if (['mp4', 'webm', 'mov', 'avi'].includes(fileExt)) type = 'video';
+                
                 content += `
                     <div class="chatbot-file-message">
-                        <a href="${msg.attachment_path}" class="chatbot-file-link" target="_blank" download>
+                        <div class="chatbot-file-link chatbot-attachment-btn" onclick="chatbotOpenAttachmentPreview('${attachment.url}', '${fileName}', '${type}')">
                             ${fileIcon}
                             <span>${escapeHtml(fileName)}</span>
-                        </a>
+                        </div>
                     </div>
                 `;
-            }
+            });
             
             // Add voice message if exists
             if (msg.is_voice) {
-                const audioUrl = msg.attachment_path;
+                const audioUrl = msg.attachment_path || (msg.attachments?.[0]?.url);
                 content += `
                     <div class="chatbot-voice-player">
                         <audio controls>
@@ -1050,11 +1254,35 @@
                     <div class="chatbot-message-time">${new Date(msg.timestamp || msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                 </div>
             `;
-            container.appendChild(div);
+            fragment.appendChild(div);
         });
 
-        // Scroll to bottom
-        container.scrollTop = container.scrollHeight;
+        container.appendChild(fragment);
+
+        // Scroll to bottom using requestAnimationFrame for optimal performance
+        requestAnimationFrame(() => {
+            container.scrollTop = container.scrollHeight;
+        });
+    }
+
+    function renderMessages() {
+        const container = document.getElementById('chatbot-messages');
+        container.innerHTML = '';
+
+        if (state.messages.length === 0) {
+            container.innerHTML = `
+                <div class="chatbot-empty-state">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <p>Start a conversation with us!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Use batch rendering for efficiency
+        renderMessageBatch(state.messages);
     }
 
     // Send message
@@ -1444,23 +1672,33 @@
             return;
         }
         
-        // Check if message already exists (to avoid duplicates)
-        const messageExists = state.messages.some(m => m.id === event.id);
-        if (!messageExists) {
-            state.messages.push({
-                id: event.id,
-                sender_type: event.sender_type,
-                sender_name: event.sender_name,
-                message: event.message,
-                attachment_path: event.attachment_path,
-                attachment_name: event.attachment_name,
-                is_voice: event.is_voice,
-                timestamp: event.timestamp,
-                created_at: event.timestamp,
-            });
-            console.log(`✓ New message received via ${state.realtimeProvider}:`, event.message);
-            renderMessages();
+        // Handle both formats: old (attachment_path, attachment_name) and new (attachments array)
+        let attachments = [];
+        if (event.attachments && Array.isArray(event.attachments)) {
+            attachments = event.attachments; // New format from broadcast
+        } else if (event.attachment_path) {
+            // Old format fallback
+            attachments = [{
+                name: event.attachment_name || 'file',
+                type: 'application/octet-stream',
+                url: event.attachment_path,
+            }];
         }
+        
+        const message = {
+            id: event.id,
+            sender_type: event.sender_type,
+            sender_name: event.sender_name,
+            message: event.message,
+            attachments: attachments,
+            is_voice: event.is_voice,
+            created_at: event.created_at || event.timestamp,
+            timestamp: event.timestamp,
+        };
+
+        // Queue for batch rendering instead of immediate render
+        queueMessageForRender(message);
+        console.log(`✓ New message queued via ${state.realtimeProvider}:`, event.message);
     }
 
     // Polling fallback for real-time updates (when Echo unavailable)
@@ -1512,6 +1750,62 @@
         };
         return text.replace(/[&<>"']/g, m => map[m]);
     }
+
+    // Attachment Preview Functions for Widget
+    window.chatbotOpenAttachmentPreview = function(url, fileName, type) {
+        const modal = document.getElementById('chatbot-attachment-modal');
+        const titleEl = document.getElementById('chatbot-attachment-title');
+        const downloadBtn = document.getElementById('chatbot-download-btn');
+        
+        // Set file name and download button
+        titleEl.textContent = fileName;
+        downloadBtn.href = url;
+        downloadBtn.download = fileName;
+        
+        // Hide all preview elements
+        document.getElementById('chatbot-preview-image').style.display = 'none';
+        document.getElementById('chatbot-preview-pdf').style.display = 'none';
+        document.getElementById('chatbot-preview-audio').style.display = 'none';
+        document.getElementById('chatbot-preview-video').style.display = 'none';
+        document.getElementById('chatbot-preview-unsupported').style.display = 'none';
+        
+        // Show appropriate preview based on type
+        if (type === 'image') {
+            const img = document.getElementById('chatbot-preview-image');
+            img.src = url;
+            img.style.display = 'block';
+        } else if (type === 'pdf') {
+            const iframe = document.getElementById('chatbot-preview-pdf');
+            iframe.src = url;
+            iframe.style.display = 'block';
+        } else if (type === 'audio') {
+            const audio = document.getElementById('chatbot-preview-audio');
+            audio.src = url;
+            audio.style.display = 'block';
+        } else if (type === 'video') {
+            const video = document.getElementById('chatbot-preview-video');
+            video.src = url;
+            video.style.display = 'block';
+        } else {
+            document.getElementById('chatbot-preview-unsupported').style.display = 'block';
+        }
+        
+        // Show modal
+        modal.classList.add('show');
+    };
+
+    window.chatbotCloseAttachmentModal = function(event) {
+        // Close if clicking overlay or close button
+        if (!event || event.target.id === 'chatbot-attachment-modal') {
+            const modal = document.getElementById('chatbot-attachment-modal');
+            modal.classList.remove('show');
+            // Clear sources
+            document.getElementById('chatbot-preview-image').src = '';
+            document.getElementById('chatbot-preview-pdf').src = '';
+            document.getElementById('chatbot-preview-audio').src = '';
+            document.getElementById('chatbot-preview-video').src = '';
+        }
+    };
 
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {

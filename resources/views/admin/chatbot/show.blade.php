@@ -37,7 +37,76 @@
     #messages-container::-webkit-scrollbar-thumb:hover {
         background: rgba(148, 163, 184, 0.7);
     }
+
+    .attachment-btn {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .attachment-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .attachment-icon {
+        transition: transform 0.2s;
+    }
+
+    .attachment-btn:hover .attachment-icon {
+        transform: scale(1.1);
+    }
+
+    .modal-overlay {
+        animation: fadeIn 0.2s ease-out;
+    }
 </style>
+
+<!-- Attachment Preview Modal -->
+<div id="attachmentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center modal-overlay" onclick="closeAttachmentModal(event)">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto m-4" onclick="event.stopPropagation()">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+            <h3 id="attachmentFileName" class="text-lg font-bold text-gray-900 dark:text-white">Attachment</h3>
+            <div class="flex items-center gap-2">
+                <a id="attachmentDownloadBtn" href="#" download class="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Download">
+                    <svg class="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                </a>
+                <button onclick="closeAttachmentModal()" class="p-2 hover:bg-slate-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <svg class="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 flex items-center justify-center">
+            <!-- Image Preview -->
+            <img id="previewImage" class="hidden max-h-[70vh] rounded-lg" />
+
+            <!-- PDF Preview -->
+            <iframe id="previewPdf" class="hidden w-full h-[70vh] rounded-lg border border-slate-200 dark:border-gray-700"></iframe>
+
+            <!-- Audio Player -->
+            <audio id="previewAudio" class="hidden w-full" controls></audio>
+
+            <!-- Video Player -->
+            <video id="previewVideo" class="hidden max-h-[70vh] rounded-lg" controls></video>
+
+            <!-- File Icon for unsupported types -->
+            <div id="previewUnsupported" class="hidden text-center">
+                <svg class="w-24 h-24 text-slate-300 dark:text-slate-600 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
+                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 10H17a1 1 0 001-1v-3a1 1 0 00-1-1h-3z"></path>
+                </svg>
+                <p class="text-slate-600 dark:text-slate-400 font-medium" id="previewUnsupportedText">Preview not available</p>
+                <p class="text-sm text-slate-500 dark:text-slate-500 mt-2">Use the download button to save this file</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 p-6">
     <!-- Header Section -->
@@ -92,6 +161,34 @@
                                 <div class="text-xs text-slate-500 dark:text-slate-400 mb-1.5 {{ $message->sender_type === 'employee' ? 'text-right' : '' }}">
                                     {{ $message->sender_type === 'employee' ? 'You' : $conversation->visitor_name }} • {{ $message->created_at->format('H:i') }}
                                 </div>
+                                @if($message->attachments && $message->attachments->count() > 0)
+                                    <div class="flex flex-wrap gap-2 mb-2">
+                                        @foreach($message->attachments as $attachment)
+                                            @php
+                                                $fileExt = strtolower(pathinfo($attachment->file_name, PATHINFO_EXTENSION));
+                                                $isImage = in_array($fileExt, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                                $isAudio = in_array($fileExt, ['mp3', 'wav', 'ogg', 'm4a']);
+                                                $isPdf = in_array($fileExt, ['pdf']);
+                                                $isVideo = in_array($fileExt, ['mp4', 'webm', 'mov', 'avi']);
+                                            @endphp
+                                            @if($isImage)
+                                                <div class="rounded-lg overflow-hidden max-w-xs attachment-btn group cursor-pointer" onclick="openAttachmentPreview('{{ asset('storage/' . $attachment->file_path) }}', '{{ $attachment->file_name }}', 'image')" title="Click to preview">
+                                                    <img src="{{ asset('storage/' . $attachment->file_path) }}" alt="{{ $attachment->file_name }}" class="max-h-48 rounded-lg object-cover group-hover:opacity-90 transition-opacity">
+                                                </div>
+                                            @elseif($isAudio)
+                                                <div class="bg-slate-100 dark:bg-gray-600 px-3 py-2 rounded-lg flex items-center gap-2">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v2.605A7.969 7.969 0 015.5 6c1.255 0 2.443.29 3.5.804V4.804z"></path><path d="M9 15.675V9.375c0-.563.448-1.028 1.006-1.028s1.006.465 1.006 1.028v6.3c0 .563-.448 1.028-1.006 1.028s-1.006-.465-1.006-1.028z"></path><path d="M15 9.375c0-.563.448-1.028 1.006-1.028s1.006.465 1.006 1.028v6.3c0 .563-.448 1.028-1.006 1.028s-1.006-.465-1.006-1.028V9.375z"></path><path d="M19 4.804A7.968 7.968 0 0015.5 4c-1.255 0-2.443.29-3.5.804v2.605A7.969 7.969 0 0115.5 6c1.255 0 2.443.29 3.5.804V4.804z"></path></svg>
+                                                    <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank" class="text-sm font-medium truncate text-blue-600 dark:text-blue-400 hover:underline">{{ $attachment->file_name }}</a>
+                                                </div>
+                                            @else
+                                                <div class="bg-slate-100 dark:bg-gray-600 px-3 py-2 rounded-lg flex items-center gap-2">
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 10H17a1 1 0 001-1v-3a1 1 0 00-1-1h-3z"></path></svg>
+                                                    <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank" class="text-sm font-medium truncate text-blue-600 dark:text-blue-400 hover:underline">{{ $attachment->file_name }}</a>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @endif
                                 <div class="px-4 py-3 rounded-2xl font-medium break-words
                                     {{ $message->sender_type === 'employee' ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md' : 'bg-slate-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' }}
                                 ">
@@ -375,9 +472,7 @@
                     You • ${timeString}
                 </div>
                 ${attachmentsHTML}
-                ${messageText ? `<div class="px-4 py-3 rounded-2xl font-medium bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                    ${escapeHtml(messageText)}
-                </div>` : ''}
+                ${messageText ? '<div class="px-4 py-3 rounded-2xl font-medium bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">' + escapeHtml(messageText) + '</div>' : ''}
             </div>
         `;
         messagesContainer.appendChild(messageDiv);
@@ -402,13 +497,27 @@
             });
 
             if (!response.ok) {
-                console.error('Error sending message');
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Error sending message:', response.status, errorData);
+                alert('Failed to send message: ' + (errorData.error || response.statusText));
+                // Remove the optimistic message on error
+                messagesContainer.removeChild(messageDiv);
             } else {
+                const data = await response.json();
+                console.log('Message sent successfully:', data);
                 selectedFiles = [];
                 updateAttachmentsPreview();
+                
+                // Update lastMessageId after successful send
+                if (data.message_id) {
+                    lastMessageId = Math.max(lastMessageId, data.message_id);
+                }
             }
         } catch (error) {
             console.error('Error sending reply:', error);
+            alert('Network error: ' + error.message);
+            // Remove the optimistic message on error
+            messagesContainer.removeChild(messageDiv);
         } finally {
             button.disabled = false;
             button.innerHTML = originalHTML;
@@ -479,17 +588,23 @@
         });
     }
 
-    // Real-time updates via WebSocket (Pusher) + Polling Fallback
+    // Real-time updates via WebSocket (Pusher) with Polling Fallback
     const conversationId = {{ $conversation->id }};
     let lastMessageId = {{ $conversation->messages->last()?->id ?? 0 }};
     let pollingInterval = null;
     let lastSentMessage = null;
+    let realtimeConnected = false;  // Track connection state
+    let channelSubscription = null;   // Track subscription object
     
     console.log('🔌 Setting up real-time listener for conversation:', conversationId);
     
-    // Polling fallback - fetch new messages every 1 second
+    // Polling fallback - only runs if real-time disconnects
     function startPolling() {
-        console.log('📡 Starting polling fallback for new messages...');
+        if (pollingInterval) return; // Already polling
+        
+        console.log('📡 Starting polling fallback (real-time disconnected)...');
+        realtimeConnected = false;
+        
         pollingInterval = setInterval(() => {
             fetch('{{ route("admin.chatbot.get-messages", $conversation) }}', {
                 headers: {
@@ -501,21 +616,30 @@
             .then(data => {
                 if (data.messages) {
                     data.messages.forEach(msg => {
-                        if (msg.id > lastMessageId && msg.sender_type === 'visitor') {
-                            console.log('📬 Polling: New message detected:', msg.message);
+                        // Display both visitor and employee messages that are newer than last loaded
+                        if (msg.id > lastMessageId) {
+                            console.log('📬 Polling: New message detected:', msg.sender_type, msg.message);
                             addMessageToUI(msg);
-                            markAsRead(msg.id);
+                            if (msg.sender_type === 'visitor') {
+                                markAsRead(msg.id);
+                            }
                             lastMessageId = msg.id;
                         }
                     });
                 }
             })
             .catch(err => console.debug('Polling error:', err));
-        }, 1000);
+        }, 3000); // Increased from 1s to 3s since this is fallback
     }
     
-    // Start polling immediately as backup
-    startPolling();
+    // Stop polling if real-time connects
+    function stopPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+            console.log('⏹️ Polling stopped - real-time connected');
+        }
+    }
     
     // Wait for Echo to be available (up to 5 seconds)
     let echoWaitCount = 0;
@@ -530,170 +654,246 @@
         } else if (echoWaitCount > 50) {
             clearInterval(echoInterval);
             console.error('❌ Echo not available after 5 seconds, using polling fallback');
+            startPolling(); // Start polling if Echo never loads
         }
     }, 100);
     
     function subscribeToRealtimeUpdates() {
         if (!window.Echo) {
             console.warn('⚠️ Echo not available, real-time disabled');
+            startPolling(); // Fallback to polling
             return;
         }
         
         // Check if Echo has the channel method
         if (typeof Echo.channel !== 'function' && typeof Echo.private !== 'function') {
             console.warn('⚠️ Echo channel methods not available, real-time disabled');
+            startPolling();
             return;
         }
         
         console.log('🔔 Subscribing to chat.conversation.' + conversationId);
-        console.log('Echo object:', window.Echo);
-        console.log('Echo connection:', window.Echo?.connector?.socket?.readyState);
+        console.log('Echo driver:', '{{ config("broadcasting.default") }}');
         
         try {
-            // Stop polling when real-time connects
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-                console.log('⏹️ Polling stopped - real-time connected');
-            }
-            
-            // Try to use public channel first
+            // Subscribe to public channel
             const channel = window.Echo.channel(`chat.conversation.${conversationId}`);
-            console.log('✅ Channel object created:', channel);
             
-            const listener = channel.listen('.ChatMessageReceived', (event) => {
-                try {
-                    console.log('🔔 Real-time message received on admin:', event);
-                    console.log('Event details - ID:', event.id, 'Sender:', event.sender_type, 'Message:', event.message);
-                    
-                    // Add visitor messages in real-time (employee messages already shown via optimistic update)
-                    if (event.sender_type === 'visitor') {
-                        // Skip if this is a duplicate of our own sent message
-                        if (lastSentMessage && event.id === lastSentMessage.id) {
-                            console.log('⏭️ Skipping duplicate sent message:', event.id);
-                            lastSentMessage = null;
-                            return;
+            // Listen for incoming messages
+            channelSubscription = channel
+                .listen('.ChatMessageReceived', (event) => {
+                    try {
+                        console.log('🔔 Real-time message received:', event);
+                        
+                        // Mark connection as active
+                        if (!realtimeConnected) {
+                            realtimeConnected = true;
+                            stopPolling(); // Stop polling since real-time is working
                         }
                         
-                        console.log('➕ Adding visitor message to UI:', event.message);
-                        addMessageToUI(event);
-                        markAsRead(event.id);
-                        lastMessageId = Math.max(lastMessageId, event.id);
-                    } else {
-                        console.log('⏭️ Skipping employee message (already displayed):', event.id);
+                        // Add visitor messages in real-time
+                        if (event.sender_type === 'visitor') {
+                            // Skip if duplicate of sent message
+                            if (lastSentMessage && event.id === lastSentMessage.id) {
+                                console.log('⏭️ Skipping duplicate:', event.id);
+                                lastSentMessage = null;
+                                return;
+                            }
+                            
+                            console.log('➕ Adding visitor message:', event.message);
+                            addMessageToUI(event);
+                            markAsRead(event.id);
+                            lastMessageId = Math.max(lastMessageId, event.id);
+                        } else {
+                            console.log('⏭️ Skipping employee message (optimistic update):', event.id);
+                        }
+                    } catch (err) {
+                        console.error('❌ Error processing real-time event:', err);
                     }
-                } catch (err) {
-                    console.error('❌ Error processing real-time event:', err);
-                }
-            })
-            .error((error) => {
-                console.warn('⚠️ Echo subscription error:', error);
-                console.log('📡 Falling back to polling...');
-                // Restart polling on error
-                startPolling();
-            });
+                })
+                .listen('.ConversationClosed', (event) => {
+                    console.log('🔴 Conversation closed by admin');
+                    // Handle conversation closure if needed
+                })
+                .error((error) => {
+                    console.warn('⚠️ Channel error, falling back to polling:', error);
+                    realtimeConnected = false;
+                    // Don't immediately start polling, wait for a message to trigger retry
+                });
             
-            // Log listener registration
-            if (listener) {
-                console.log('✅ Listener object created:', listener);
-            }
+            // Set connection status
+            realtimeConnected = true;
+            stopPolling();
+            console.log('✅ Real-time listener registered successfully');
             
-            console.log('✅ Channel listener registered');
         } catch (error) {
             console.error('❌ Error subscribing to channel:', error);
-            console.log('📡 Falling back to polling...');
+            realtimeConnected = false;
             startPolling();
         }
     }
+
+    // Monitor Echo connection state periodically
+    setInterval(() => {
+        if (window.Echo && window.Echo.connector) {
+            const isConnected = window.Echo.connector.socket?.connected;
+            if (!realtimeConnected && isConnected) {
+                console.log('✅ Echo reconnected, stopping polling');
+                stopPolling();
+                realtimeConnected = true;
+            } else if (realtimeConnected && !isConnected) {
+                console.log('❌ Echo disconnected, starting polling');
+                realtimeConnected = false;
+                startPolling();
+            }
+        }
+    }, 5000);
     
-    // Add message to UI dynamically
-    function addMessageToUI(message) {
+    // Message queue for batching DOM updates
+    let messageQueue = [];
+    let renderTimeout = null;
+    const BATCH_DELAY = 50; // milliseconds - batches messages received within 50ms
+    
+    // Helper to render batch of messages efficiently
+    function renderMessageBatch(messages) {
         const container = document.getElementById('messages-container');
-        if (!container) {
-            console.error('❌ Messages container not found');
-            return;
-        }
+        if (!container) return;
         
-        // Check if message already exists
-        if (document.getElementById(`message-${message.id}`)) {
-            console.log('⚠️ Message already exists:', message.id);
-            return;
-        }
+        // Create document fragment for efficient DOM insertion
+        const fragment = document.createDocumentFragment();
+        let shouldScroll = false;
         
-        const isEmployee = message.sender_type === 'employee';
-        const messageDiv = document.createElement('div');
-        messageDiv.id = `message-${message.id}`;
-        messageDiv.className = `flex ${isEmployee ? 'justify-end' : 'justify-start'} animate-fadeIn`;
-        
-        // Build attachments HTML
-        let attachmentsHTML = '';
-        if (message.attachments && message.attachments.length > 0) {
-            attachmentsHTML = '<div class="flex flex-wrap gap-2 mb-2">';
-            message.attachments.forEach(att => {
-                if (att.type.startsWith('image/')) {
-                    attachmentsHTML += `
-                        <div class="rounded-lg overflow-hidden max-w-xs">
-                            <img src="${att.url}" alt="attachment" class="max-h-48 rounded-lg cursor-pointer hover:opacity-80" onclick="window.open('${att.url}', '_blank')">
-                        </div>
-                    `;
-                } else if (att.type.startsWith('audio/')) {
-                    attachmentsHTML += `
-                        <div class="bg-slate-100 dark:bg-gray-600 px-4 py-2 rounded-lg">
-                            <audio controls class="max-w-xs">
-                                <source src="${att.url}" type="${att.type}">
-                                Your browser does not support the audio element.
-                            </audio>
-                        </div>
-                    `;
-                } else {
-                    attachmentsHTML += `
-                        <a href="${att.url}" target="_blank" class="bg-slate-100 dark:bg-gray-600 px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-gray-500 transition-colors">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 10H17a1 1 0 001-1v-3a1 1 0 00-1-1h-3z"></path></svg>
-                            <span class="text-sm font-medium truncate max-w-xs" title="${att.name}">${att.name}</span>
-                        </a>
-                    `;
-                }
-            });
-            attachmentsHTML += '</div>';
-        }
-        
-        messageDiv.innerHTML = `
-            <div class="max-w-sm">
-                <div class="text-xs text-slate-500 dark:text-slate-400 mb-1.5 ${isEmployee ? 'text-right' : ''}">
-                    ${message.sender_name || 'Support'} • ${new Date(message.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+        messages.forEach(message => {
+            // Deduplicate at UI level
+            if (document.getElementById(`message-${message.id}`)) {
+                console.log('⏭️ Message already rendered:', message.id);
+                return;
+            }
+            
+            const isEmployee = message.sender_type === 'employee';
+            const messageDiv = document.createElement('div');
+            messageDiv.id = `message-${message.id}`;
+            messageDiv.className = `flex ${isEmployee ? 'justify-end' : 'justify-start'} animate-fadeIn`;
+            
+            // Build attachments HTML
+            let attachmentsHTML = '';
+            if (message.attachments && message.attachments.length > 0) {
+                attachmentsHTML = '<div class="flex flex-wrap gap-2 mb-2">';
+                message.attachments.forEach(att => {
+                    if (att.type.startsWith('image/')) {
+                        attachmentsHTML += `
+                            <div class="rounded-lg overflow-hidden max-w-xs">
+                                <img src="${att.url}" alt="attachment" class="max-h-48 rounded-lg cursor-pointer hover:opacity-80" onclick="window.open('${att.url}', '_blank')">
+                            </div>
+                        `;
+                    } else if (att.type.startsWith('audio/')) {
+                        attachmentsHTML += `
+                            <div class="bg-slate-100 dark:bg-gray-600 px-4 py-2 rounded-lg">
+                                <audio controls class="max-w-xs">
+                                    <source src="${att.url}" type="${att.type}">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        `;
+                    } else {
+                        attachmentsHTML += `
+                            <a href="${att.url}" target="_blank" class="bg-slate-100 dark:bg-gray-600 px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-gray-500 transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 10H17a1 1 0 001-1v-3a1 1 0 00-1-1h-3z"></path></svg>
+                                <span class="text-sm font-medium truncate max-w-xs" title="${att.name}">${att.name}</span>
+                            </a>
+                        `;
+                    }
+                });
+                attachmentsHTML += '</div>';
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="max-w-sm">
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mb-1.5 ${isEmployee ? 'text-right' : ''}">
+                        ${message.sender_name || 'Support'} • ${new Date(message.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    ${attachmentsHTML}
+                    ${message.message ? `<div class="px-4 py-3 rounded-2xl font-medium break-words ${isEmployee ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md' : 'bg-slate-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'}">
+                        ${escapeHtml(message.message)}
+                    </div>` : ''}
                 </div>
-                ${attachmentsHTML}
-                ${message.message ? `<div class="px-4 py-3 rounded-2xl font-medium break-words ${isEmployee ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md' : 'bg-slate-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'}">
-                    ${escapeHtml(message.message)}
-                </div>` : ''}
-            </div>
-        `;
+            `;
+            
+            fragment.appendChild(messageDiv);
+            shouldScroll = true;
+        });
         
-        container.appendChild(messageDiv);
+        // Append all at once (single reflow instead of multiple)
+        if (fragment.childNodes.length > 0) {
+            container.appendChild(fragment);
+            console.log(`✅ Batch rendered ${fragment.childNodes.length} messages`);
+            
+            // Scroll once after batch render
+            if (shouldScroll) {
+                requestAnimationFrame(() => {
+                    container.scrollTop = container.scrollHeight;
+                });
+            }
+        }
+    }
+    
+    // Queue message for batched rendering
+    function addMessageToUI(message) {
+        // Deduplicate before queueing
+        if (document.getElementById(`message-${message.id}`)) {
+            return;
+        }
         
-        // Scroll to bottom
-        setTimeout(() => {
-            container.scrollTop = container.scrollHeight;
-        }, 0);
+        // Add to queue
+        messageQueue.push(message);
         
-        console.log('✅ Message added to UI:', message.id);
+        // Clear existing timeout
+        if (renderTimeout) clearTimeout(renderTimeout);
         
-        // Update conversation last_message_at
-        updateConversationTime();
+        // Batch render after BATCH_DELAY
+        renderTimeout = setTimeout(() => {
+            if (messageQueue.length > 0) {
+                const batch = messageQueue.splice(0);
+                renderMessageBatch(batch);
+            }
+            renderTimeout = null;
+        }, BATCH_DELAY);
     }
     
     // Mark message as read
+    // Batch mark as read calls
+    let readQueue = [];
+    let readTimeout = null;
+    
     function markAsRead(messageId) {
-        fetch('{{ route("admin.chatbot.mark-read", $conversation) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            },
-            body: JSON.stringify({
-                message_id: messageId,
-                conversation_id: conversationId,
-            }),
-        }).catch(err => console.debug('Mark read error:', err));
+        readQueue.push(messageId);
+        
+        // Clear existing timeout
+        if (readTimeout) clearTimeout(readTimeout);
+        
+        // Batch mark-as-read calls after 100ms
+        readTimeout = setTimeout(() => {
+            if (readQueue.length === 0) return;
+            
+            const ids = readQueue.splice(0);
+            
+            // Deduplicate IDs
+            const uniqueIds = [...new Set(ids)];
+            
+            fetch('{{ route("admin.chatbot.mark-read", $conversation) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({
+                    message_ids: uniqueIds,
+                    conversation_id: conversationId,
+                }),
+            }).catch(err => console.debug('Mark read error:', err));
+            
+            readTimeout = null;
+        }, 100);
     }
     
     // Update conversation last message time
@@ -717,6 +917,87 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
+
+    // Attachment Preview Functions
+    function openAttachmentPreview(url, fileName, type) {
+        const modal = document.getElementById('attachmentModal');
+        const fileNameEl = document.getElementById('attachmentFileName');
+        const downloadBtn = document.getElementById('attachmentDownloadBtn');
+        
+        // Set file name and download button
+        fileNameEl.textContent = fileName;
+        downloadBtn.href = url;
+        downloadBtn.download = fileName;
+        
+        // Hide all preview elements
+        document.getElementById('previewImage').classList.add('hidden');
+        document.getElementById('previewPdf').classList.add('hidden');
+        document.getElementById('previewAudio').classList.add('hidden');
+        document.getElementById('previewVideo').classList.add('hidden');
+        document.getElementById('previewUnsupported').classList.add('hidden');
+        
+        // Show appropriate preview based on type
+        if (type === 'image') {
+            const img = document.getElementById('previewImage');
+            img.src = url;
+            img.classList.remove('hidden');
+        } else if (type === 'pdf') {
+            const iframe = document.getElementById('previewPdf');
+            iframe.src = url;
+            iframe.classList.remove('hidden');
+        } else if (type === 'audio') {
+            const audio = document.getElementById('previewAudio');
+            audio.src = url;
+            audio.classList.remove('hidden');
+        } else if (type === 'video') {
+            const video = document.getElementById('previewVideo');
+            video.src = url;
+            video.classList.remove('hidden');
+        } else {
+            document.getElementById('previewUnsupported').classList.remove('hidden');
+        }
+        
+        // Show modal
+        modal.classList.remove('hidden');
+    }
+
+    function closeAttachmentModal(event) {
+        // Close if clicking overlay or close button
+        if (!event || event.target.id === 'attachmentModal') {
+            document.getElementById('attachmentModal').classList.add('hidden');
+            // Clear sources
+            document.getElementById('previewImage').src = '';
+            document.getElementById('previewPdf').src = '';
+            document.getElementById('previewAudio').src = '';
+            document.getElementById('previewVideo').src = '';
+        }
+    }
+
+    // Wire up old attachment links to new modal system
+    document.addEventListener('DOMContentLoaded', function() {
+        // Convert all old-style file links to use the modal
+        document.querySelectorAll('.chatbot-file-link').forEach(link => {
+            const url = link.getAttribute('href');
+            const fileName = link.textContent.trim();
+            const fileExt = fileName.split('.').pop().toLowerCase();
+            
+            // Determine type
+            let type = 'file';
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) type = 'image';
+            else if (['mp3', 'wav', 'ogg', 'm4a'].includes(fileExt)) type = 'audio';
+            else if (['pdf'].includes(fileExt)) type = 'pdf';
+            else if (['mp4', 'webm', 'mov', 'avi'].includes(fileExt)) type = 'video';
+            
+            // Replace with onclick handler
+            link.onclick = (e) => {
+                e.preventDefault();
+                openAttachmentPreview(url, fileName, type);
+            };
+            link.style.cursor = 'pointer';
+            link.removeAttribute('target');
+            link.removeAttribute('download');
+        });
+    });
 
 </script>
 </x-app-layout>

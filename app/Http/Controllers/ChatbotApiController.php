@@ -137,11 +137,13 @@ class ChatbotApiController extends Controller
             if ($conversation->chatbot_widget_id !== $widget->id) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-
             // Store message
             $message = $this->chatbotService->storeMessage($conversation, array_merge($validated, ['message' => $message]));
 
             Log::info('Message stored', ['message_id' => $message->id, 'conversation_id' => $conversation->id]);
+
+            // Invalidate stats cache when new message arrives
+            \Illuminate\Support\Facades\Cache::forget('chat_stats');
 
             // Broadcast real-time update
             try {

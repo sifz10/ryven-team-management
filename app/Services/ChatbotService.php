@@ -76,6 +76,11 @@ class ChatbotService
      */
     public function getConversationWithMessages(ChatConversation $conversation)
     {
+        // Load all relationships efficiently
+        $conversation->load(['messages' => function ($query) {
+            $query->with(['attachments', 'sender']);
+        }]);
+
         return [
             'id' => $conversation->id,
             'visitor_name' => $conversation->visitor_name,
@@ -94,11 +99,10 @@ class ChatbotService
                         ? ($msg->sender ? $msg->sender->first_name . ' ' . $msg->sender->last_name : 'Support')
                         : $msg->conversation->visitor_name,
                     'message' => $msg->message,
-                    'attachment' => $msg->attachment_path ? [
-                        'path' => $msg->attachment_path,
-                        'name' => $msg->attachment_name,
-                    ] : null,
+                    'attachments' => $msg->attachments->map(fn ($att) => $att->toApiArray())->toArray(),
+                    'is_voice' => $msg->is_voice ?? false,
                     'timestamp' => $msg->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
                     'read_at' => $msg->read_at?->format('Y-m-d H:i:s'),
                 ];
             }),

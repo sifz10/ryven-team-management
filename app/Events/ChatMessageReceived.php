@@ -56,6 +56,9 @@ class ChatMessageReceived implements ShouldBroadcast
      */
     public function broadcastWith(): array
     {
+        // Load attachments eagerly for broadcast payload
+        $this->message->load('attachments');
+        
         return [
             'id' => $this->message->id,
             'conversation_id' => $this->conversation->id,
@@ -64,10 +67,12 @@ class ChatMessageReceived implements ShouldBroadcast
                 ? ($this->message->sender ? $this->message->sender->first_name . ' ' . $this->message->sender->last_name : 'Support')
                 : $this->conversation->visitor_name,
             'message' => $this->message->message,
-            'attachment_path' => $this->message->attachment_path,
-            'attachment_name' => $this->message->attachment_name,
+            'attachments' => $this->message->attachments
+                ->map(fn ($att) => $att->toApiArray())
+                ->toArray(),
             'is_voice' => $this->message->is_voice ?? false,
-            'timestamp' => $this->message->created_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->message->created_at->format('Y-m-d H:i:s'),
+            'timestamp' => $this->message->created_at->timestamp,
         ];
     }
 }

@@ -38,15 +38,18 @@ class ChatbotController extends Controller
         $widgets = ChatbotWidget::where('is_active', true)->get();
         $employees = Employee::where('is_active', true)->get();
 
-        $stats = [
-            'total' => ChatConversation::count(),
-            'pending' => ChatConversation::where('status', 'pending')->count(),
-            'active' => ChatConversation::where('status', 'active')->count(),
-            'closed' => ChatConversation::where('status', 'closed')->count(),
-            'unread' => ChatMessage::whereHas('conversation', function ($q) {
-                $q->whereIn('status', ['pending', 'active']);
-            })->where('sender_type', 'visitor')->whereNull('read_at')->count(),
-        ];
+        // Cache stats for 60 seconds to reduce database load
+        $stats = \Illuminate\Support\Facades\Cache::remember('chat_stats', 60, function () {
+            return [
+                'total' => ChatConversation::count(),
+                'pending' => ChatConversation::where('status', 'pending')->count(),
+                'active' => ChatConversation::where('status', 'active')->count(),
+                'closed' => ChatConversation::where('status', 'closed')->count(),
+                'unread' => ChatMessage::whereHas('conversation', function ($q) {
+                    $q->whereIn('status', ['pending', 'active']);
+                })->where('sender_type', 'visitor')->whereNull('read_at')->count(),
+            ];
+        });
 
         return view('admin.chatbot.index', compact('conversations', 'widgets', 'employees', 'stats'));
     }
@@ -56,7 +59,9 @@ class ChatbotController extends Controller
      */
     public function show(ChatConversation $conversation)
     {
-        $conversation->load(['messages.sender', 'chatbotWidget', 'assignedEmployee']);
+        $conversation->load(['messages' => function ($q) {
+            $q->with(['sender', 'attachments']);
+        }, 'chatbotWidget', 'assignedEmployee']);
         
         // Mark all unread visitor messages as read
         $conversation->messages()
@@ -74,31 +79,22 @@ class ChatbotController extends Controller
      */
     public function getMessages(ChatConversation $conversation)
     {
+        // Eager-load all relationships to avoid N+1 queries
         $messages = $conversation->messages()
-            ->with('sender')
+            ->with(['sender', 'attachments', 'conversation'])
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function ($message) {
                 if ($message->sender_type === 'employee') {
                     $senderName = $message->sender?->name ?? 'Admin';
                 } else {
-                    // For visitors, get name from conversation if available
+                    // For visitors, get name from conversation (already loaded)
                     $senderName = $message->conversation?->visitor_name ?? 'Visitor';
                 }
                 
-                // Get attachments
-                $attachments = \DB::table('chat_message_attachments')
-                    ->where('chat_message_id', $message->id)
-                    ->get()
-                    ->map(function ($att) {
-                        return [
-                            'id' => $att->id,
-                            'name' => $att->file_name,
-                            'type' => $att->file_type,
-                            'size' => $att->file_size,
-                            'url' => asset('storage/' . $att->file_path),
-                        ];
-                    })
+                // Use eager-loaded attachments instead of querying per message
+                $attachments = $message->attachments
+                    ->map(fn ($att) => $att->toApiArray())
                     ->toArray();
                 
                 return [
@@ -165,6 +161,12 @@ class ChatbotController extends Controller
             'last_message_at' => now(),
             'assigned_to_employee_id' => auth()->guard('web')->user()->employee?->id,
         ]);
+
+        // Invalidate stats cache when new message is sent
+        \Illuminate\Support\Facades\Cache::forget('chat_stats');
+
+        // Reload message with attachments before broadcasting
+        $message->load('attachments');
 
         // Broadcast to widget in real-time
         broadcast(new \App\Events\ChatMessageReceived($conversation, $message))->toOthers();
@@ -355,11 +357,28 @@ class ChatbotController extends Controller
     public function markRead(Request $request)
     {
         $validated = $request->validate([
-            'message_id' => 'required|integer',
+            'message_ids' => 'sometimes|array',
+            'message_ids.*' => 'integer',
+            'message_id' => 'sometimes|integer',
+            'conversation_id' => 'required|integer',
         ]);
 
-        $message = ChatMessage::findOrFail($validated['message_id']);
-        $message->update(['read_at' => now()]);
+        // Support both single and batch requests (backward compatibility)
+        $messageIds = [];
+        if ($request->filled('message_ids')) {
+            $messageIds = $validated['message_ids'];
+        } elseif ($request->filled('message_id')) {
+            $messageIds = [$validated['message_id']];
+        }
+
+        if (!empty($messageIds)) {
+            // Batch update all messages at once (single database query)
+            ChatMessage::whereIn('id', $messageIds)
+                ->update(['read_at' => now()]);
+            
+            // Invalidate chat stats cache
+            \Illuminate\Support\Facades\Cache::forget('chat_stats');
+        }
 
         return response()->json(['success' => true]);
     }

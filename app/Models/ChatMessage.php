@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ChatMessage extends Model
 {
@@ -34,6 +35,11 @@ class ChatMessage extends Model
             return $this->belongsTo(Employee::class, 'sender_id');
         }
         return $this->belongsTo(ChatbotWidget::class, 'sender_id');
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ChatMessageAttachment::class, 'chat_message_id');
     }
 
     public function scopeUnread($query)
