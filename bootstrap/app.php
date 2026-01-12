@@ -13,9 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Exclude GitHub webhook from CSRF verification
+        // Exclude GitHub webhook and Chatbot API from CSRF verification
         $middleware->validateCsrfTokens(except: [
             'webhook/github',
+            'api/chatbot/*',
         ]);
 
         // Register employee authentication middleware
