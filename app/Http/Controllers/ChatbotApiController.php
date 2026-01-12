@@ -131,6 +131,22 @@ class ChatbotApiController extends Controller
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
 
+            // Mark visitor messages as read
+            $conversation->messages()
+                ->where('sender_type', 'visitor')
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $this->chatbotService->getConversationWithMessages($conversation),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Get conversation error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error'], 500);
+        }
+    }
+
     /**
      * Upload file
      * POST /api/chatbot/file
