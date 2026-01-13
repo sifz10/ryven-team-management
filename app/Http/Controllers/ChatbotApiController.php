@@ -162,10 +162,17 @@ class ChatbotApiController extends Controller
                 ]);
                 
                 $event = new \App\Events\ChatMessageReceived($conversation, $message);
-                Log::info('Event instance created', ['event' => get_class($event)]);
+                Log::info('Event instance created', [
+                    'event' => get_class($event),
+                    'event_broadcast_as' => $event->broadcastAs(),
+                    'event_channels' => array_map(fn($ch) => $ch->name, $event->broadcastOn()),
+                    'event_public_properties' => array_keys(get_object_vars($event)),
+                ]);
                 
                 broadcast($event)->toOthers();
-                Log::info('Broadcast sent successfully');
+                Log::info('Broadcast sent successfully', [
+                    'event_class' => get_class($event),
+                ]);
             } catch (\Exception $broadcastError) {
                 Log::error('Broadcast failed: ' . $broadcastError->getMessage(), [
                     'exception' => $broadcastError,

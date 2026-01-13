@@ -10,13 +10,26 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class ChatMessageReceived implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, InteractsWithSockets;
 
-    public ChatConversation $conversation;
-    public ChatMessage $message;
+    // Private model instances (NOT sent to Pusher)
+    private ChatConversation $conversation;
+    private ChatMessage $message;
+    
+    // Public scalar properties (SENT to Pusher)
+    public $id;
+    public $conversation_id;
+    public $sender_type;
+    public $sender_name;
+    public $messageText;
+    public $attachments;
+    public $is_voice;
+    public $created_at;
+    public $timestamp;
 
     /**
      * Create a new event instance.
@@ -26,10 +39,29 @@ class ChatMessageReceived implements ShouldBroadcast
         $this->conversation = $conversation;
         $this->message = $message;
         
-        \Illuminate\Support\Facades\Log::info('ChatMessageReceived event created', [
+        // Load attachments
+        $message->load('attachments');
+        
+        // Pre-populate public properties for broadcast
+        $this->id = $message->id;
+        $this->conversation_id = $conversation->id;
+        $this->sender_type = $message->sender_type;
+        $this->sender_name = $message->sender_type === 'employee' 
+            ? ($message->sender ? $message->sender->first_name . ' ' . $message->sender->last_name : 'Support')
+            : $conversation->visitor_name;
+        $this->messageText = $message->message;
+        $this->attachments = $message->attachments
+            ->map(fn ($att) => $att->toApiArray())
+            ->toArray();
+        $this->is_voice = $message->is_voice ?? false;
+        $this->created_at = $message->created_at->format('Y-m-d H:i:s');
+        $this->timestamp = $message->created_at->timestamp;
+        
+        Log::info('ChatMessageReceived event created', [
             'conversation_id' => $conversation->id,
             'message_id' => $message->id,
             'sender_type' => $message->sender_type,
+            'has_payload' => true,
         ]);
     }
 
@@ -38,13 +70,7 @@ class ChatMessageReceived implements ShouldBroadcast
      */
     public function broadcastAs(): string
     {
-        $eventName = 'ChatMessageReceived';
-        \Illuminate\Support\Facades\Log::debug('Event broadcastAs() called', [
-            'event_name' => $eventName,
-            'conversation_id' => $this->conversation->id,
-            'message_id' => $this->message->id,
-        ]);
-        return $eventName;
+        return 'ChatMessageReceived';
     }
 
     /**
@@ -55,39 +81,5 @@ class ChatMessageReceived implements ShouldBroadcast
         return [
             new Channel('chat.conversation.' . $this->conversation->id),
         ];
-    }
-
-    /**
-     * Get the data to broadcast.
-     */
-    public function broadcastWith(): array
-    {
-        // Load attachments eagerly for broadcast payload
-        $this->message->load('attachments');
-        
-        $payload = [
-            'id' => $this->message->id,
-            'conversation_id' => $this->conversation->id,
-            'sender_type' => $this->message->sender_type,
-            'sender_name' => $this->message->sender_type === 'employee' 
-                ? ($this->message->sender ? $this->message->sender->first_name . ' ' . $this->message->sender->last_name : 'Support')
-                : $this->conversation->visitor_name,
-            'message' => $this->message->message,
-            'attachments' => $this->message->attachments
-                ->map(fn ($att) => $att->toApiArray())
-                ->toArray(),
-            'is_voice' => $this->message->is_voice ?? false,
-            'created_at' => $this->message->created_at->format('Y-m-d H:i:s'),
-            'timestamp' => $this->message->created_at->timestamp,
-        ];
-        
-        \Illuminate\Support\Facades\Log::info('BroadcastWith payload prepared', [
-            'channel' => 'chat.conversation.' . $this->conversation->id,
-            'payload_keys' => array_keys($payload),
-            'message_text' => $payload['message'] ?? 'NO MESSAGE',
-            'has_attachments' => count($payload['attachments'] ?? []),
-        ]);
-        
-        return $payload;
     }
 }

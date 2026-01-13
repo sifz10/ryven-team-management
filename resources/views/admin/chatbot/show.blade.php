@@ -598,12 +598,11 @@
     
     console.log('🔌 Setting up real-time listener for conversation:', conversationId);
     
-    // Polling fallback - only runs if real-time disconnects
+    // Polling fallback - runs alongside real-time as backup
     function startPolling() {
         if (pollingInterval) return; // Already polling
         
-        console.log('📡 Starting polling fallback (real-time disconnected)...');
-        realtimeConnected = false;
+        console.log('📡 Starting polling (3s interval)...');
         
         pollingInterval = setInterval(() => {
             fetch('{{ route("admin.chatbot.get-messages", $conversation) }}', {
@@ -629,7 +628,7 @@
                 }
             })
             .catch(err => console.debug('Polling error:', err));
-        }, 3000); // Increased from 1s to 3s since this is fallback
+        }, 3000); // Check every 3 seconds
     }
     
     // Stop polling if real-time connects
@@ -685,13 +684,6 @@
                     try {
                         console.log('🔔 Real-time message received:', event);
                         
-                        // Mark connection as active only when we receive first message
-                        if (!realtimeConnected) {
-                            realtimeConnected = true;
-                            stopPolling(); // Stop polling since real-time is working
-                            console.log('✅ Real-time working - received first message!');
-                        }
-                        
                         // Add visitor messages in real-time
                         if (event.sender_type === 'visitor') {
                             // Skip if duplicate of sent message
@@ -701,7 +693,7 @@
                                 return;
                             }
                             
-                            console.log('➕ Adding visitor message:', event.message);
+                            console.log('➕ Adding visitor message:', event.messageText || event.message);
                             addMessageToUI(event);
                             markAsRead(event.id);
                             lastMessageId = Math.max(lastMessageId, event.id);
@@ -717,12 +709,13 @@
                     // Handle conversation closure if needed
                 })
                 .error((error) => {
-                    console.warn('⚠️ Channel error, falling back to polling:', error);
+                    console.warn('⚠️ Channel error:', error);
                     realtimeConnected = false;
-                    startPolling();
                 });
             
             console.log('✅ Real-time listener registered successfully');
+            // Start polling as backup even if real-time is working
+            startPolling();
             
         } catch (error) {
             console.error('❌ Error subscribing to channel:', error);

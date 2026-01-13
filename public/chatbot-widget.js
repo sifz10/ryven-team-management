@@ -154,30 +154,65 @@
         });
     }
 
-    // Initialize real-time provider (Pusher or Reverb)
+    // Initialize real-time provider using existing Echo from app bootstrap
     function initializeRealTime() {
-        if (window.Echo) {
-            tryInitializePusher();
-        } else {
-            console.log('No Echo library available, using polling fallback');
-            startPollingMessages();
-        }
+        console.log('🔌 [Widget] Initializing real-time...');
+        console.log('window.Echo available:', !!window.Echo);
+        
+        // Wait for Echo to be available (initialized by main app's bootstrap.js)
+        let echoWaitCount = 0;
+        const echoWaitInterval = setInterval(() => {
+            echoWaitCount++;
+            
+            if (window.Echo) {
+                clearInterval(echoWaitInterval);
+                console.log('✅ [Widget] Echo available!');
+                console.log('Echo config:', window.Echo.connector?.config);
+                console.log('Echo broadcaster:', window.Echo.connector?.config?.broadcaster);
+                state.realtimeConnected = true;
+                state.realtimeProvider = 'reverb';
+                setupRealtimeUpdates();
+            } else if (echoWaitCount > 50) {
+                // Timeout after 5 seconds
+                clearInterval(echoWaitInterval);
+                console.warn('⚠️ [Widget] Echo not available after 5 seconds, using polling fallback');
+                startPollingMessages();
+            } else if (echoWaitCount === 1) {
+                console.log('⏳ [Widget] Waiting for Echo to be initialized...');
+            }
+        }, 100);
     }
 
-    // Try to initialize Pusher via Echo
+    // Get Reverb app key from environment
+    function getReverbKey() {
+        // Try to get from data attribute if set by server
+        const widgetEl = document.querySelector('[data-reverb-key]');
+        if (widgetEl && widgetEl.dataset.reverbKey) {
+            return widgetEl.dataset.reverbKey;
+        }
+        
+        // Fallback to default from .env (REVERB_APP_KEY)
+        return 'ysgs6pjrsn52uowbeuv7'; // From .env REVERB_APP_KEY
+    }
+
+    // Try to initialize Pusher via Echo (fallback)
     function tryInitializePusher() {
-        console.log('🔌 Attempting to initialize Pusher...');
+        console.log('🔌 Attempting to initialize Pusher (external service fallback)...');
         try {
             if (typeof window.Pusher === 'undefined') {
-                console.warn('⚠ Pusher library not loaded, falling back to Reverb...');
-                tryInitializeReverb();
+                console.warn('⚠ Pusher library not loaded');
+                startPollingMessages();
                 return;
             }
 
-            console.log('Creating Pusher instance: key=d0b01bc6eed6d3bdfa71, cluster=ap2');
+            // Use dynamic config or defaults
+            const pusherKey = getPusherKey();
+            const pusherCluster = getPusherCluster();
             
-            const pusher = new window.Pusher('d0b01bc6eed6d3bdfa71', {
-                cluster: 'ap2',
+            console.log('Creating Pusher instance: key=' + pusherKey + ', cluster=' + pusherCluster);
+            
+            const pusher = new window.Pusher(pusherKey, {
+                cluster: pusherCluster,
                 encrypted: true,
             });
             
@@ -238,29 +273,20 @@
     }
 
     // Try to initialize Reverb via Echo
-    function tryInitializeReverb() {
-        try {
-            console.log('🔌 Initializing Reverb (local WebSocket)...');
-            
-            window.Echo = new window.Echo({
-                broadcaster: 'reverb',
-                key: 'ysgs6pjrsn52uowbeuv7',
-                wsHost: '127.0.0.1',
-                wsPort: 8080,
-                wssPort: 443,
-                forceTLS: false,
-                encrypted: false,
-                disableStats: true,
-            });
-            
-            state.realtimeProvider = 'reverb';
-            state.realtimeConnected = true;
-            console.log('✅ Reverb real-time connected on 127.0.0.1:8080');
-        } catch (error) {
-            console.error('❌ Reverb initialization failed:', error.message);
-            console.log('Falling back to polling...');
-            state.realtimeProvider = 'polling';
+    function getPusherKey() {
+        const widgetEl = document.querySelector('[data-pusher-key]');
+        if (widgetEl && widgetEl.dataset.pusherKey) {
+            return widgetEl.dataset.pusherKey;
         }
+        return '2101345'; // Fallback - update with your key
+    }
+
+    function getPusherCluster() {
+        const widgetEl = document.querySelector('[data-pusher-cluster]');
+        if (widgetEl && widgetEl.dataset.pusherCluster) {
+            return widgetEl.dataset.pusherCluster;
+        }
+        return 'mt1'; // Fallback
     }
 
     // Create widget HTML
@@ -1637,65 +1663,37 @@
     function setupRealtimeUpdates() {
         if (!state.conversationId) return;
         
-        // Stop polling if it was running
-        if (state.pollingInterval) {
-            clearInterval(state.pollingInterval);
-            state.pollingInterval = null;
-            console.log('Stopped polling (real-time connected)');
-        }
-        
-        // If real-time is already connected, subscribe immediately
-        if (state.realtimeConnected && window.Echo) {
-            console.log('✓ Real-time already connected, subscribing...');
+        // If Echo is available, subscribe to real-time updates
+        if (window.Echo) {
+            console.log('✓ Echo available, subscribing to real-time channel...');
             subscribeToChannel();
-            return;
+        } else {
+            console.warn('⚠ Echo not available, using polling only');
+            startPollingMessages();
         }
-        
-        // Wait for real-time connection to be established
-        console.log('🔗 Waiting for Pusher real-time connection...');
-        let waitCount = 0;
-        const maxWaits = 50; // Wait up to 5 seconds (50 x 100ms)
-        
-        const waitForRealtimeReady = setInterval(() => {
-            if (state.realtimeConnected && window.Echo) {
-                console.log('✓ Pusher connected! Subscribing to channel...');
-                clearInterval(waitForRealtimeReady);
-                subscribeToChannel();
-            } else {
-                waitCount++;
-                if (waitCount % 5 === 0) {
-                    console.debug(`⏳ Waiting for Pusher connection... ${waitCount * 100}ms | connected=${state.realtimeConnected} | Echo=${!!window.Echo}`);
-                }
-                if (waitCount >= maxWaits) {
-                    console.error('❌ Pusher connection timeout! Check Pusher credentials in browser console and verify:');
-                    console.error('   1. PUSHER_APP_KEY is correct (b2d29ad1ac007bfd4c83)');
-                    console.error('   2. PUSHER_APP_CLUSTER is correct (ap2)');
-                    console.error('   3. Pusher account is active and the app is configured');
-                    clearInterval(waitForRealtimeReady);
-                    console.error('Giving up on Pusher, will try to use polling as fallback...');
-                    startPollingMessages();
-                }
-            }
-        }, 100);
     }
 
     // Subscribe to real-time channel (Pusher or Reverb)
     function subscribeToChannel() {
         if (!window.Echo) {
-            console.warn('Echo not available, using polling');
+            console.warn('❌ [Widget] Echo not available, using polling');
             startPollingMessages();
             return;
         }
         
         try {
             const channelName = `chat.conversation.${state.conversationId}`;
+            console.log(`🔗 [Widget] Subscribing to channel: ${channelName}`);
             
             // Subscribe to public channel (must match admin's broadcast channel)
             state.channelSubscription = window.Echo.channel(channelName)
-                .listen('.ChatMessageReceived', handleNewMessage)
+                .listen('.ChatMessageReceived', (event) => {
+                    console.log('✅✅✅ [Widget] REAL-TIME MESSAGE RECEIVED!', event);
+                    handleNewMessage(event);
+                })
                 .listen('.ConversationClosed', handleConversationClosed)
                 .error((error) => {
-                    console.warn(`Channel subscription error on ${state.realtimeProvider}:`, error);
+                    console.warn(`❌ [Widget] Channel subscription error:`, error);
                     // Fallback to polling
                     if (window.Echo && window.Echo.connector && window.Echo.connector.socket) {
                         if (!window.Echo.connector.socket.connected) {
@@ -1707,9 +1705,9 @@
                     }
                 });
             
-            console.log(`✓ Subscribed to real-time channel: ${channelName} via ${state.realtimeProvider}`);
+            console.log(`✅ [Widget] Subscribed to channel: ${channelName}`);
         } catch (error) {
-            console.error('Channel subscription failed:', error);
+            console.error('❌ [Widget] Channel subscription failed:', error);
             startPollingMessages();
         }
     }
@@ -1761,7 +1759,7 @@
             id: event.id,
             sender_type: event.sender_type,
             sender_name: event.sender_name,
-            message: event.message,
+            message: event.messageText || event.message, // Handle both old and new format
             attachments: attachments,
             is_voice: event.is_voice,
             created_at: event.created_at || event.timestamp,
@@ -1770,7 +1768,7 @@
 
         // Queue for batch rendering instead of immediate render
         queueMessageForRender(message);
-        console.log(`✓ New message queued via ${state.realtimeProvider}:`, event.message);
+        console.log(`✓ New message queued via ${state.realtimeProvider}:`, event.messageText || event.message);
     }
 
     // Polling fallback for real-time updates (when Echo unavailable)
@@ -1781,9 +1779,9 @@
         }
         
         state.realtimeProvider = 'polling';
-        console.log('⚠ Falling back to polling mode (2s interval)');
+        console.log('📡 Real-time not available, falling back to polling (5s interval)');
         
-        // Check for new messages every 2 seconds
+        // Check for new messages every 5 seconds (reduced from 2s to save API calls)
         state.pollingInterval = setInterval(async () => {
             if (!state.conversationId) return;
             try {
@@ -1808,7 +1806,7 @@
             } catch (error) {
                 console.debug('Polling error (non-critical):', error);
             }
-        }, 2000);
+        }, 5000);
     }
 
     // Utility function to escape HTML
